@@ -327,3 +327,9 @@ A completed Noise XX handshake proves possession of the remote static Noise key,
 
 This complements the signed ANNOUNCE binding check and the persistent verified-peer key pins. It does not provide out-of-band human identity verification, and the peer ID remains a truncated 64-bit identifier.
 
+## Noise session lifecycle concurrency — 2026-10-31
+
+The session manager previously used a separate map lookup, destroy, and removal sequence. A concurrent replacement could therefore be removed accidentally, and replacing a session through `addSession` did not destroy the previous session. Lifecycle mutations are now serialized at the manager boundary; replacement destroys the displaced session, and removal uses an atomic map removal before teardown. Handshake failure paths use the same teardown path.
+
+Session teardown now coordinates with the transport cipher lock, preventing a concurrent encrypt/decrypt operation from using a `CipherState` while it is being destroyed. This is a local concurrency hardening change; it does not solve multi-device key synchronization or message delivery reliability.
+
