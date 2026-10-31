@@ -255,3 +255,13 @@ The dedicated Android CI run for the current channel-verification changes is que
 - Added unit tests for round-trip encoding, malformed framing, unsupported versions, invalid identifiers and undersized ciphertext.
 - **Scope limitation:** this is framing/validation only. It does not encrypt data, authenticate senders, distribute keys, prevent replay, persist messages or connect to BLE/P2P. No transport call sites have been changed. Do not treat the presence of this envelope as end-to-end channel encryption.
 - The dedicated CI run triggered by these commits must pass before this change is considered verified.
+
+
+### Authenticated channel-envelope cryptography — 2026-10-31
+
+- Added `ChannelMessageCrypto`, an isolated AES-GCM helper for the versioned channel envelope.
+- Encryption stores a fresh 12-byte GCM nonce followed by authenticated ciphertext and tag in the envelope's opaque ciphertext field.
+- The channel identifier, message identifier, protocol version and a domain-separation label are supplied as GCM additional authenticated data (AAD). Changing either identifier or the ciphertext causes decryption to fail.
+- Added unit tests for UTF-8 round-trip, wrong keys, altered channel/message identifiers, modified ciphertext and empty plaintext.
+- **Security boundary:** this helper requires the caller to supply a trusted AES key. It does not establish peer identity, distribute or persist keys, provide replay protection, or connect to BLE/P2P. It is not yet used by the live channel send/receive path. Existing channel messaging must not be represented as end-to-end encrypted.
+- CI for these commits is required before this isolated crypto layer is considered verified.
