@@ -273,3 +273,11 @@ The dedicated Android CI run for the current channel-verification changes is que
 - The existing direct-neighbor ANNOUNCE duplicate exception is preserved; it is still subject to signature verification.
 - Added regression tests proving that both unsigned and invalidly signed packets do not poison the cache and that a later valid signature for the same packet is accepted.
 - This cache remains in-memory and time-bounded; it is not durable replay protection across process restarts. The change does not replace message-level idempotency or authenticated transport/session sequencing.
+
+### Identity-announcement TLV parser hardening — 2026-10-31
+
+- IdentityAnnouncement.encode now requires a non-empty nickname and exactly 32-byte Curve25519 and Ed25519 public keys.
+- IdentityAnnouncement.decode now rejects incomplete TLV headers, truncated values, duplicate known fields, malformed UTF-8 nicknames, empty nicknames and public keys with incorrect lengths.
+- Unknown TLV types remain skippable for forward compatibility. The parser still requires all three known identity fields.
+- Added unit tests for valid round trips, invalid key lengths, empty nicknames, duplicate fields, truncated headers, malformed UTF-8 and unknown-field compatibility.
+- This validates the structure of the announced identity data; it does not by itself prove that a peer ID is cryptographically bound to the Noise public key or provide out-of-band identity verification. That binding remains a separate item to verify against the transport's peer-ID derivation and rotation rules before changing behavior.
