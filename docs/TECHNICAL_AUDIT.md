@@ -221,3 +221,28 @@ The complete upstream archive is extracted locally. The next gate is to complete
 - The audited upstream source commit `1fc0e237f719514c7eb0920b503a4db103786479` has now been imported into `feat/resa-foundation` as commit `add38df920d6459185558657bbba1f20d834ac5c`. GitHub tree verification reports 1,831 paths, including 248 Kotlin/Java source files, the Gradle wrapper and the Go AAR. Resa audit documents and repository README were retained; upstream MIT license text was preserved under `licenses/`.
 - A GitHub Actions baseline pipeline has been added. Initial attempts exposed runner setup issues (the legacy `tools` SDK package is unavailable; the wrapper executable bit was not preserved by the upstream checkout). These were corrected in the workflow. The latest run is proceeding through Android SDK setup and baseline Gradle tests; until it completes, no successful build or test result is claimed.
 - The upstream source is now present in the Resa development branch. App behavior has not yet been changed from the imported baseline; functional fixes and Resa UI work begin after the baseline build gate is resolved.
+
+## 9. Verified Resa repository status — 2026-10-31 (supersedes earlier point-in-time notes)
+
+The sections above preserve findings as they were recorded during the initial audit. The following is the current verified state and takes precedence wherever earlier notes describe the repository as empty, the source as not imported, or CI as not yet successful.
+
+- The upstream application source is imported into `feat/resa-foundation`; the import is pinned to `1fc0e237f719514c7eb0920b503a4db103786479`.
+- GitHub Actions run [41219038644](https://github.com/Mzarmehi1390/Resa/actions/runs/41219038644) completed successfully. Its unit-test, lint and Debug APK assembly steps all passed.
+- The stale `BATTERY_OPTIMIZATION_CHECK` test enum reference was corrected to match the current `OnboardingState`; `APP_LOCK_SETUP` is now included in the test cases.
+- The source-import workflow now checks for `UPSTREAM_BASELINE.md` before copying upstream files. After the initial import it preserves Resa source changes instead of overwriting them.
+- A separate `.github/workflows/android-ci.yml` workflow now runs unit tests, lint and Debug APK assembly for app/build changes on `feat/resa-foundation`.
+
+### Channel password verification — initial fail-closed correction
+
+The unconditional `return true` test stub in `ChannelManager.verifyChannelPassword` has been removed.
+
+- A new `ChannelKeyCommitment` helper creates SHA-256 commitments from derived key bytes and compares them with `MessageDigest.isEqual` (constant-time comparison for equal-length values).
+- `ChannelManager.setChannelPassword` now stores a local commitment alongside the derived key.
+- Password verification fails closed if there is no expected commitment, if the commitment is malformed, or if the candidate password derives a different key. On a match, the derived key is made available in memory for the current process.
+- Unit tests cover matching keys, incorrect keys, missing/malformed commitments and uppercase hexadecimal commitments.
+
+**Important limitation:** this is only a local fail-closed correction, not a completed multi-device channel security protocol. The commitment is currently held in memory and is not distributed through an authenticated peer protocol or persisted across process restarts. Consequently, a device that has no trusted commitment cannot join a protected channel through password verification; it will now be rejected rather than accepted without proof. Channel message encryption is still not connected end-to-end to the BLE/P2P transport or receive-side decryption. Do not describe protected-channel messaging as secure or operational until authenticated commitment distribution, versioned encrypted message envelopes, receive-side decryption, persistence/recovery policy and two-device integration tests are implemented.
+
+### Current CI run for the channel correction
+
+The dedicated Android CI run for the current channel-verification changes is queued/running at the time of this update: [41219606306](https://github.com/Mzarmehi1390/Resa/actions/runs/41219606306). The earlier successful baseline run does not substitute for this new run. Do not mark the new code as test-passing until this run completes successfully.
