@@ -343,5 +343,25 @@ Session teardown now coordinates with the transport cipher lock, preventing a co
 - A duplicate exchange is rejected before any existing session is replaced. A fresh, signed handshake may still replace an established session to support re-handshake.
 - `NoiseEncryptionService.processHandshakeMessage` now propagates protocol failures to its caller instead of converting them to `null`. `null` remains the valid result for a handshake step that requires no outgoing response. This distinction is necessary for retry-safe replay tracking.
 - Added unit tests for in-flight duplicate rejection, retry after abort, completed-exchange rejection, bounded cleanup, reset behavior, and ingress rejection/acceptance for unsigned/signed Noise handshakes.
-- **Verification status:** CI for the final commit containing these changes is pending. Do not treat these changes as verified until unit tests, lint and debug APK assembly all pass.
+- **Verification status:** CI run `41229649447` passed unit tests, lint and debug APK assembly for the final handshake-ingress changes.
 - **Scope limitation:** these changes protect handshake packet authenticity and local replay bookkeeping. They do not establish a human identity beyond the existing pinned signing key, nor do they replace the need for real two-device BLE/mesh handshake tests.
+
+
+## Legacy Ed25519 API hardening — 2026-10-31
+
+- Replaced the legacy `EncryptionService.sign` empty-byte placeholder with a real Ed25519 signature using the existing local signing identity.
+- The legacy `EncryptionService.verify` API now fails closed. It cannot authenticate a peer because this service does not own the peer's pinned signing key; callers must use `SecurityManager.verifySignature` with the trusted peer identity.
+- `SecurityManager.signPacket` now calls the explicit Ed25519 `signData` API instead of the legacy wrapper.
+- Added regression tests proving the legacy signer produces a verifiable non-empty signature, modified data fails verification, and legacy peer verification does not accept a peer without a pinned key.
+- **Verification:** CI run `41230492968` passed unit tests, lint and debug APK assembly.
+- **Compatibility note:** the old `verify` behavior (treating an established Noise session as proof of an Ed25519 packet signature) was intentionally removed because those are different authentication mechanisms.
+
+## Fragment reassembly resource and isolation hardening — 2026-10-31
+
+- Fragment reassembly state is now scoped by sender ID, recipient ID and fragment ID. Identical 8-byte fragment IDs from different senders/recipients can no longer be mixed into one reconstructed packet.
+- Added bounds for active incomplete sets (64), aggregate buffered fragment data (2 MiB), reconstructed packet size (512 KiB), fragment count (1,024) and individual fragment data (469 bytes).
+- Incomplete sets are evicted by age when the active-set cap is reached, and aggregate memory accounting is updated on completion, timeout, rejection and explicit clear.
+- Reassembly now rejects metadata changes within a set and conflicting duplicate fragment indexes; identical duplicate fragments are ignored.
+- Fragment IDs are generated with `SecureRandom`; the wire format remains the existing 8-byte ID and 13-byte fragment header.
+- Added regression coverage for sender isolation and rejection of excessive fragment counts, oversized fragment data and nested fragment types.
+- **Verification status:** pending CI for the fragment hardening commits. Real interoperability with the iOS implementation and multi-device transfer testing remains required.
