@@ -139,7 +139,10 @@ class PeerManager(context: Context? = null) {
                 return false
             }
 
-            if (isVerified && trustStore != null &&
+            // Verification is monotonic for a pinned identity: a later legacy or
+            // unverified update must never downgrade a previously trusted peer.
+            val remainsVerified = isVerified || existingPeer?.isVerifiedNickname == true || trustedRecord != null
+            if (remainsVerified && trustStore != null &&
                 !trustStore.remember(PeerTrustRecord(peerID, nickname, noisePublicKey, signingPublicKey))
             ) {
                 Log.e(TAG, "Could not persist verified peer identity; refusing trust update")
@@ -153,7 +156,7 @@ class PeerManager(context: Context? = null) {
                 isDirectConnection = existingPeer?.isDirectConnection ?: false,
                 noisePublicKey = noisePublicKey.copyOf(),
                 signingPublicKey = signingPublicKey.copyOf(),
-                isVerifiedNickname = isVerified,
+                isVerifiedNickname = remainsVerified,
                 lastSeen = System.currentTimeMillis()
             )
             peers[peerID] = peerInfo
