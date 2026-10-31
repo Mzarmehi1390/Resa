@@ -207,10 +207,17 @@ The channel-encryption audit was extended across ChannelManager, ChatViewModel, 
 
 ### Private-message handshake/retry trace — additional finding (2026-10-31)
 
-6. **A first private-message attempt is not queued for delivery while the Noise session is absent.** BluetoothMeshService.sendPrivateMessage checks for an established session. If none exists, it initiates a Noise handshake and exits without retaining or retrying the message. The source comment explicitly describes this as fire-and-forget. The private-file send path has the same behavior: it initiates a handshake but does not queue the file. The UI-side message can therefore exist locally even though no transport packet for that message/file was sent. This is a reliability/UX gap rather than proof that Noise encryption itself is broken. Add a bounded, lifecycle-aware pending-send queue with explicit expiration/cancellation and retry only after session establishment; surface a truthful pending/failed state and test handshake success, timeout, peer disconnect and app process death.
+6. **The direct BLE send APIs do not queue first attempts when the Noise session is absent, but the normal text-chat route has a higher-level outbox.** BluetoothMeshService.sendPrivateMessage itself initiates a Noise handshake and exits without retaining the message. However, the normal ChatViewModel text-message flow routes through MessageRouter.sendPrivate, which queues messages when a BLE link exists but the Noise session is not established, then initiates the handshake and schedules a bounded fallback. This means the direct API behavior must not be generalized to the ordinary text-chat path. The private-file send path still initiates a handshake without a corresponding file outbox in the inspected implementation. MessageRouter's outbox is in-memory, so process death can still discard queued text messages. Reliability work should unify send status and queue semantics across text and files, define persistence/expiry policy, and test handshake success, timeout, peer disconnect and process death.
 
 ## 8. Current phase
 
 **Phase 1 — Repository Audit (in progress; source archive now available locally).**
 
 The complete upstream archive is extracted locally. The next gate is to complete source-level review and establish a reproducible source import into Resa, then run a baseline build in an environment with Gradle/Android SDK dependencies available. No destructive changes have been made to the upstream project.
+
+
+### Source import and baseline build pipeline (2026-10-31)
+
+- The audited upstream source commit `1fc0e237f719514c7eb0920b503a4db103786479` has now been imported into `feat/resa-foundation` as commit `add38df920d6459185558657bbba1f20d834ac5c`. GitHub tree verification reports 1,831 paths, including 248 Kotlin/Java source files, the Gradle wrapper and the Go AAR. Resa audit documents and repository README were retained; upstream MIT license text was preserved under `licenses/`.
+- A GitHub Actions baseline pipeline has been added. Initial attempts exposed runner setup issues (the legacy `tools` SDK package is unavailable; the wrapper executable bit was not preserved by the upstream checkout). These were corrected in the workflow. The latest run is proceeding through Android SDK setup and baseline Gradle tests; until it completes, no successful build or test result is claimed.
+- The upstream source is now present in the Resa development branch. App behavior has not yet been changed from the imported baseline; functional fixes and Resa UI work begin after the baseline build gate is resolved.
