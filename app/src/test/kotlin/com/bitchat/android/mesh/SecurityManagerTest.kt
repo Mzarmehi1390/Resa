@@ -378,9 +378,10 @@ class SecurityManagerTest {
         val timestamp = 1_800_000_000_000uL
         val first = ZemzemePacket(
             type = MessageType.FRAGMENT.value,
-            senderID = otherPeerID,
+            senderID = otherPeerID.chunked(2).map { it.toInt(16).toByte() }.toByteArray(),
             timestamp = timestamp,
-            payload = payloadA
+            payload = payloadA,
+            ttl = 10u
         )
         val second = ZemzemePacket(
             type = MessageType.FRAGMENT.value,
