@@ -434,6 +434,14 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
             Log.w(TAG, "🚫 Dropping public message from unverified or unknown peer ${peerID.take(8)}...")
             return
         }
+
+        // Never render a versioned encrypted channel frame as UTF-8 ciphertext.
+        // Receive-side key validation/decryption and replay protection are not
+        // connected yet, so reserved frames fail closed until that protocol lands.
+        if (com.roman.zemzeme.protocol.ChannelMessageEnvelope.hasMagicPrefix(packet.payload)) {
+            Log.w(TAG, "Dropping encrypted channel frame until authenticated receive processing is available")
+            return
+        }
         
         try {
             // Try file packet first (voice, image, etc.) and log outcome for FILE_TRANSFER
@@ -501,6 +509,13 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
      * Handle (decrypted) private message addressed to us
      */
     private suspend fun handlePrivateMessage(packet: ZemzemePacket, peerID: String) {
+        // A channel envelope must never fall through to the private-message
+        // plaintext decoder. No channel-envelope receive protocol is enabled yet.
+        if (com.roman.zemzeme.protocol.ChannelMessageEnvelope.hasMagicPrefix(packet.payload)) {
+            Log.w(TAG, "Dropping encrypted channel frame on private-message path")
+            return
+        }
+
         try {
             // Private MESSAGE and FILE_TRANSFER packets must always carry a valid
             // Ed25519 signature. Do not rely solely on the upstream PacketProcessor:
