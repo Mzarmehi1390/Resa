@@ -39,10 +39,12 @@ object FileSharingManager {
                 file.delete()
                 return null
             }
-            val content = file.readBytes()
-
-            // Clean up temp file
-            file.delete()
+            val content = try {
+                file.readBytes()
+            } finally {
+                // Always remove the temporary copy, including on read failure.
+                file.delete()
+            }
 
             val packet = ZemzemeFilePacket(
                 fileName = fileName,
