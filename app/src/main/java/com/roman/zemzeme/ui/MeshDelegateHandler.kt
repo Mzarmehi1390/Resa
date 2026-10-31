@@ -41,8 +41,12 @@ class MeshDelegateHandler(
                 }
             }
             
-            // Trigger haptic feedback
-            onHapticFeedback()
+            // A locally sent broadcast may return through the mesh receive path.
+            // Keep self-echoes out of incoming-message feedback and unread accounting.
+            val isOwnMessage = message.senderPeerID == getMyPeerID()
+            if (!isOwnMessage) {
+                onHapticFeedback()
+            }
 
             if (message.isPrivate) {
                 // Private message
@@ -86,7 +90,7 @@ class MeshDelegateHandler(
                             selected is com.roman.zemzeme.geohash.ChannelID.Location && selected.channel.geohash.equals(geo, ignoreCase = true)
                         } else false
                     } catch (_: Exception) { false }
-                    if (!viewingClassic && !viewingGeohash) {
+                    if (!isOwnMessage && !viewingClassic && !viewingGeohash) {
                         val currentUnread = state.getUnreadChannelMessagesValue().toMutableMap()
                         currentUnread[channel] = (currentUnread[channel] ?: 0) + 1
                         state.setUnreadChannelMessages(currentUnread)
@@ -97,11 +101,13 @@ class MeshDelegateHandler(
                 // Track unread mesh count when not viewing mesh chat screen
                 val isOnChat = state.isOnChatScreen.value
                 val viewingMesh = isOnChat && state.selectedLocationChannel.value is com.roman.zemzeme.geohash.ChannelID.Mesh
-                if (!viewingMesh) {
+                if (!isOwnMessage && !viewingMesh) {
                     state.setUnreadMeshCount(state.getUnreadMeshCountValue() + 1)
                 }
-                // Still run mention detection/notifications
-                checkAndTriggerMeshMentionNotification(message)
+                // Only incoming messages should trigger mention notifications.
+                if (!isOwnMessage) {
+                    checkAndTriggerMeshMentionNotification(message)
+                }
             }
             
             // Periodic cleanup
