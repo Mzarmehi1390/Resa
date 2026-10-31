@@ -185,18 +185,22 @@ class PeerManager(context: Context? = null) {
      * Get peer info with dynamic direct connection status
      */
     fun getPeerInfo(peerID: String): PeerInfo? {
-        val info = peers[peerID] ?: trustStore?.get(peerID)?.let { trusted ->
-            PeerInfo(
+        val activeInfo = peers[peerID]
+        val trusted = if (activeInfo?.isVerifiedNickname == true) null else trustStore?.get(peerID)
+        val info = when {
+            trusted != null -> PeerInfo(
                 id = trusted.peerID,
-                nickname = trusted.nickname,
-                isConnected = false,
-                isDirectConnection = false,
+                nickname = activeInfo?.nickname ?: trusted.nickname,
+                isConnected = activeInfo?.isConnected ?: false,
+                isDirectConnection = activeInfo?.isDirectConnection ?: false,
                 noisePublicKey = trusted.noisePublicKey.copyOf(),
                 signingPublicKey = trusted.signingPublicKey.copyOf(),
                 isVerifiedNickname = true,
-                lastSeen = 0L
+                lastSeen = activeInfo?.lastSeen ?: 0L
             )
-        } ?: return null
+            activeInfo != null -> activeInfo
+            else -> return null
+        }
 
         // Dynamically check direct connection status from ConnectionManager.
         val isDirect = isPeerDirectlyConnected?.invoke(peerID) ?: false
