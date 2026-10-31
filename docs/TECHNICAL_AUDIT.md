@@ -298,3 +298,13 @@ The dedicated Android CI run for the current channel-verification changes is que
 - **Scope limitation:** this pinning currently lives in the in-memory PeerManager. It does not survive process restarts and is not a persistent trust store. There is no authenticated key-rotation/recovery protocol; legitimate key changes are intentionally rejected until such a protocol is designed. Out-of-band human identity verification is still not provided.
 - The CI run for the final commit containing this change must pass before it is considered verified.
 
+### Persistent verified-peer trust records — 2026-10-31
+
+- Added a device-local trust database encrypted with AES-256-GCM using a non-exportable Android Keystore key. The encrypted snapshot is stored in app-private SharedPreferences; the peer public keys are not secret, but authenticated encryption prevents silent local record modification and protects stored metadata.
+- The binary record codec is versioned and validates peer IDs, UTF-8 nicknames, exact 32-byte Noise/Ed25519 keys, record counts, duplicate IDs, truncation and trailing data.
+- BluetoothMeshService now supplies the application context to PeerManager. Verified identities are persisted before being accepted into the in-memory peer map; a persistence failure or key mismatch rejects the update.
+- On process restart, stored signing keys remain available to SecurityManager through PeerManager.getPeerInfo, including when the peer is not currently connected. Ordinary stale-peer removal does not erase trust records; explicit clear-all attempts to clear the persistent trust database.
+- If encrypted data cannot be decrypted/authenticated (including a missing or invalidated Keystore key), the store enters an unavailable state and refuses trust updates rather than silently starting a new trust database.
+- Added JVM tests for codec round trips, duplicate IDs, malformed IDs, invalid key lengths, truncation, trailing bytes and unsupported versions.
+- **Limitations:** Android Keystore-backed storage is device-local and does not sync across devices or provide human/out-of-band identity verification. This change does not implement authenticated key rotation, trust export/recovery, hardware-backed-key attestation, or protection against a fully compromised/rooted running device. Android Keystore integration itself still requires device-level testing; JVM CI only validates the pure record codec.
+
