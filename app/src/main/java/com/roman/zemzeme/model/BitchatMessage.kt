@@ -231,7 +231,7 @@ data class ZemzemeMessage(
 
                 // Optional fields. Every field announced by a flag must be complete;
                 // accepting a truncated field would silently change message semantics.
-                fun readOptionalString(fieldName: String): String? {
+                fun readOptionalString(fieldName: String): String {
                     if (!buffer.hasRemaining()) throw IllegalArgumentException("Missing $fieldName length")
                     val length = buffer.get().toInt() and 0xFF
                     if (buffer.remaining() < length) {
