@@ -26,8 +26,10 @@ class NoiseSessionManager(
     /**
      * Add new session for a peer
      */
+    @Synchronized
     fun addSession(peerID: String, session: NoiseSession) {
-        sessions[peerID] = session
+        // Destroy a replaced session so its transport keys are not left live.
+        sessions.put(peerID, session)?.takeIf { it !== session }?.destroy()
         Log.d(TAG, "Added new session for $peerID")
     }
 
@@ -42,15 +44,18 @@ class NoiseSessionManager(
     /**
      * Remove session for a peer
      */
+    @Synchronized
     fun removeSession(peerID: String) {
-        sessions[peerID]?.destroy()
-        sessions.remove(peerID)
+        // Remove atomically before destroying: a concurrent replacement must never
+        // be removed by a stale read/remove sequence.
+        sessions.remove(peerID)?.destroy()
         Log.d(TAG, "Removed session for $peerID")
     }
     
     /**
      * SIMPLIFIED: Initiate handshake - no tie breaker, just start
      */
+    @Synchronized
     fun initiateHandshake(peerID: String): ByteArray {
         Log.d(TAG, "initiateHandshake($peerID)")
 
@@ -72,7 +77,7 @@ class NoiseSessionManager(
             Log.d(TAG, "Started handshake with $peerID as INITIATOR")
             return handshakeData
         } catch (e: Exception) {
-            sessions.remove(peerID)
+            removeSession(peerID)
             throw e
         }
     }
@@ -80,6 +85,7 @@ class NoiseSessionManager(
     /**
      * Handle incoming handshake message
      */
+    @Synchronized
     fun processHandshakeMessage(peerID: String, message: ByteArray): ByteArray? {
         Log.d(TAG, "processHandshakeMessage($peerID, ${message.size} bytes)")
         
@@ -114,7 +120,7 @@ class NoiseSessionManager(
             
         } catch (e: Exception) {
             Log.e(TAG, "Handshake failed with $peerID: ${e.message}")
-            sessions.remove(peerID)
+            removeSession(peerID)
             onSessionFailed?.invoke(peerID, e)
             throw e
         }
@@ -207,6 +213,7 @@ class NoiseSessionManager(
     /**
      * Shutdown manager and clean up all sessions
      */
+    @Synchronized
     fun shutdown() {
         sessions.values.forEach { it.destroy() }
         sessions.clear()
