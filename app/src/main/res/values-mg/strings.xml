@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Zemzeme</string>
+
+    <!-- Fanazavana momba ny alalana -->
+    <string name="permission_bluetooth_rationale">Ilaina ny alalana Bluetooth mba hifandraisan-davitra tsy misy Internet.</string>
+    <string name="permission_location_rationale">Ilaina ny alalana momba ny toerana mba hahitana fitaovana akaiky amin\'ny alalan\'ny Bluetooth.</string>
+    <string name="permission_notification_rationale">Ilaina ny alalana fampandrenesana mba hampandre anao rehefa misy hafatra vaovao.</string>
+
+    <!-- Soso-kevitra / UI fototra -->
+    <string name="nickname_hint">anarana kely</string>
+    <string name="message_hint">soraty hafatra…</string>
+    <string name="channel_password_hint">Teny miafina</string>
+    <string name="join_channel">Hiditra amin\'ny fantsona</string>
+    <string name="leave_channel">Hiala</string>
+    <string name="send_message">Handefa</string>
+    <string name="show_commands">Haneho baiko</string>
+    <string name="back">Hiverina</string>
+    <string name="people">Olona</string>
+    <string name="channels">Fantsona</string>
+    <string name="online_users">Mpampiasa an-tserasera</string>
+    <string name="no_one_connected">Tsy misy olona mifandray</string>
+    <string name="emergency_clear_hint">Tsindrio in-telo mba hamafana ny angona rehetra</string>
+    <string name="your_network">Tambazotry</string>
+
+    <!-- Fanamafisana bateria -->
+    <string name="battery_optimization_detected">Hita ny Fanamafisana Bateria</string>
+    <string name="battery_optimization_disabled">Najanona ny Fanamafisana Bateria</string>
+    <string name="battery_optimization_not_required">Tsy ilaina ny Fanamafisana Bateria</string>
+    <string name="battery_optimization_checking">Manamarina ny Fanamafisana Bateria</string>
+    <string name="battery_optimization_why_disable">Nahoana no mijanona ny fanamafisana bateria?</string>
+    <string name="battery_optimization_explanation">Mihazakazaka ao ambadika ny Zemzeme mba hitazona ny fifandraisana tambazotry mesh amin\'ny fitaovana akaiky. Ny fanamafisana bateria dia afaka manelingelina ireo fifandraisana ireo, ka mahatonga ny hafatra hataran-tara na very.\n\nNy fanajanona ny fanamafisana bateria dia miantoka ny fifandraisan-davitra azo itokisana.</string>
+    <string name="battery_optimization_disable_button">Hajanona ny Fanamafisana Bateria</string>
+    <string name="battery_optimization_note">Fanamarihana: Azonao ovaina ato aoriana izany amin\'ny Toetry Android &gt; Apps &gt; Zemzeme &gt; Bateria</string>
+    <string name="battery_optimization_not_supported_explanation">Ny fitaovanao dia tsy mila fametrahana fanamafisana bateria. Ny Zemzeme dia handeha ara-dalàna.</string>
+    <string name="battery_optimization_not_supported_message">Ny fitaovanao dia tsy mila fametrahana fanamafisana bateria. Ny Zemzeme dia handeha ara-dalàna.</string>
+    <string name="battery_optimization_success_message">Afaka mihazakazaka azo itokisana ao ambadika ny Zemzeme</string>
+    <string name="battery_optimization_benefits">• Miantoka ny fandefasana hafatra azo itokisana\n• Mitazona ny fifandraisana tambazotry mesh\n• Mamela ny famindrana hafatra ao ambadika\n• Misoroka ny fahatapahan\'ny fifandraisana</string>
+    <string name="battery_optimization_check_again">Hanamarina indray</string>
+    <string name="battery_optimization_skip">Hitsambikina ankehitriny</string>
+    <string name="battery_optimization_continue">Hanohy</string>
+    <string name="retry">Hanandrana indray</string>
+    <string name="skip">Hitsambikina</string>
+
+    <!-- Fampandrenesana -->
+    <string name="notification_summary_more">ary %1$d hafa</string>
+    <string name="notification_messages_from_people">%1$d hafatra avy amin\'ny olona %2$d</string>
+    <string name="notification_more_conversations">ary %1$d resaka hafa</string>
+    <string name="notification_active_peers_title">👥 Zemzeme user akaiky!</string>
+    <string name="notification_active_peers_one">Olona 1 manodidina</string>
+    <string name="notification_active_peers_many">Olona %1$d manodidina</string>
+    <string name="notification_new_messages">Hafatra vaovao</string>
+    <string name="notification_new_location_messages">Hafatra Toerana Vaovao</string>
+    <string name="notification_mentions_in">Voatonona ao amin\'ny %1$s</string>
+    <string name="notification_mentions_in_more">Voatonona ao amin\'ny %1$s (+%2$d hafa)</string>
+    <string name="notification_mentions_in_plural">%1$d fanaovana tsiahy ao amin\'ny %2$s</string>
+    <string name="notification_new_activity_in">Hetsika vaovao ao amin\'ny %1$s</string>
+    <string name="notification_messages_in">Hafatra ao amin\'ny %1$s</string>
+    <string name="notification_joined_conversation">%1$s dia niditra tamin\'ny resaka</string>
+    <string name="notification_geohash_summary_title_mentions">Zemzeme - %1$d fanaovana tsiahy</string>
+    <string name="notification_geohash_summary_title">Zemzeme - resaka toerana</string>
+    <string name="notification_geohash_summary_text">%1$d hafatra avy amin\'ny toerana %2$d</string>
+    <string name="notification_mesh_mention_title_singular">Voatonona ao amin\'ny Bluetooth Chat</string>
+    <string name="notification_mesh_mention_title_plural">%1$d fanaovana tsiahy ao amin\'ny Bluetooth Chat</string>
+    <string name="notification_more_locations">ary %1$d toerana hafa</string>
+    <string name="notification_and_more">ary %1$d hafa</string>
+
+    <!-- Fahafinaretana momba ny ankafizina -->
+    <string name="cd_add_favorite">Hampidirina amin\'ny ankafizina</string>
+    <string name="cd_remove_favorite">Hanesorana amin\'ny ankafizina</string>
+    <string name="cd_add_bookmark">Hanampy bookmark</string>
+
+    <!-- Lohan\'ny resaka &amp; fahafaha-miditra -->
+    <string name="chat_back">miverina</string>
+    <string name="chat_channel_prefix">fantsona: %1$s</string>
+    <string name="chat_leave">hiala</string>
+    <string name="cd_nostr_reachable">Azo tratrarina amin\'ny alalan\'ny Nostr</string>
+    <string name="cd_unread_private_messages">Hafatra manokana tsy voavaky</string>
+    <string name="cd_toggle_bookmark">Hanova bookmark</string>
+    <string name="cd_teleported">Nafindra toerana</string>
+    <string name="cd_tor_status">Toe-javatra Tor</string>
+    <string name="cd_connected_peers">Mpiara-miasa mifandray</string>
+    <string name="cd_geohash_participants">Mpandray anjara Geohash</string>
+    <string name="cd_ready_for_handshake">Vonona ho amin\'ny fifampiraharahana</string>
+    <string name="cd_handshake_in_progress">Fifampiraharahana mandeha eo</string>
+    <string name="cd_encrypted">Voafono farany amin\'ny farany</string>
+    <string name="cd_handshake_failed">Tsy nahomby ny fifampiraharahana</string>
+
+    <!-- Fifanakalozan-dresaka momba ny rakitra -->
+    <string name="file_viewer_title">📎 Rakitra Voaray</string>
+    <string name="file_viewer_name">📄 %1$s</string>
+    <string name="file_viewer_size">📏 Habeny: %1$s</string>
+    <string name="file_viewer_type">🏷️ Karazana: %1$s</string>
+    <string name="file_viewer_open_save">📂 Hanokatra / Hitahiry</string>
+    <string name="close_with_emoji">❌ Hanakatona</string>
+    <string name="pick_image">Hifidy sary</string>
+
+    <!-- Momba ny takelaka -->
+    <string name="about_tagline">Fifandraisan-dresaka tsy voamarin-poana amin ny toe-javatra rehetra, voarakitra avy amin ny farany ka hatramin ny farany</string>
+    <string name="about_offline_mesh_title">Bluetooth Chat tsy an-tserasera</string>
+    <string name="about_offline_mesh_desc">Mifandraisa mivantana amin\'ny alalan\'ny Bluetooth LE tsy misy Internet na mpizara. Ny hafatra dia mamindra amin\'ny alalan\'ny fitaovana akaiky mba hanitarana ny elanelana.</string>
+    <string name="about_online_geohash_title">Fantsona Geohash an-tserasera</string>
+    <string name="about_online_geohash_desc">Mifandray amin\'ny olona eo amin\'ny faritra misy anao amin\'ny fampiasana fantsona mifototra amin\'ny geohash. Manitatra ny mesh amin\'ny fampiasana relay Internet ho an\'ny daholobe.</string>
+    <string name="about_e2e_title">Fandokoana Farany amin\'ny Farany</string>
+    <string name="about_e2e_desc">Voafono ny hafatra manokana. Hafatra ho an\'ny daholobe ny hafatra fantsona.</string>
+    <string name="about_appearance">endrika</string>
+    <string name="about_system">rafitra</string>
+    <string name="about_light">mazava</string>
+    <string name="about_dark">maizina</string>
+    <string name="about_pow">porofo asa</string>
+    <string name="about_pow_off">pow tapaka</string>
+    <string name="about_pow_on">pow mandeha</string>
+    <string name="about_pow_tip">ampio porofo asa amin\'ny hafatra geohash mba hanakanana spam.</string>
+    <string name="about_pow_difficulty">sarotra: %1$d bit (~%2$s)</string>
+    <string name="about_pow_difficulty_attempts">sarotra %1$d mitaky ~%2$s fanandramana hash</string>
+    <string name="about_pow_desc_none">tsy misy porofo asa ilaina</string>
+    <string name="about_pow_desc_very_low">ambany indrindra - fiarovana spam kely</string>
+    <string name="about_pow_desc_low">ambany - fiarovana spam fototra</string>
+    <string name="about_pow_desc_medium">antonony - fiarovana spam tsara</string>
+    <string name="about_pow_desc_high">avo - fiarovana spam matanjaka</string>
+    <string name="about_pow_desc_very_high">avo dia avo - mety miteraka fahatarana</string>
+    <string name="about_pow_desc_extreme">faran\'izany - mitaky kajy lehibe</string>
+    <string name="about_network">tambazotry</string>
+    <string name="about_tor_off">tor tapaka</string>
+    <string name="about_tor_on">tor mandeha</string>
+    <string name="about_tor_route">alefaso amin\'ny alalan\'ny tor ny Internet mba hahazoana fiainana manokana bebe kokoa.</string>
+    <string name="about_tor_status">Toe-javatra Tor: %1$s, bootstrap %2$d%%</string>
+    <string name="about_last">Farany: %1$s</string>
+    <string name="about_emergency_title">Famafana Angona Maika</string>
+    <string name="about_emergency_tip">Toro-hevitra: Tsindrio in-telo ny anaran\'ny fampiharana mba hamafana maika ny angona rehetra voatahiry ao anatin\'izany ny hafatra, ny lakile ary ny fametrahana.</string>
+    <string name="about_debug_settings">Fametrahana Debug</string>
+    <string name="about_footer">Loharanom-baovao misokatra • Fiainana manokana voalohany • Tsy misy foibe</string>
+    <string name="close_plain">Hanakatona</string>
+    <string name="cancel_lower">hanafoana</string>
+
+    <!-- Famaritana votoaty ankapobeny -->
+    <string name="cd_warning">Fampitandremana</string>
+    <string name="cd_location_services">Sampan-draharaham-pitoerana</string>
+    <string name="cd_privacy">Fiainana manokana</string>
+    <string name="cd_error">Hadisoana</string>
+    <string name="cd_battery_optimization">Fanamafisana Bateria</string>
+    <string name="cd_benefits">Tombontsoa</string>
+    <string name="cd_checking_battery_optimization">Manamarina ny Fanamafisana Bateria</string>
+    <string name="cd_not_supported_battery_optimization">Tsy tohanana ny Fanamafisana Bateria</string>
+    <string name="cd_bluetooth">Bluetooth</string>
+    <string name="cd_unread_message">Hafatra tsy voavaky</string>
+    <string name="cd_open_map">Hanokatra sarintany</string>
+    <string name="cd_remove_bookmark">Hanesorana bookmark</string>
+    <string name="cd_teleport">Hamindra toerana</string>
+    <string name="cd_selected">Voafidy</string>
+    <string name="cd_leave_channel">Hiala amin\'ny fantsona</string>
+    <string name="cd_reachable_via_nostr">Azo tratrarina amin\'ny alalan\'ny Nostr</string>
+    <string name="cd_offline_favorite">Ankafizina tsy an-tserasera</string>
+    <string name="cd_decrease_precision">Hampihenana ny fahamarinana</string>
+    <string name="cd_increase_precision">Hampitombo ny fahamarinana</string>
+    <string name="cd_select_geohash">Hifidy geohash</string>
+    <string name="cd_scroll_to_bottom">Hidina any ambany</string>
+    <string name="cd_file">Rakitra</string>
+    <string name="cd_image">Sary</string>
+    <string name="cd_cancel">Hanafoana</string>
+    <string name="cd_link">Rohy</string>
+    <string name="cd_pick_media">Hifidy media</string>
+    <string name="cd_pick_file">Hifidy rakitra</string>
+    <string name="cd_save_current_image">Hitahiry ny sary ankehitriny</string>
+    <string name="cd_close">Hanakatona</string>
+    <string name="cd_image_index_of">Sary %1$d amin\'ny %2$d</string>
+    <string name="cd_privacy_protected">Voaaro ny Fiainana Manokana</string>
+    <string name="cd_record_voice">Handrakitra feo</string>
+    <string name="cd_offline_mesh_chat">Bluetooth Chat tsy an-tserasera</string>
+    <string name="cd_online_geohash_channels">Fantsona Geohash an-tserasera</string>
+    <string name="cd_end_to_end_encryption">Fandokoana Farany amin\'ny Farany</string>
+    <string name="cd_settings">Fametrahana</string>
+    <string name="cd_location_notes">Fanamarihana toerana</string>
+
+    <!-- Sary &amp; rakitra -->
+    <string name="image_page_of">Sary %1$d amin\'ny %2$d</string>
+    <string name="image_unavailable">Tsy misy sary</string>
+    <string name="image_saved_to_downloads">Sary voatahiry ao amin\'ny Downloads</string>
+    <string name="image_save_failed">Tsy afaka mitahiry sary</string>
+    <string name="toast_image_saved">Sary voatahiry ao amin\'ny Downloads</string>
+    <string name="toast_failed_to_save_image">Tsy afaka mitahiry sary</string>
+    <string name="pick_file">Hifidy rakitra</string>
+    <string name="file_unavailable">[rakitra tsy misy]</string>
+    <string name="unknown">tsy fantatra</string>
+
+    <!-- Takelaka hetsika mpampiasa -->
+    <string name="choose_action_message_or_user">safidio hetsika ho an\'ity hafatra na mpampiasa ity</string>
+    <string name="choose_action_user">safidio hetsika ho an\'ity mpampiasa ity</string>
+    <string name="action_copy_message_title">adikao ny hafatra</string>
+    <string name="action_copy_message_subtitle">adikao ity hafatra ity any amin\'ny clipboard</string>
+    <string name="action_slap_title">kapohina %1$s</string>
+    <string name="action_slap_subtitle">handefasa hafatra kapohana an-dalao</string>
+    <string name="action_hug_title">honofinofy %1$s</string>
+    <string name="action_hug_subtitle">handefasa hafatra honofinofy sariaka</string>
+    <string name="action_block_title">hanorina %1$s</string>
+    <string name="action_block_subtitle">hanorina ny hafatra rehetra avy amin\'ity mpampiasa ity</string>
+
+    <!-- Takelaka fantsona toerana -->
+    <string name="location_channels_title">#fantsona toerana</string>
+    <string name="location_channels_desc">miresaka amin\'ny olona akaiky anao amin\'ny fampiasana fantsona geohash. geohash marivo ihany no zarainy, tsy GPS marina akory. aza maka sary an-efijery na mizara ity efijery ity mba hiarovana ny fiainanao manokana.</string>
+    <string name="grant_location_permission">omeo alalana momba ny toerana</string>
+    <string name="location_permission_denied">nolavina ny alalana momba ny toerana. alefaso ao amin\'ny fametrahana mba hampiasa fantsona toerana.</string>
+    <string name="open_settings">Hanokatra fametrahana</string>
+    <string name="location_permission_granted">\u2713 omena ny alalana momba ny toerana</string>
+    <string name="checking_permissions">manamarina ny alalana...</string>
+    <string name="finding_nearby_channels">mitady fantsona akaiky…</string>
+    <string name="bookmarked">voaisy bookmark</string>
+    <string name="geohash_placeholder">geohash</string>
+    <string name="invalid_geohash">geohash tsy mety</string>
+    <string name="teleport">hamindra toerana</string>
+    <string name="disable_location_services">hanajanona sampan-draharaham-pitoerana</string>
+    <string name="enable_location_services">halefa sampan-draharaham-pitoerana</string>
+    <string name="mesh_label">bluetooth</string>
+    <string name="location_level_block">sakana</string>
+    <string name="location_level_neighborhood">manodidina</string>
+    <string name="location_level_city">tanàna</string>
+    <string name="location_level_province">faritany</string>
+    <string name="location_level_region">faritra</string>
+    <string name="location_bluetooth_subtitle">#bluetooth • %1$s</string>
+
+    <!-- Debug / Diagnostika -->
+    <string name="debug_tools">fitaovana debug</string>
+    <string name="debug_tools_desc">fitaovana mpamorona ho an\'ny diagnostika sy fifehezana</string>
+    <string name="debug_verbose_logging">firaketana amin\'ny antsipiriany</string>
+    <string name="debug_verbose_hint">raketo ny fidiran\'ny mpiara-miasa / ny fialana, ny fanolorana fifandraisana, ny routing pakets ary ny relays</string>
+    <string name="debug_bluetooth_roles">andraikitry Bluetooth</string>
+    <string name="debug_gatt_server">mpizara GATT</string>
+    <string name="debug_connections_fmt">fifandraisana: %1$d / %2$d</string>
+    <string name="debug_max_server">mpizara max</string>
+    <string name="debug_gatt_client">mpanjifa GATT</string>
+    <string name="debug_max_client">mpanjifa max</string>
+    <string name="debug_overall_connections_fmt">fifandraisana: %1$d / %2$d</string>
+    <string name="debug_max_overall">max ankapobeny</string>
+    <string name="debug_packet_relay">relay pakets</string>
+    <string name="debug_since_start_fmt">hatramin\'ny fanombohana: %1$d</string>
+    <string name="debug_roles_hint">alefaso / tapaho ny andraikitra ary akatony ny fifandraisana rehetra rehefa tapaka</string>
+    <string name="debug_sync_settings">fametrahana sync</string>
+    <string name="debug_max_packets_per_sync_fmt">pakets max isaky ny sync: %1$d</string>
+    <string name="debug_max_gcs_filter_size_fmt">haben\'ny sivana GCS max: %1$d bytes (128–1024)</string>
+    <string name="debug_target_fpr_fmt">FPR kendrena: %1$.2f%%</string>
+    <string name="debug_connected_devices">fitaovana mifandray</string>
+    <string name="debug_our_device_id_fmt">ID fitaovanay: %1$s</string>
+    <string name="debug_none">tsy misy</string>
+    <string name="debug_disconnect">hisaraka</string>
+    <string name="debug_recent_scan_results">valim-panadihadiana vao haingana</string>
+    <string name="debug_connect">hifandray</string>
+    <string name="debug_debug_console">console debug</string>
+    <string name="debug_clear">hamafa</string>
+    <string name="debug_relays_window_fmt">10s farany: %1$d • 1m: %2$d • 15m: %3$d</string>
+    <string name="debug_derived_p_fmt">P azo: %1$s • tombana singa max: %2$s</string>
+    <string name="debug_direct_suffix"> • mivantana</string>
+    <string name="debug_role_server">ho mpizara (isika mampiantrano)</string>
+    <string name="debug_role_client">ho mpanjifa (isika mifandray)</string>
+
+    <!-- Efijery fanombohana -->
+    <string name="location_services_required">Ilaina ny Sampan-draharaham-pitoerana</string>
+    <string name="privacy_first">Fiainana Manokana Voalohany</string>
+    <string name="location_explanation">Ny Zemzeme dia TSY manaraka ny toerananao.\n\nIlaina ny sampan-draharaham-pitoerana ho an\'ny scan Bluetooth sy ny endri-javatra resaka Geohash.</string>
+    <string name="location_needs_for">Ny Zemzeme dia mila sampan-draharaham-pitoerana ho an\'ny:</string>
+    <string name="location_needs_bullets">• Scan fitaovana Bluetooth\n• Fahitana mpampiasa akaiky amin\'ny tambazotry mesh\n• Endri-javatra resaka Geohash\n• Tsy misy fanaraha-maso na fanangonana toerana</string>
+    <string name="open_location_settings">Hanokatra Fametrahana Toerana</string>
+    <string name="check_again">Hanamarina Indray</string>
+    <string name="location_services_unavailable">Tsy Misy Sampan-draharaham-pitoerana</string>
+    <string name="location_unavailable_explanation">Tsy misy sampan-draharaham-pitoerana amin\'ity fitaovana ity. Mahagaga izany satria mahazatra amin\'ny fitaovana Android ny sampan-draharaham-pitoerana.\n\nMila sampan-draharaham-pitoerana ny Zemzeme mba hiasa tsara ny scan Bluetooth (takiana Android). Raha tsy izany, ny fampiharana dia tsy afaka mahita mpampiasa akaiky.</string>
+    <string name="checking_location_services">Manamarina sampan-draharaham-pitoerana...</string>
+    <string name="bluetooth_required">Ilaina ny Bluetooth</string>
+    <string name="bluetooth_needs_for">Mila Bluetooth ny Zemzeme mba:</string>
+    <string name="bluetooth_needs_bullets">• Hahita mpampiasa akaiky\n• Hamorona fifandraisana tambazotry mesh\n• Handefa sy handray hafatra\n• Hiasa tsy misy Internet na mpizara</string>
+    <string name="enable_bluetooth">Alefaso ny Bluetooth</string>
+    <string name="bluetooth_not_supported">Tsy Tohanana ny Bluetooth</string>
+    <string name="bluetooth_unsupported_explanation">Ity fitaovana ity dia tsy manohana ny Bluetooth Low Energy (BLE), izay ilaina mba hiasan\'ny Zemzeme.\n\nMila BLE ny Zemzeme mba hamoronana tambazotry mesh sy hifandray amin\'ny fitaovana akaiky tsy misy Internet.</string>
+    <string name="checking_bluetooth_status">Manamarina ny toe-javatra Bluetooth...</string>
+    <string name="battery_optimization_detected_title">hita ny fanamafisana bateria</string>
+    <string name="battery_optimization_enabled_title">Alefa ny Fanamafisana Bateria</string>
+    <string name="battery_optimization_explanation_short">Mila mihazakazaka ao ambadika ny Zemzeme mba hitazona ny fifandraisana mesh. ny fanamafisana bateria dia afaka manelingelina ireo fifandraisana ireo.</string>
+    <string name="benefits_of_disabling">Tombontsoam-panajanona</string>
+    <string name="battery_benefits_short">• fandefasana hafatra azo itokisana\n• mitazona ny fifandraisana mesh\n• misoroka ny fahatapahan\'ny fifandraisana</string>
+    <string name="disable_battery_optimization">Hajanona ny Fanamafisana Bateria</string>
+    <string name="battery_optimization_disabled_title">najanona ny fanamafisana bateria</string>
+    <string name="continue_btn">Hanohy</string>
+    <string name="initializing_mesh_network">Manomboka ny tambazotry mesh</string>
+    <string name="dot">.</string>
+    <string name="setting_up_bluetooth">Mametraka ny tambazotry mesh Bluetooth...</string>
+    <string name="should_take_seconds">Tokony haharitra segaondra vitsivitsy ihany izany</string>
+    <string name="warning_emoji">⚠️</string>
+    <string name="setup_not_complete">Tsy Vita ny Fametrahana</string>
+    <string name="try_again">Andramo Indray</string>
+    <string name="privacy_protected">Voaaro ny Fiainanao Manokana</string>
+    <string name="privacy_bullets">• tsy misy fanaraha-maso na fanangonana angona\n• tsy an-tserasera tanteraka ny resaka mesh Bluetooth\n• mampiasa Internet ny resaka Geohash</string>
+    <string name="permissions_header">alalana</string>
+    <string name="grant_permissions">Omeo Alalana</string>
+    <string name="continue_button">Hanohy</string>
+    <string name="perm_required_label">Takiana</string>
+    <string name="perm_recommended_label">Torolalana</string>
+    <string name="perm_info_dialog_ok">OK</string>
+    <string name="perm_benefit_nearby_devices">Ny alalana Bluetooth dia mamela ny Zemzeme hahita sy hifandray amin\'ny mpampiasa hafa akaiky amin\'ny alalan\'ny tambazotry mesh. Izany dia mamela ny firaisan-davitra tsy an-tserasera, peer-to-peer tsy misy Internet.</string>
+    <string name="perm_benefit_location">Mitaky alalana toerana ny Android mba hisikidiana fitaovana Bluetooth akaiky. Ny Zemzeme dia TSY manaraka na mitahiry ny toerananao.</string>
+    <string name="perm_benefit_background_location">Ny toerana ao ambadika dia mamela ny Zemzeme hahita mpampiasa akaiky na dia ao ambadika aza ny fampiharana. Raha tsy izany, ny tambazotry mesh dia miasa fotsiny rehefa misokatra eo amin\'ny efijery ny fampiharana.</string>
+    <string name="perm_benefit_notifications">Ny fampandrenesana dia mampandre anao rehefa mahazo hafatra manokana na rehefa misy hetsika vaovao amin\'ny fantsona, na dia ao ambadika aza ny fampiharana.</string>
+    <string name="perm_benefit_battery_optimization">Ny fanajanona ny fanamafisana bateria dia miantoka fa mihazakazaka azo itokisana ao ambadika ny Zemzeme ary mitazona ny fifandraisana tambazotry mesh. Raha tsy izany, ny Android dia afaka mamono ny fampiharana mba hitsitsiana bateria ka mampisaraka anao amin\'ny mesh.</string>
+    <string name="location_tracking_warning">Ny Zemzeme dia TSY manaraka ny toerananao</string>
+    <string name="at_symbol">@</string>
+    <string name="app_brand">Zemzeme/</string>
+    <string name="channel_count_prefix"> · ⧉ </string>
+    <string name="geohash_people_header">OLONA</string>
+    <string name="nobody_around">tsy misy olona manodidina...</string>
+    <string name="you_suffix"> (ianao)</string>
+    <string name="pan_zoom_instruction">ahetsika sy ataovy lehibe mba hifidianana geohash</string>
+    <string name="select">hifidy</string>
+    <string name="type_a_message_placeholder">soraty hafatra...</string>
+    <string name="mention_suggestion_at">@%1$s</string>
+    <string name="mention">hanonona</string>
+    <string name="image_counter">%1$d / %2$d</string>
+    <string name="pow_time_estimate">(~%1$s)</string>
+    <string name="at_nickname">@%1$s</string>
+    <string name="version_prefix">v%1$s</string>
+    <string name="hash_symbol">#</string>
+    <string name="underscore">_</string>
+    <string name="progress_bar_brackets">[%1$s] %2$d%%</string>
+    <string name="progress_filled">█</string>
+    <string name="progress_empty">░</string>
+    <string name="image_star">image/*</string>
+    <string name="media_type_image">Sary</string>
+    <string name="media_type_file">Rakitra</string>
+
+    <!-- Famantarana toe-javatra hafatra -->
+    <string name="status_sending">○</string>
+    <string name="status_pending">○</string>
+    <string name="status_sent">✓</string>
+    <string name="status_delivered">✓✓</string>
+    <string name="status_failed">⚠</string>
+    <string name="status_read">✓</string>
+
+    <!-- Mpanampy lahatsoratra fampandrenesana -->
+    <string name="notification_sent_image">📷 nandefasa sary</string>
+    <string name="notification_sent_voice">🎤 nandefasa hafatra feo</string>
+    <string name="notification_sent_file">📎 nandefasa rakitra</string>
+    <string name="notification_file_pdf">📄</string>
+    <string name="notification_file_zip">🗜️</string>
+    <string name="notification_file_doc">📄</string>
+    <string name="notification_file_xls">📊</string>
+    <string name="notification_file_ppt">📈</string>
+    <string name="notification_file_generic">📎</string>
+
+    <!-- Fahafaha-miditra mpilalao feo -->
+    <string name="cd_play_voice">Hilalao</string>
+    <string name="cd_pause_voice">Hijanona</string>
+    <string name="cd_mining_pow">Mihaingam-poana PoW</string>
+    <string name="cd_pow_enabled">Alefa ny PoW</string>
+    <string name="cd_proof_of_work">Porofo Asa</string>
+    <string name="pow_mining_ellipsis">mihaingana...</string>
+    <string name="pow_label_format">pow: %1$dbit</string>
+
+    <!-- Famaritana alalana -->
+    <string name="perm_nearby_devices_desc">Ilaina mba hahitana mpampiasa Zemzeme amin\'ny alalan\'ny Bluetooth</string>
+    <string name="perm_nearby_devices_system">Avelao ny Zemzeme hifandray amin\'ny fitaovana akaiky</string>
+    <string name="perm_location_desc">Takian\'ny Android mba hahitana mpampiasa Zemzeme akaiky amin\'ny alalan\'ny Bluetooth</string>
+    <string name="perm_location_system">Mila izany ny Zemzeme mba hisikidy fitaovana akaiky</string>
+    <string name="perm_notifications_desc">Mandray fampandrenesana rehefa mahazo hafatra manokana ianao</string>
+    <string name="perm_notifications_system">Avelao ny Zemzeme handefasa fampandrenesana aminao</string>
+    <string name="perm_battery_desc">Ajanony ny fanamafisana bateria mba hahazoana antoka fa mihazakazaka azo itokisana ao ambadika ny Zemzeme ary mitazona ny fifandraisana tambazotry mesh</string>
+    <string name="perm_battery_system">Avelao ny Zemzeme handeha tsy misy famerana bateria</string>
+
+    <!-- Karazana alalana -->
+    <string name="perm_type_nearby_devices">Fitaovana Akaiky</string>
+    <string name="perm_type_precise_location">Toerana Marina</string>
+    <string name="perm_type_microphone">Mikraofona</string>
+    <string name="perm_type_notifications">Fampandrenesana</string>
+    <string name="perm_type_battery_optimization">Fanamafisana Bateria</string>
+    <string name="perm_type_other">Hafa</string>
+
+    <!-- App Lock -->
+    <string name="app_lock_title">Fisakanana Aplikasiôna</string>
+    <string name="app_lock_subtitle_off">Tsy miasa</string>
+    <string name="app_lock_subtitle_on">Biometrika + PIN</string>
+    <string name="app_lock_security_section">FIAROVANA</string>
+    <string name="app_lock_enter_pin">Ampidiro ny PIN</string>
+    <string name="app_lock_set_pin">Apetraho ny PIN</string>
+    <string name="app_lock_confirm_pin">Avereno ny PIN</string>
+    <string name="app_lock_biometric_title">Sokafy ny Zemzeme</string>
+    <string name="app_lock_biometric_subtitle">Ampiasao ny biometrika hisokafana</string>
+    <string name="app_lock_use_pin">Ampiasao ny PIN</string>
+    <string name="app_lock_wrong_pin">PIN diso</string>
+    <string name="app_lock_too_many_attempts">Tsy mety loatra. Andrama indray ao anatin\'ny %1$d segondra.</string>
+    <string name="app_lock_cooldown">%1$d segondra sisa</string>
+    <string name="app_lock_pin_mismatch">Tsy mifanentana ny PIN</string>
+    <string name="app_lock_pin_min_length">Ny PIN dia tsy maintsy manana fara-fahakeliny 4 laharana</string>
+    <string name="app_lock_disable_title">Fafao ny fisakanana aplikasiôna</string>
+    <string name="app_lock_disable_msg">Hamarino ny maha-izy anao mba hanafoana ny fisakanana</string>
+    <string name="app_lock_protect_title">Arovy ny Resaka</string>
+    <string name="app_lock_protect_desc">PIN 6 laharana dia manidy ny fampiharana. Ampiasao ny biometrika mba hidirana haingana.</string>
+    <string name="app_lock_enable">Alefaso ny Fisakanana</string>
+    <string name="app_lock_not_now">Tsy Izao</string>
+
+    <!-- Fifanakalozan-dresaka fangatahana teny miafina -->
+    <string name="pwd_prompt_title">Ampidiro ny Teny Miafina Fantsona</string>
+    <string name="pwd_prompt_message">Voaaro amin\'ny teny miafina ny fantsona %1$s. Ampidiro ny teny miafina mba hidirana.</string>
+    <string name="pwd_label">Teny miafina</string>
+    <string name="join">Hiditra</string>
+    <string name="cancel">Hanafoana</string>
+    <string name="tor_not_available_in_this_build">Tor tsy misy amin\'ity version ity</string>
+
+    <!-- Plurals -->
+    <plurals name="notification_and_more">
+        <item quantity="one">ary %d hafa</item>
+        <item quantity="other">ary %d hafa</item>
+    </plurals>
+
+    <plurals name="people_count">
+        <item quantity="one">Olona 1</item>
+        <item quantity="other">Olona %d</item>
+    </plurals>
+
+    <plurals name="location_notes_title">
+        <item quantity="one">#%1$s ± 1 • %2$d fanamarihana</item>
+        <item quantity="other">#%1$s ± 1 • %2$d fanamarihana</item>
+    </plurals>
+    <string name="location_notes_description">menomero fanamarihana fohy maharitra amin\'ity toerana ity mba ho hitan\'ny mpitsidika hafa.</string>
+    <string name="location_notes_relays_unavailable">geo relays tsy misy; fanamarihana napetraka</string>
+    <string name="location_notes_no_relays_title">tsy misy geo relays akaiky</string>
+    <string name="location_notes_no_relays_desc">ny fanamarihana dia miankina amin\'ny geo relays. jereo ny fifandraisan\'ny ary andramo indray.</string>
+    <string name="loading_location_notes">mampiditra ny fanamarihana…</string>
+    <string name="location_notes_empty_title">tsy misy fanamarihana mbola</string>
+    <string name="location_notes_empty_desc">aoka ho voalohany ianao hanomezana fanamarihana amin\'ity toerana ity.</string>
+    <string name="dismiss">akatona</string>
+    <string name="location_notes_input_placeholder">menomero fanamarihana amin\'ity toerana ity</string>
+
+    <string name="mesh_service_notification_content">Mandeha ny Bluetooth — %1$d peers</string>
+    <string name="mesh_service_channel_name">Serivisy Bluetooth ao ambadika</string>
+    <string name="mesh_service_channel_desc">Mitazona ny Bluetooth mesh miasa ao ambadika</string>
+    <string name="notification_action_quit_bitchat">Hiala ao amin\'ny Zemzeme</string>
+    <string name="about_background_title">mihazakazaka ao ambadika</string>
+    <string name="about_background_desc">mitazona ny mesh mavitrika rehefa voakatona ny fampiharana (serivisy aloha)</string>
+    <string name="about_p2p_subtitle">Fifandraisana mivantana amin\'ny p2p</string>
+    <string name="about_nostr_subtitle">Fandefasana hafatra amin\'ny relay internet</string>
+    <string name="about_ble_subtitle">Mesh Bluetooth akaiky</string>
+    <string name="ble_setting_off_subtitle">Tsy miasa ny Bluetooth — alefaso mba hampiasana ny BLE Mesh</string>
+    <string name="ble_banner_off">Tsy miasa ny Bluetooth — tsy azo ampiasaina ny BLE Mesh</string>
+    <string name="ble_setting_dialog_title">Mila Bluetooth</string>
+    <string name="ble_setting_dialog_msg">Tsy miasa ny Bluetooth. Alefaso mba hampiasana ny BLE Mesh.</string>
+    <string name="ble_setting_dialog_btn">Sokafy ny Bluetooth Settings</string>
+    <string name="ble_banner_enable_btn">Alefaso</string>
+    <string name="ble_banner_mesh_disabled">Tsy ampiasaina ny BLE Mesh</string>
+
+    <!-- Fifandraisana tambazotry -->
+    <string name="network_setting_off_subtitle">Tsy misy internet — jereo ny fifandraisanao</string>
+    <string name="network_not_available">Tsy misy fifandraisana internet</string>
+    <string name="network_transports_off_hint">Alefaso ny P2P na Nostr</string>
+    <string name="network_no_internet">Mifandray nefa tsy misy internet hita</string>
+    <string name="network_setting_dialog_title">Mila Internet</string>
+    <string name="network_setting_dialog_msg">Ilaina ny fifandraisana internet ho an\'ny fampitana P2P sy Nostr.</string>
+    <string name="network_setting_dialog_btn">Fametrahana Fifandraisana</string>
+    <string name="network_banner_disconnected">Tsy misy internet — jereo ny fametrahana fifandraisanao</string>
+    <string name="network_banner_airplane_mode">Ny fomba fiaramanidina dia mihetsika</string>
+    <string name="network_airplane_mode">Ny fomba fiaramanidina dia mihetsika</string>
+    <string name="network_banner_no_internet">Mifandray nefa tsy misy internet — jereo ny fifandraisanao</string>
+    <string name="network_banner_transports_disabled">Tsy misy fampitana tambazotry — alefaso ny P2P na Nostr ao amin\'ny fametrahana</string>
+    <string name="network_banner_settings_btn">Fametrahana</string>
+
+    <string name="background_location_required_title">Toerana ao Ambadika Torolalana</string>
+    <string name="background_location_required_subtitle">tsy voatery, manampy ny fahazakana mesh</string>
+    <string name="background_location_explanation">Android dia manoro ny toerana ao ambadika mba ahafahana Zemzeme mitady fitaovana akaiky rehefa tsy misokatra ny fampiharana. Izany dia mitazona ny mesh miasa rehefa averina.</string>
+    <string name="background_location_settings_tip">Rehefa misokatra ny fametrahana, misafidy "Avelao foana".</string>
+    <string name="background_location_needs_for">Zemzeme dia mampiasa toerana ao ambadika ho an\'ny:</string>
+    <string name="background_location_needs_bullets">- mitady fitaovana akaiky rehefa voakatona ny fampiharana\n- mamerina fifandraisana rehefa averina\n- mitazona ny mesh miasa ao ambadika</string>
+    <string name="background_location_privacy_note">Tsy manangona na mitahiry ny toeranao MIHITSY izahay. Voaro ny fiainanao manokana.</string>
+    <string name="grant_background_location">Avelao ny toerana ao ambadika</string>
+    <string name="skip_background_location">Mitohy tsy misy toerana ao ambadika</string>
+    <string name="perm_background_location_desc">Torolalana mba hitadiavana fitaovana akaiky rehefa ao ambadika ny fampiharana</string>
+    <string name="perm_background_location_system">Avelao ny fidirana toerana ao ambadika</string>
+    <string name="perm_type_background_location">Toerana ao Ambadika</string>
+
+    <!-- Fanamarinana -->
+    <string name="verify_title">fanamarinana</string>
+    <string name="verify_my_qr_title">sikano mba hamarinana ahy</string>
+    <string name="verify_scan_prompt_friend">sikano ny QR olon-kafa</string>
+    <string name="verify_scan_someone">sikano ny QR olon-kafa</string>
+    <string name="verify_show_my_qr">aseho ny QR-ko</string>
+    <string name="verify_remove">esory ny fanamarinana</string>
+    <string name="verify_qr_unavailable">QR tsy misy</string>
+    <string name="verify_camera_permission">ilaina ny alalana fakana sary mba hisikidiana QR</string>
+    <string name="verify_request_camera">alefaso ny fakana sary</string>
+    <string name="verify_paste_label">apetaho ny URL fanamarinana</string>
+    <string name="verify_validate">hanamarina</string>
+    <string name="verify_scanned">fanamarinana nangatahina</string>
+    <string name="security_verification_title">fanamarinana fiarovana</string>
+    <string name="fingerprint_their">ny fingerprint-ny</string>
+    <string name="fingerprint_yours">ny fingerprint-nao</string>
+    <string name="fingerprint_pending">fifampiraharahana miandry</string>
+    <string name="fingerprint_no_peer">sokafy ny resaka manokana mba hijery fingerprint</string>
+    <string name="fingerprint_status_verified">voafono &amp; voamarina</string>
+    <string name="fingerprint_status_encrypted">voafono</string>
+    <string name="fingerprint_status_handshaking">fifampiraharahana</string>
+    <string name="fingerprint_status_failed">tsy nahomby ny fifampiraharahana</string>
+    <string name="fingerprint_status_uninitialized">tsy voafono</string>
+    <string name="fingerprint_verified_label">voamarina</string>
+    <string name="fingerprint_verified_message">efa namarinao ny maha-izy an\'ity olona ity.</string>
+    <string name="fingerprint_not_verified_label">tsy mbola voamarina</string>
+    <string name="fingerprint_not_verified_message_fmt">ampitahao ireo fingerprint ireo amin\'i %1$s amin\'ny alalan\'ny fantsona azo antoka.</string>
+    <string name="fingerprint_mark_verified">mariho ho voamarina</string>
+    <string name="fingerprint_start_handshake">atombohy ny fifampiraharahana</string>
+    <string name="fingerprint_copy">adikao</string>
+    <string name="verify_mutual_match_title">Fanamarinana ifanaovan-droa</string>
+    <string name="verify_mutual_match_body">Ianao sy %1$s dia nifamarina</string>
+    <string name="verify_mutual_system_message">fanamarinana ifanaovan-droa tamin\'i %1$s</string>
+    <string name="verify_success_title">Voamarina</string>
+    <string name="verify_success_body">Nanamarina an\'i %1$s ianao</string>
+    <string name="verify_success_system_message">namarina an\'i %1$s</string>
+
+    <string name="debug_rssi_fmt">RSSI: %1$s</string>
+    <string name="debug_question_mark">?</string>
+
+    <!-- Mesh intro -->
+    <string name="mesh_intro_title">Bluetooth</string>
+    <string name="mesh_intro_body">Ny fifandraisana amin\'ity vondrona ity dia mifototra tanteraka amin\'ny Bluetooth. Ny fitaovana akaiky dia mamindra hafatra eo amin\'ny olona — tsy mila fifandraisana Internet.</string>
+    <string name="mesh_intro_close">Hanakatona</string>
+    <string name="mesh_intro_dont_show">Aza aseho intsony</string>
+
+    <!-- Mizara fampiharana -->
+    <string name="about_share_app_header">ZARAO NY FAMPIHARANA</string>
+    <string name="about_share_system_title">Zarao ny Fampiharana</string>
+    <string name="about_share_system_desc">Alefaso APK amin\'ny Bluetooth, Nearby Share, na Wi-Fi Direct (%1$s)</string>
+    <string name="about_share_failed">Tsy nahomby ny fanomanana APK hozaraina</string>
+    <string name="about_share_chooser_title">Zarao ny APK %1$s</string>
+    <string name="about_share_helper_text">Ampiasao ny Google Quick Share mba handefasana (alefaso ao amin\'ny Toetry ny finday). Aorian\'ny famindrana, ny APK dia ho ao amin\'ny Downloads eo amin\'ny fitaovana mpandray.</string>
+
+    <!-- Fanovana kisary -->
+    <string name="icon_switch_title">Havaozina ny Kisary &amp; Anaran\'ny Fampiharana</string>
+    <string name="icon_switch_section">Fanamboarana</string>
+    <string name="icon_switch_subtitle">ovao ny kisary sy anaran\'ny fampiharana eo amin\'ny launcher</string>
+    <string name="icon_switch_confirm">Hovaina ny kisary sy anaran\'ny fampiharana ho ity?</string>
+    <string name="icon_switch_apply">Ampiharo</string>
+    <string name="icon_switch_toast">Voaova ny kisary sy anaran\'ny fampiharana!</string>
+
+    <!-- Lohan\'ny fifanakalozan-dresaka sy hetsika -->
+    <string name="dialog_delete_chat">Hamafa resaka</string>
+    <string name="dialog_delete_group">Hamafa vondrona</string>
+    <string name="dialog_delete_confirm_body">Tena te-hamafa \"%1$s\" ve ianao? Tsy azo averina izany.</string>
+    <string name="action_delete">Hamafa</string>
+    <string name="dialog_clear_chat">Hanadio resaka</string>
+    <string name="dialog_clear_confirm_body">Tena te-hamafa ny hafatra rehetra ao amin\'ny \"%1$s\" ve ianao?</string>
+    <string name="action_clear">Hanadio</string>
+    <string name="dialog_title_create_group">Hamorona Vondrona Vaovao</string>
+    <string name="label_group_name">Anaran\'ny vondrona</string>
+    <string name="action_create">Hamorona</string>
+    <string name="dialog_title_join_group">Hiditra Vondrona</string>
+    <string name="label_group_id">ID Vondrona</string>
+    <string name="label_nickname_optional">Anarana kely (tsy voatery)</string>
+    <string name="dialog_title_rename_group">Hanova Anaran\'ny Vondrona</string>
+    <string name="action_rename">Hanova Anarana</string>
+
+    <!-- Lohan\'ny fametrahana -->
+    <string name="setting_ble_mesh">BLE Mesh</string>
+    <string name="setting_p2p_network">Tambazotry P2P</string>
+    <string name="setting_nostr_relays">Relay Nostr</string>
+    <string name="setting_tor_nostr">\u0020\u0020Tor (Nostr)</string>
+
+    <!-- Hafatra toast -->
+    <string name="toast_ble_mesh_enabled">BLE Mesh nalefa</string>
+    <string name="toast_ble_mesh_disabled">BLE Mesh najanona</string>
+    <string name="toast_nostr_enabled">Nostr nalefa</string>
+    <string name="toast_nostr_disabled">Nostr najanona</string>
+    <string name="toast_tor_p2p_unsupported">Tor miaraka amin\'ny P2P tsy tohanana. Ajanony ny P2P aloha.</string>
+    <string name="toast_p2p_tor_disabled">P2P amin\'ny alalan\'ny Tor tsy tohanana. Najanona ny Tor.</string>
+
+    <!-- Mpifidy sary -->
+    <string name="action_gallery">Galeria</string>
+    <string name="action_camera">Fakana sary</string>
+
+    <!-- Famaritana votoaty fahafaha-miditra -->
+    <string name="cd_refresh_p2p">Havaozina ny fifandraisana P2P</string>
+    <string name="cd_direct_bluetooth">Bluetooth mivantana</string>
+    <string name="cd_routed">Voalefa</string>
+    <string name="cd_p2p_connection">Fifandraisana P2P</string>
+    <string name="cd_teleported_user">Mpampiasa nafindra toerana</string>
+    <string name="cd_user">Mpampiasa</string>
+    <string name="cd_backspace">fafana</string>
+    <string name="cd_verified">Voamarina</string>
+    <string name="cd_add_node">Hanampy node</string>
+    <string name="cd_remove">Hanesorana</string>
+    <string name="action_enable_location">Alefaso ny Toerana</string>
+
+    <!-- Marika ID vondrona -->
+    <string name="label_group_id_fmt">ID Vondrona: %1$s</string>
+
+    <!-- Placeholder PIN -->
+    <string name="placeholder_6_digits">6 laharana</string>
+
+    <!-- Fametrahana P2P -->
+    <string name="p2p_settings_header">FAMETRAHANA</string>
+    <string name="p2p_enable">Alefaso ny P2P</string>
+    <string name="p2p_enable_desc">Mifandray mivantana amin\'ny mpiara-miasa Zemzeme hafa</string>
+    <string name="p2p_use_default_nodes">Ampiasao ny Node Default</string>
+    <string name="p2p_default_nodes_desc">Mifandray amin\'ny node bootstrap IPFS ho an\'ny daholobe</string>
+    <string name="p2p_custom_nodes_header">NODE BOOTSTRAP MANOKANA</string>
+    <string name="p2p_no_custom_nodes">Tsy misy node manokana voarafitra. Tsindrio + hanampy.</string>
+    <string name="p2p_add_bootstrap_node">Hanampy Node Bootstrap</string>
+    <string name="p2p_enter_multiaddr">Ampidiro ny multiaddr ho an\'ny node bootstrap:</string>
+    <string name="p2p_recovering">Mamerina…</string>
+    <string name="p2p_recover_connection">Haverena ny Fifandraisana</string>
+    <string name="action_add">Hanampy</string>
+
+    <!-- Fantsona fampandrenesana -->
+    <string name="notification_channel_direct_messages">Hafatra Mivantana</string>
+    <string name="notification_channel_dm_desc">Fampandrenesana ho an\'ny hafatra manokana avy amin\'ny mpampiasa hafa</string>
+    <string name="notification_channel_geohash_chats">Resaka Geohash</string>
+    <string name="notification_channel_geohash_desc">Fampandrenesana ho an\'ny fanaovana tsiahy sy hafatra amin\'ny fantsona toerana geohash</string>
+
+    <!-- Debug: topologia mesh -->
+    <string name="debug_mesh_topology">topologia mesh</string>
+    <string name="debug_no_gossip">tsy mbola misy gossip</string>
+
+    <!-- Debug: fanavaozana manokana -->
+    <string name="debug_self_update">fanavaozana manokana (dev)</string>
+    <string name="debug_current_version_fmt">Version ankehitriny: %1$s</string>
+    <string name="debug_download_updates_desc">Alao sy apetraho ny fanavaozana avy amin\'ny GitHub releases</string>
+    <string name="update_status_ready">Vonona</string>
+    <string name="update_status_checking">Manamarina fanavaozana…</string>
+    <string name="update_status_available">Misy fanavaozana: %1$s</string>
+    <string name="update_status_downloading">Misintona: %1$d%%</string>
+    <string name="update_status_ready_install">Vonona hapetraka: %1$s</string>
+    <string name="update_status_installing">Mametraka…</string>
+    <string name="update_status_success">Fanavaozana voapetraka! Avereno ny fampiharana.</string>
+    <string name="update_status_pending_action">Miandry ny fanamarinan\'ny mpampiasa…</string>
+    <string name="update_status_error">Hadisoana: %1$s</string>
+    <string name="update_grant_install_permission">Omeo Alalana Fametrahana</string>
+    <string name="update_install">Apetraho ny Fanavaozana</string>
+    <string name="update_check">Hanamarina Fanavaozana</string>
+    <string name="debug_test_update_dialog">Hitsapa ny Fifanakalozan-dresaka Fanavaozana</string>
+
+    <!-- Debug: grafika bandwidth -->
+    <string name="debug_overall">Ankapobeny</string>
+    <string name="debug_per_device">Isaky ny Fitaovana</string>
+    <string name="debug_per_peer">Isaky ny Mpiara-miasa</string>
+    <string name="debug_incoming">Miditra</string>
+    <string name="debug_outgoing">Mivoaka</string>
+
+    <!-- Debug: console -->
+    <string name="debug_refreshing">Mavaozina…</string>
+    <string name="debug_refresh">Havaozina</string>
+    <string name="debug_clear_logs">Hamafa ny Rakitra</string>
+    <string name="debug_preparing_export">Manomana ny fanondranana…</string>
+    <string name="debug_share_logs">Zarao ny Rakitra</string>
+
+    <!-- FAB menu items -->
+    <string name="fab_scan_qr">Hamaky QR</string>
+    <string name="fab_choose_city">Misafidy tanàna</string>
+    <string name="fab_join_group">Miditra amin\'ny vondrona</string>
+    <string name="fab_create_group">Mamorona vondrona</string>
+    <!-- Section headers -->
+    <string name="section_nearby">Akaiky</string>
+    <string name="section_geographic_groups">Vondrona ara-jeografika</string>
+    <string name="section_my_groups">Ireo vondroko</string>
+    <string name="section_contacts">Fifandraisana</string>
+
+    <!-- New translated strings -->
+    <string name="section_username">ANARANA MPAMPIASA</string>
+    <string name="section_theme">LOKO</string>
+    <string name="section_settings">FANDRINDRANA</string>
+    <string name="section_network">TAMBAZOTRA</string>
+    <string name="section_status">SATA</string>
+    <string name="app_lock_subtitle_pin">PIN</string>
+    <string name="p2p_networking_title">Tambazotra P2P</string>
+    <string name="p2p_status_no_peers">Tsy misy mpiara-dia</string>
+    <string name="p2p_status_connected">Mifandray</string>
+    <string name="p2p_status_connecting">Mifandray…</string>
+    <string name="p2p_status_disconnected">Tsy mifandray</string>
+    <string name="p2p_status_error">Hadisoana</string>
+    <string name="p2p_peers_connected_fmt">%1$d mpiara-dia mifandray</string>
+    <string name="p2p_dht_fmt">DHT: %1$s</string>
+    <string name="p2p_peer_id_fmt">Peer ID: %1$s…%2$s</string>
+    <string name="p2p_active_nodes_fmt">Nodes mavitrika: %1$d</string>
+    <string name="location_acquiring_title">Mitady toerana</string>
+    <string name="location_acquiring_desc">Andraso azafady fa mitady ny toeranao izahay</string>
+    <string name="location_unavailable_title">Tsy hita ny toerana</string>
+    <string name="location_permission_required_notes">Ilaina ny alalana momba ny toerana ho an\'ny naoty</string>
+
+    <!-- Connection indicator -->
+    <string name="connection_searching_peers">Mitady mpiara-dia…</string>
+    <string name="connection_connecting_peers">Mifandray amin\'ny mpiara-dia…</string>
+    <plurals name="connection_peers_connected">
+        <item quantity="one">%1$d mpiara-dia mifandray</item>
+        <item quantity="other">%1$d mpiara-dia mifandray</item>
+    </plurals>
+    <string name="connection_no_new_messages">Mifandray - tsy misy hafatra vaovao</string>
+    <string name="connection_error">Hadisoana amin\'ny fifandraisana</string>
+    <string name="connection_direct">Mivantana</string>
+    <string name="connection_connected">Mifandray</string>
+
+    <!-- Debug connection indicator -->
+    <string name="debug_p2p_no_info">P2P (tsy misy vaovao)</string>
+    <string name="debug_nostr_relay">Nostr relay</string>
+    <string name="debug_ble_direct">BLE mivantana</string>
+    <string name="debug_p2p_searching">P2P: mitady mpiara-dia…</string>
+    <string name="debug_p2p_connecting">P2P: mifandray amin\'ny mpiara-dia…</string>
+    <string name="debug_nostr_no_messages">Nostr mifandray - tsy misy hafatra vaovao</string>
+    <string name="debug_connection_failed">tsy nahomby ny fifandraisana</string>
+    <string name="debug_error_fmt">hadisoana: %1$s</string>
+
+</resources>

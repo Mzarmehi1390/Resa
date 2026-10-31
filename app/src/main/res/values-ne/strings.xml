@@ -1,0 +1,809 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">जेमजेमे</string>
+
+    <!-- अनुमति कारणहरू -->
+    <string name="permission_bluetooth_rationale">इन्टरनेट बिना प्रत्यक्ष कुराकानीका लागि ब्लुटुथ अनुमति आवश्यक हुन्छ।</string>
+    <string name="permission_location_rationale">ब्लुटुथमार्फत नजिकका यन्त्रहरू फेला पार्न स्थान अनुमति आवश्यक हुन्छ।</string>
+    <string name="permission_notification_rationale">नयाँ सन्देशबारे सूचित गर्न सूचनाको अनुमति आवश्यक हुन्छ।</string>
+
+    <!-- Placeholder / आधार UI -->
+    <string name="nickname_hint">उपनाम</string>
+    <string name="message_hint">सन्देश टाइप गर्नुहोस्…</string>
+    <string name="channel_password_hint">पासवर्ड</string>
+    <string name="join_channel">च्यानलमा जोडिनुहोस्</string>
+    <string name="leave_channel">छोड्नुहोस्</string>
+    <string name="send_message">पठाउनुहोस्</string>
+    <string name="show_commands">आज्ञाहरू देखाउनुहोस्</string>
+    <string name="back">पछाडि</string>
+    <string name="people">मानिसहरू</string>
+    <string name="channels">च्यानलहरू</string>
+    <string name="online_users">अनलाइन प्रयोगकर्ता</string>
+    <string name="no_one_connected">कसैसँग जडान छैन</string>
+    <string name="emergency_clear_hint">सबै डेटा मेटाउन तीन पटक ट्याप गर्नुहोस्</string>
+    <string name="your_network">सञ्जाल</string>
+
+    <!-- ब्याट्री अनुकूलन -->
+    <string name="battery_optimization_detected">ब्याट्री अनुकूलन भेटियो</string>
+    <string name="battery_optimization_disabled">ब्याट्री अनुकूलन बन्द</string>
+    <string name="battery_optimization_not_required">ब्याट्री अनुकूलन आवश्यक छैन</string>
+    <string name="battery_optimization_checking">ब्याट्री अनुकूलन जाँचिँदै</string>
+    <string name="battery_optimization_why_disable">ब्याट्री अनुकूलन किन बन्द गर्ने?</string>
+    <string name="battery_optimization_explanation">Zemzeme पछाडिबाट चल्छ ताकि नजिकका यन्त्रहरूसँग मेष जडान कायम रहोस्। ब्याट्री अनुकूलनले यी जडान विच्छेद गराउन सक्छ, जसले सन्देश ढिलो वा हराउन सक्छ।\n\nअनुकूलन बन्द गर्दा भरपर्दो peer‑to‑peer सन्देश सुनिश्चित हुन्छ।</string>
+    <string name="battery_optimization_disable_button">ब्याट्री अनुकूलन बन्द गर्नुहोस्</string>
+    <string name="battery_optimization_note">नोट: यो सेटिङ पछि Android सेटिङहरू &gt; Apps &gt; Zemzeme &gt; Battery मा परिवर्तन गर्न सकिन्छ।</string>
+    <string name="battery_optimization_not_supported_explanation">तपाईंको यन्त्रलाई ब्याट्री अनुकूलन सेटिङ आवश्यक छैन। Zemzeme सामान्य रूपमा चल्नेछ।</string>
+    <string name="battery_optimization_not_supported_message">तपाईंको यन्त्रलाई ब्याट्री अनुकूलन सेटिङ आवश्यक छैन। Zemzeme सामान्य रूपमा चल्नेछ।</string>
+    <string name="battery_optimization_success_message">Zemzeme पछाडिबाट भरपर्दो रूपमा चल्न सक्छ</string>
+    <string name="battery_optimization_benefits">• सन्देश विश्वसनीय डेलिभरी\n• मेष जडान कायम राख्ने\n• पृष्ठभूमिमा रिले\n• जडान विच्छेद हुन नदिने</string>
+    <string name="battery_optimization_check_again">फेरि जाँच्नुहोस्</string>
+    <string name="battery_optimization_skip">अहिलेलाई बेवास्ता गर्नुहोस्</string>
+    <string name="battery_optimization_continue">जारी राख्नुहोस्</string>
+    <string name="retry">फेरि प्रयास गर्नुहोस्</string>
+    <string name="skip">बेवास्ता गर्नुहोस्</string>
+
+    <!-- सूचनाहरू -->
+    <string name="notification_summary_more">र %1$d थप</string>
+    <string name="notification_messages_from_people">%1$d सन्देश %2$d जनाबाट</string>
+    <string name="notification_more_conversations">र %1$d अरू कुराकानी</string>
+    <string name="notification_active_peers_title">👥 नजिकै Zemzeme user हरू!</string>
+    <string name="notification_active_peers_one">१ जना नजिकै</string>
+    <string name="notification_active_peers_many">%1$d जना नजिकै</string>
+    <string name="notification_new_messages">नयाँ सन्देश</string>
+    <string name="notification_new_location_messages">नयाँ स्थान सन्देश</string>
+    <string name="notification_mentions_in">%1$s मा उल्लेख</string>
+    <string name="notification_mentions_in_more">%1$s मा उल्लेख (+%2$d थप)</string>
+    <string name="notification_mentions_in_plural">%1$d उल्लेख %2$s मा</string>
+    <string name="notification_new_activity_in">%1$s मा नयाँ गतिविधि</string>
+    <string name="notification_messages_in">%1$s मा सन्देश</string>
+    <string name="notification_joined_conversation">%1$s वार्तालापमा सामेल भयो</string>
+    <string name="notification_geohash_summary_title_mentions">Zemzeme – %1$d उल्लेख</string>
+    <string name="notification_geohash_summary_title">Zemzeme – स्थान च्याट</string>
+    <string name="notification_geohash_summary_text">%2$d स्थानबाट %1$d सन्देश</string>
+    <string name="notification_mesh_mention_title_singular">Bluetooth च्याटमा उल्लेख</string>
+    <string name="notification_mesh_mention_title_plural">Bluetooth च्याटमा %1$d उल्लेख</string>
+    <string name="notification_more_locations">र %1$d थप स्थान</string>
+    <string name="notification_and_more">र %1$d थप</string>
+
+    <!-- मेष सेवा अग्रभूमि सूचना -->
+    <string name="mesh_service_channel_name">Zemzeme Bluetooth सञ्जाल</string>
+    <string name="mesh_service_channel_desc">Zemzeme mesh सञ्चारका लागि</string>
+    <string name="mesh_service_notification_content">Bluetooth चलिरहेको छ — %1$d पियर्स</string>
+
+    <!-- मनपर्ने / पहुँचयोग्यता -->
+    <string name="cd_add_favorite">मनपर्नेमा थप्नुहोस्</string>
+    <string name="cd_remove_favorite">मनपरिबाट हटाउनुहोस्</string>
+    <string name="cd_add_bookmark">बुकमार्क थप्नुहोस्</string>
+
+    <!-- च्याट शीर्षक / पहुँचयोग्यता -->
+    <string name="chat_back">पछाडि</string>
+    <string name="chat_channel_prefix">च्यानल: %1$s</string>
+    <string name="chat_leave">छोड्नुहोस्</string>
+    <string name="cd_nostr_reachable">Nostr मार्फत पुग्न सकिने</string>
+    <string name="cd_unread_private_messages">नपढिएका निजी सन्देश</string>
+    <string name="cd_toggle_bookmark">बुकमार्क टगल</string>
+    <string name="cd_location_notes">स्थान नोटहरू</string>
+    <string name="cd_teleported">टेलिपोर्ट भयो</string>
+    <string name="cd_tor_status">Tor स्थिति</string>
+    <string name="cd_connected_peers">जडान भएका साथीहरू</string>
+    <string name="cd_geohash_participants">Geohash सहभागिहरू</string>
+    <string name="cd_ready_for_handshake">ह्यान्डशेकका लागि तयार</string>
+    <string name="cd_handshake_in_progress">ह्यान्डशेक भइरहेको</string>
+    <string name="cd_encrypted">अन्त्यदेखि अन्त्य एनक्रिप्टेड</string>
+    <string name="cd_handshake_failed">ह्यान्डशेक असफल</string>
+    <string name="cd_settings">सेटिङ</string>
+    <string name="cd_refresh_account">खाता नष्ट गर्नुहोस्</string>
+    <string name="refresh_account_title">खाता नष्ट गर्ने?</string>
+    <string name="refresh_account_message">यसले सबै सन्देश मेटाउनेछ र नयाँ पहिचान बनाउनेछ। यो पूर्ववत गर्न सकिँदैन।</string>
+    <string name="refresh_account_confirm">नष्ट गर्नुहोस्</string>
+
+    <!-- फाइल दर्शक संवाद -->
+    <string name="file_viewer_title">📎 फाइल प्राप्त भयो</string>
+    <string name="file_viewer_name">📄 %1$s</string>
+    <string name="file_viewer_size">📏 साइज: %1$s</string>
+    <string name="file_viewer_type">🏷️ प्रकार: %1$s</string>
+    <string name="file_viewer_open_save">📂 खोल्नुहोस् / बचत गर्नुहोस्</string>
+    <string name="close_with_emoji">❌ बन्द गर्नुहोस्</string>
+    <string name="pick_image">तस्वीर छान्नुहोस्</string>
+    <string name="cd_save_current_image">हालको तस्वीर सेभ गर्नुहोस्</string>
+    <string name="cd_close">बन्द गर्नुहोस्</string>
+    <string name="toast_image_saved">तस्वीर Downloads मा सेभ भयो</string>
+    <string name="toast_failed_to_save_image">तस्वीर सेभ गर्न सकिएन</string>
+    <string name="cd_image_index_of">तस्वीर %1$d मध्ये %2$d</string>
+    <string name="cd_pick_file">फाइल छान्नुहोस्</string>
+
+    <!-- अबाउट शीट -->
+    <string name="about_tagline">सबै परिस्थितिहरूमा निगरानीमुक्त सन्देश, अन्त-देखि-अन्त इन्क्रिप्टेड</string>
+    <string name="about_offline_mesh_title">अफलाइन ब्लुटुथ च्याट</string>
+    <string name="about_offline_mesh_desc">इन्टरनेट वा सर्भर बिना सिधै Bluetooth LE मार्फत सञ्चार गर्नुहोस्। नजिकका यन्त्रहरूबाट सन्देश रिले हुन्छ।</string>
+    <string name="about_online_geohash_title">अनलाइन Geohash च्यानलहरू</string>
+    <string name="about_online_geohash_desc">Geohash आधारित च्यानलमार्फत नजिकका मानिसहरूसँग जोडिनुहोस्। सार्वजनिक इन्टरनेट रिलेलाई प्रयोग गरेर मेष विस्तार गर्नुहोस्।</string>
+    <string name="about_e2e_title">एन्ड‑टु‑एन्ड इन्क्रिप्सन</string>
+    <string name="about_e2e_desc">निजी सन्देश इन्क्रिप्टेड हुन्छन्। च्यानल सन्देश सार्वजनिक हुन्छन्।</string>
+    <string name="about_appearance">देखावट</string>
+    <string name="about_system">सिस्टम</string>
+    <string name="about_light">हल्का</string>
+    <string name="about_dark">गाढा</string>
+    <string name="about_pow">प्रुफ अफ वर्क</string>
+    <string name="about_pow_off">pow बन्द</string>
+    <string name="about_pow_on">pow चालु</string>
+    <string name="about_pow_tip">स्पाम रोकथामका लागि geohash सन्देशमा proof of work थप्नुहोस्।</string>
+    <string name="about_pow_difficulty">कठिनाइ: %1$d बिट (~%2$s)</string>
+    <string name="about_pow_difficulty_attempts">कठिनाइ %1$d का लागि ~%2$s ह्यास प्रयास</string>
+    <string name="about_pow_desc_none">proof of work आवश्यक छैन</string>
+    <string name="about_pow_desc_very_low">अति कम – न्यून सुरक्षा</string>
+    <string name="about_pow_desc_low">कम – आधारभूत सुरक्षा</string>
+    <string name="about_pow_desc_medium">मध्यम – राम्रो सुरक्षा</string>
+    <string name="about_pow_desc_high">उच्च – बलियो सुरक्षा</string>
+    <string name="about_pow_desc_very_high">एकदम उच्च – ढिलाइ हुन सक्छ</string>
+    <string name="about_pow_desc_extreme">अत्यधिक – धेरै गणना आवश्यक</string>
+    <string name="about_network">सञ्जाल</string>
+    <string name="about_tor_off">tor बन्द</string>
+    <string name="about_tor_on">tor चालु</string>
+    <string name="about_tor_route">बढी गोपनीयताका लागि Tor मार्फत इन्टरनेट रुट गर्नुहोस्।</string>
+    <string name="about_tor_status">Tor स्थिति: %1$s, बुटस्ट्र्याप %2$d%%</string>
+    <string name="about_last">अन्तिम: %1$s</string>
+    <string name="about_emergency_title">आपतकालीन डेटा मेटाउने</string>
+    <string name="about_emergency_tip">सुझाव: एप शीर्षक तीन पटक ट्याप गरी सबै डेटा (सन्देश, कुञ्जी, सेटिङ) मेटाउनुहोस्।</string>
+    <string name="about_debug_settings">डिबग सेटिङ</string>
+    <string name="about_footer">Open Source • Privacy First • विकेन्द्रित</string>
+    <string name="about_background_title">ब्याकग्राउन्डमा चलाउनुहोस्</string>
+    <string name="about_background_desc">एप बन्द हुँदा मेष सक्रिय राख्नुहोस् (अग्रभूमि सेवा)</string>
+    <string name="about_p2p_subtitle">P2P मार्फत प्रत्यक्ष पियर जडान</string>
+    <string name="about_nostr_subtitle">इन्टरनेट रिले सन्देश</string>
+    <string name="about_ble_subtitle">ब्लुटुथ निकटता मेष</string>
+    <string name="close_plain">बन्द गर्नुहोस्</string>
+    <string name="cd_privacy_protected">गोपनीयता सुरक्षित</string>
+    <string name="cancel_lower">रद्द गर्नुहोस्</string>
+
+    <!-- सामान्य CD -->
+    <string name="cd_warning">चेतावनी</string>
+    <string name="cd_location_services">स्थान सेवाहरू</string>
+    <string name="cd_privacy">गोपनीयता</string>
+    <string name="cd_error">त्रुटि</string>
+    <string name="cd_battery_optimization">ब्याट्री अनुकूलन</string>
+    <string name="cd_benefits">फाइदाहरू</string>
+    <string name="cd_checking_battery_optimization">ब्याट्री अनुकूलन जाँचिँदै</string>
+    <string name="cd_not_supported_battery_optimization">समर्थन छैन</string>
+    <string name="cd_bluetooth">ब्लुटुथ</string>
+    <string name="cd_unread_message">नपढिएको सन्देश</string>
+    <string name="cd_open_map">नक्सा खोल्नुहोस्</string>
+    <string name="cd_remove_bookmark">बुकमार्क हटाउनुहोस्</string>
+    <string name="cd_teleport">टेलिपोर्ट</string>
+    <string name="cd_selected">छानिएको</string>
+    <string name="notification_action_quit_bitchat">Zemzeme बन्द गर्नुहोस्</string>
+    <string name="cd_leave_channel">च्यानल छोड्नुहोस्</string>
+    <string name="cd_reachable_via_nostr">Nostr बाट पहुँचयोग्य</string>
+    <string name="cd_offline_favorite">मनपर्ने (अफलाइन)</string>
+    <string name="cd_decrease_precision">शुद्धता घटाउनुहोस्</string>
+    <string name="cd_increase_precision">शुद्धता बढाउनुहोस्</string>
+    <string name="cd_select_geohash">geohash छान्नुहोस्</string>
+    <string name="cd_scroll_to_bottom">तल स्क्रोल गर्नुहोस्</string>
+    <string name="cd_file">फाइल</string>
+    <string name="cd_image">तस्वीर</string>
+    <string name="cd_cancel">रद्द</string>
+    <string name="cd_link">लिङ्क</string>
+    <string name="cd_record_voice">भ्वाइस नोट रेकर्ड</string>
+    <string name="cd_pick_media">मेडिया छान्नुहोस्</string>
+    <string name="cd_mining_pow">PoW माइनिङ</string>
+    <string name="cd_pow_enabled">PoW सक्षम छ</string>
+    <string name="cd_proof_of_work">Proof of Work</string>
+    <string name="cd_offline_mesh_chat">अफलाइन Bluetooth च्याट</string>
+    <string name="cd_online_geohash_channels">अनलाइन Geohash च्यानल</string>
+    <string name="cd_end_to_end_encryption">एन्ड‑टु‑एन्ड इन्क्रिप्सन</string>
+
+    <!-- BLE सेटिङ -->
+    <string name="ble_setting_off_subtitle">ब्लुटुथ बन्द छ — BLE Mesh प्रयोग गर्न सक्रिय गर्नुहोस्</string>
+    <string name="ble_banner_off">ब्लुटुथ बन्द छ — BLE Mesh उपलब्ध छैन</string>
+    <string name="ble_setting_dialog_title">ब्लुटुथ आवश्यक छ</string>
+    <string name="ble_setting_dialog_msg">ब्लुटुथ बन्द छ। BLE Mesh प्रयोग गर्न सक्रिय गर्नुहोस्।</string>
+    <string name="ble_setting_dialog_btn">ब्लुटुथ सेटिङ खोल्नुहोस्</string>
+    <string name="ble_banner_enable_btn">सक्रिय गर्नुहोस्</string>
+    <string name="ble_banner_mesh_disabled">BLE Mesh निष्क्रिय छ</string>
+
+    <!-- सञ्जाल जडान -->
+    <string name="network_setting_off_subtitle">इन्टरनेट छैन — तपाईंको जडान जाँच्नुहोस्</string>
+    <string name="network_not_available">इन्टरनेट जडान छैन</string>
+    <string name="network_transports_off_hint">P2P वा Nostr सक्षम गर्नुहोस्</string>
+    <string name="network_no_internet">जडित तर इन्टरनेट भेटिएन</string>
+    <string name="network_setting_dialog_title">इन्टरनेट आवश्यक छ</string>
+    <string name="network_setting_dialog_msg">P2P र Nostr ट्रान्सपोर्टका लागि इन्टरनेट जडान आवश्यक छ।</string>
+    <string name="network_setting_dialog_btn">जडान सेटिङ</string>
+    <string name="network_banner_disconnected">इन्टरनेट छैन — तपाईंको जडान सेटिङ जाँच्नुहोस्</string>
+    <string name="network_banner_airplane_mode">हवाइजहाज मोड सक्रिय छ</string>
+    <string name="network_airplane_mode">हवाइजहाज मोड सक्रिय छ</string>
+    <string name="network_banner_no_internet">जडित तर इन्टरनेट छैन — तपाईंको जडान जाँच्नुहोस्</string>
+    <string name="network_banner_transports_disabled">सञ्जाल ट्रान्सपोर्ट छैन — सेटिङमा P2P वा Nostr सक्षम गर्नुहोस्</string>
+    <string name="network_banner_settings_btn">सेटिङ</string>
+
+    <!-- छवि / फाइल -->
+    <string name="location_bluetooth_subtitle">#bluetooth • %1$s</string>
+    <string name="image_page_of">तस्वीर %1$d / %2$d</string>
+    <string name="image_unavailable">तस्वीर उपलब्ध छैन</string>
+    <string name="image_saved_to_downloads">तस्वीर "Downloads" मा सुरक्षित भयो</string>
+    <string name="image_save_failed">तस्वीर बचत असफल</string>
+    <string name="pick_file">फाइल छान्नुहोस्</string>
+    <string name="file_unavailable">[फाइल उपलब्ध छैन]</string>
+    <string name="unknown">अज्ञात</string>
+
+    <!-- प्रयोगकर्ता कार्य शीट -->
+    <string name="choose_action_message_or_user">यो सन्देश वा प्रयोगकर्ताका लागि कार्य छान्नुहोस्</string>
+    <string name="choose_action_user">यस प्रयोगकर्ताका लागि कार्य छान्नुहोस्</string>
+    <string name="action_copy_message_title">सन्देश प्रतिलिपि</string>
+    <string name="action_copy_message_subtitle">यो सन्देश क्लिपबोर्डमा प्रतिलिपि गर्नुहोस्</string>
+    <string name="action_slap_title">%1$s लाई चड्कन</string>
+    <string name="action_slap_subtitle">मनोरञ्जनका लागि चड्कन पठाउनुहोस्</string>
+    <string name="action_hug_title">%1$s लाई अँगालो</string>
+    <string name="action_hug_subtitle">मैत्रीपूर्ण अँगालो पठाउनुहोस्</string>
+    <string name="action_block_title">%1$s लाई ब्लक गर्नुहोस्</string>
+    <string name="action_block_subtitle">यस प्रयोगकर्ताबाट सबै सन्देश ब्लक गर्नुहोस्</string>
+
+    <!-- स्थान च्यानल शीट -->
+    <string name="location_channels_title">#स्थान च्यानल</string>
+    <string name="location_channels_desc">तपाईंको वरिपरिका मानिसहरूसँग geohash च्यानल प्रयोग गरी च्याट गर्नुहोस्। केवल सामान्य geohash साझा हुन्छ, कहिल्यै ठ्याक्कै GPS होइन। गोपनीयताका लागि स्क्रिनसट नलिनुहोस् र नबाँड्नुहोस्।</string>
+    <string name="grant_location_permission">स्थान अनुमति दिनुहोस्</string>
+    <string name="location_permission_denied">स्थान अनुमति अस्वीकार। स्थान च्यानल प्रयोग गर्न सेटिङमा सक्षम गर्नुहोस्।</string>
+    <string name="open_settings">सेटिङ खोल्नुहोस्</string>
+    <string name="location_permission_granted">\u2713 स्थान अनुमति दिइयो</string>
+    <string name="checking_permissions">अनुमति जाँचिँदै…</string>
+    <string name="finding_nearby_channels">नजिकका च्यानल खोजिँदै…</string>
+    <string name="bookmarked">बुकमार्क गरिएको</string>
+    <string name="geohash_placeholder">geohash</string>
+    <string name="invalid_geohash">अवैध geohash</string>
+    <string name="teleport">टेलिपोर्ट</string>
+    <string name="disable_location_services">स्थान सेवाहरू बन्द गर्नुहोस्</string>
+    <string name="enable_location_services">स्थान सेवाहरू सुरु गर्नुहोस्</string>
+    <string name="mesh_label">bluetooth</string>
+    <string name="location_level_block">ब्लक</string>
+    <string name="location_level_neighborhood">छिमेक</string>
+    <string name="location_level_city">सहर</string>
+    <string name="location_level_province">प्रान्त</string>
+    <string name="location_level_region">क्षेत्र</string>
+
+    <!-- स्थान नोट शीट -->
+    <plurals name="location_notes_title">
+        <item quantity="one">#%1$s ± 1 • %2$d नोट</item>
+        <item quantity="other">#%1$s ± 1 • %2$d नोटहरू</item>
+    </plurals>
+    <string name="location_notes_description">यस स्थानका नोटहरू</string>
+    <string name="location_notes_relays_unavailable">Relay उपलब्ध छैन</string>
+    <string name="location_notes_no_relays_title">कुनै relay छैन</string>
+    <string name="location_notes_no_relays_desc">स्थान नोटका लागि कुनै Nostr relay कन्फिगर गरिएको छैन</string>
+    <string name="loading_location_notes">स्थान नोटहरू लोड हुँदैछ…</string>
+    <string name="location_notes_empty_title">कुनै नोट छैन</string>
+    <string name="location_notes_empty_desc">यस क्षेत्रमा अझै कसैले नोट छोडेको छैन</string>
+    <string name="dismiss">खारेज गर्नुहोस्</string>
+    <string name="location_notes_input_placeholder">यहाँ नोट लेख्नुहोस्…</string>
+
+    <!-- डिबग / निदान -->
+    <string name="debug_tools">डिबग उपकरण</string>
+    <string name="debug_tools_desc">diagnostics र नियन्त्रणका लागि developer उपकरणहरू</string>
+    <string name="debug_verbose_logging">विस्तृत लगिङ</string>
+    <string name="debug_verbose_hint">peer जोड्ने/छोड्ने, जडान दिशा, packet routing र relay लग गर्दछ</string>
+    <string name="debug_bluetooth_roles">ब्लुटुथ भूमिकाहरू</string>
+    <string name="debug_roles_hint">भूमिकाहरू on/off गर्नुहोस् र disable भएपछि सबै जडान बन्द गर्नुहोस्</string>
+    <string name="debug_gatt_server">GATT सर्भर</string>
+    <string name="debug_connections_fmt">जडान: %1$d / %2$d</string>
+    <string name="debug_max_server">अधिकतम सर्भर</string>
+    <string name="debug_gatt_client">GATT क्लाइन्ट</string>
+    <string name="debug_max_client">अधिकतम क्लाइन्ट</string>
+    <string name="debug_overall_connections_fmt">जडान: %1$d / %2$d</string>
+    <string name="debug_max_overall">अधिकतम कुल</string>
+    <string name="debug_packet_relay">प्याकेट रिले</string>
+    <string name="debug_since_start_fmt">सुरु भएकोयता: %1$d</string>
+    <string name="debug_sync_settings">सिङ्क सेटिङ</string>
+    <string name="debug_max_packets_per_sync_fmt">प्रत्येक सिङ्कका अधिकतम प्याकेट: %1$d</string>
+    <string name="debug_max_gcs_filter_size_fmt">GCS फिल्टर साइज अधिकतम: %1$d बाइट (128–1024)</string>
+    <string name="debug_target_fpr_fmt">लक्ष्य FPR: %1$.2f%%</string>
+    <string name="debug_connected_devices">जडान भएका यन्त्रहरू</string>
+    <string name="debug_our_device_id_fmt">हाम्रो यन्त्र आईडी: %1$s</string>
+    <string name="debug_none">केही छैन</string>
+    <string name="debug_disconnect">डिस्कनेक्ट</string>
+    <string name="debug_recent_scan_results">हालैका स्क्यान नतिजा</string>
+    <string name="debug_connect">जोड्नुहोस्</string>
+    <string name="debug_debug_console">डिबग कन्सोल</string>
+    <string name="debug_clear">खाली गर्नुहोस्</string>
+    <string name="debug_relays_window_fmt">अन्तिम 10s: %1$d • 1m: %2$d • 15m: %3$d</string>
+    <string name="debug_derived_p_fmt">व्युत्पन्न P: %1$s • अनुमानित अधिकतम तत्व: %2$s</string>
+    <string name="debug_direct_suffix"> • प्रत्यक्ष</string>
+    <string name="debug_rssi_fmt">RSSI: %1$s</string>
+    <string name="debug_question_mark">?</string>
+    <string name="debug_role_server">सर्भरको रूपमा (हामी होस्ट गर्छौं)</string>
+    <string name="debug_role_client">क्लाइन्टको रूपमा (हामी जडान गर्छौं)</string>
+
+    <!-- प्रमाणीकरण / सत्यापन -->
+    <string name="verify_title">सत्यापन</string>
+    <string name="verify_my_qr_title">मलाई सत्यापन गर्न स्क्यान गर्नुहोस्</string>
+    <string name="verify_scan_prompt_friend">अर्को व्यक्तिको QR स्क्यान गर्नुहोस्</string>
+    <string name="verify_scan_someone">अर्को व्यक्तिको QR स्क्यान गर्नुहोस्</string>
+    <string name="verify_show_my_qr">मेरो QR देखाउनुहोस्</string>
+    <string name="verify_remove">सत्यापन हटाउनुहोस्</string>
+    <string name="verify_qr_unavailable">QR उपलब्ध छैन</string>
+    <string name="verify_camera_permission">QR कोड स्क्यान गर्न क्यामेरा अनुमति आवश्यक छ</string>
+    <string name="verify_request_camera">क्यामेरा सक्षम गर्नुहोस्</string>
+    <string name="verify_paste_label">सत्यापन URL पेस्ट गर्नुहोस्</string>
+    <string name="verify_validate">मान्य गर्नुहोस्</string>
+    <string name="verify_scanned">सत्यापन अनुरोध गरियो</string>
+    <string name="security_verification_title">सुरक्षा सत्यापन</string>
+    <string name="fingerprint_their">उनीहरूको फिंगरप्रिन्ट</string>
+    <string name="fingerprint_yours">तपाईंको फिंगरप्रिन्ट</string>
+    <string name="fingerprint_pending">ह्यान्डशेक पर्खिँदै</string>
+    <string name="fingerprint_no_peer">फिंगरप्रिन्ट हेर्न निजी च्याट खोल्नुहोस्</string>
+    <string name="fingerprint_status_verified">इन्क्रिप्टेड &amp; सत्यापित</string>
+    <string name="fingerprint_status_encrypted">इन्क्रिप्टेड</string>
+    <string name="fingerprint_status_handshaking">ह्यान्डशेक हुँदै</string>
+    <string name="fingerprint_status_failed">ह्यान्डशेक असफल</string>
+    <string name="fingerprint_status_uninitialized">इन्क्रिप्टेड छैन</string>
+    <string name="fingerprint_verified_label">सत्यापित</string>
+    <string name="fingerprint_verified_message">तपाईंले यस व्यक्तिको पहिचान सत्यापित गर्नुभएको छ।</string>
+    <string name="fingerprint_not_verified_label">सत्यापित छैन</string>
+    <string name="fingerprint_not_verified_message_fmt">सुरक्षित च्यानल प्रयोग गरी %1$s सँग यी फिंगरप्रिन्टहरू तुलना गर्नुहोस्।</string>
+    <string name="fingerprint_mark_verified">सत्यापित चिन्ह लगाउनुहोस्</string>
+    <string name="fingerprint_start_handshake">ह्यान्डशेक सुरु गर्नुहोस्</string>
+    <string name="fingerprint_copy">प्रतिलिपि</string>
+    <string name="verify_mutual_match_title">पारस्परिक सत्यापन</string>
+    <string name="verify_mutual_match_body">तपाईं र %1$s ले एक-अर्कालाई सत्यापित गर्नुभयो</string>
+    <string name="verify_mutual_system_message">%1$s सँग पारस्परिक सत्यापन</string>
+    <string name="verify_success_title">सत्यापित</string>
+    <string name="verify_success_body">तपाईंले %1$s लाई सत्यापित गर्नुभयो</string>
+    <string name="verify_success_system_message">%1$s सत्यापित गरियो</string>
+
+    <!-- अनबोर्डिङ स्क्रिन -->
+    <string name="location_services_required">स्थान सेवाहरू आवश्यक</string>
+    <string name="privacy_first">गोपनीयता पहिलो</string>
+    <string name="location_explanation">Zemzeme ले तपाईंको स्थान पछ्याउँदैन।\n\nब्लुटुथ स्क्यान र Geohash च्याट सुविधा लागि स्थान सेवा आवश्यक छन्।</string>
+    <string name="location_needs_for">Zemzeme लाई स्थान सेवा आवश्यक पर्छ:</string>
+    <string name="location_needs_bullets">• ब्लुटुथ यन्त्र स्क्यान\n• मेष सञ्जालमा नजिकका प्रयोगकर्ता पत्ता लगाउने\n• Geohash च्याट सुविधा\n• कुनै ट्र्याकिङ वा स्थान सङ्कलन छैन</string>
+    <string name="background_location_required_title">ब्याकग्राउन्ड स्थान पहुँच</string>
+    <string name="background_location_required_subtitle">ऐच्छिक, मेष भरपर्दोपन सुधार गर्छ</string>
+    <string name="background_location_explanation">Android ले ब्याकग्राउन्ड स्थान सिफारिस गर्छ ताकि एप नखुलेको बेलामा पनि Zemzeme ले नजिकका यन्त्रहरू स्क्यान गर्न सकोस्। रिबुटपछि मेष सक्रिय राख्छ।</string>
+    <string name="background_location_settings_tip">सेटिङ खुल्दा \"सधैं अनुमति दिनुहोस्\" छान्नुहोस्।</string>
+    <string name="background_location_needs_for">Zemzeme ले ब्याकग्राउन्ड स्थान प्रयोग गर्छ:</string>
+    <string name="background_location_needs_bullets">- एप बन्द हुँदा नजिकका यन्त्रहरू स्क्यान गर्न\n- रिबुटपछि पुन: जडान गर्न\n- ब्याकग्राउन्डमा मेष चलाउन</string>
+    <string name="background_location_privacy_note">तपाईंको स्थान कहिल्यै सर्भरमा पठाइँदैन</string>
+    <string name="grant_background_location">ब्याकग्राउन्ड स्थान अनुमति दिनुहोस्</string>
+    <string name="skip_background_location">ब्याकग्राउन्ड स्थान बिना जारी राख्नुहोस्</string>
+    <string name="open_location_settings">स्थान सेटिङ खोल्नुहोस्</string>
+    <string name="check_again">फेरि जाँच्नुहोस्</string>
+    <string name="location_services_unavailable">स्थान सेवाहरू उपलब्ध छैनन्</string>
+    <string name="location_unavailable_explanation">यस यन्त्रमा स्थान सेवाहरू उपलब्ध छैनन्। यो असामान्य हो किनकि Android यन्त्रमा यो मानक हो।\n\nब्लुटुथ स्क्यान ठीकसँग चल्न (Android को आवश्यक) स्थान सेवा चाहिन्छ। अन्यथा नजिकका प्रयोगकर्ता पत्ता लाग्दैनन्।</string>
+    <string name="checking_location_services">स्थान सेवाहरू जाँचिँदै…</string>
+    <string name="bluetooth_required">ब्लुटुथ आवश्यक</string>
+    <string name="bluetooth_needs_for">Zemzeme लाई ब्लुटुथ आवश्यक छ:</string>
+    <string name="bluetooth_needs_bullets">• नजिकका प्रयोगकर्ता पत्ता लगाउने\n• मेष जडान बनाउने\n• सन्देश पठाउने/प्राप्त गर्ने\n• इन्टरनेट वा सर्भर बिना काम गर्ने</string>
+    <string name="enable_bluetooth">ब्लुटुथ सक्षम गर्नुहोस्</string>
+    <string name="bluetooth_not_supported">ब्लुटुथ समर्थित छैन</string>
+    <string name="bluetooth_unsupported_explanation">यो यन्त्रले Bluetooth Low Energy (BLE) समर्थन गर्दैन, जुन Zemzeme को लागि आवश्यक छ।\n\nनजिकका यन्त्रहरूसँग इन्टरनेट बिना सञ्चार गर्न र मेष बनाउन BLE चाहिन्छ।</string>
+    <string name="checking_bluetooth_status">ब्लुटुथ स्थिति जाँचिँदै…</string>
+    <string name="battery_optimization_detected_title">ब्याट्री अनुकूलन भेटियो</string>
+    <string name="battery_optimization_enabled_title">ब्याट्री अनुकूलन सक्षम</string>
+    <string name="battery_optimization_explanation_short">मेष जडान कायम राख्न Zemzeme पछाडिबाट चल्नुपर्छ। ब्याट्री अनुकूलनले जडान काट्न सक्छ।</string>
+    <string name="benefits_of_disabling">बन्द गर्ने फाइदाहरू</string>
+    <string name="battery_benefits_short">• भरपर्दो डेलिभरी\n• मेष कन्नेक्टिभिटी कायम\n• विच्छेद रोक्छ</string>
+    <string name="disable_battery_optimization">अनुकूलन बन्द गर्नुहोस्</string>
+    <string name="battery_optimization_disabled_title">ब्याट्री अनुकूलन बन्द</string>
+    <string name="continue_btn">जारी राख्नुहोस्</string>
+    <string name="continue_button">जारी राख्नुहोस्</string>
+    <string name="initializing_mesh_network">मेष सञ्जाल सुरु गर्दै</string>
+    <string name="dot">.</string>
+    <string name="setting_up_bluetooth">ब्लुटुथ मेष सेटअप गर्दै…</string>
+    <string name="should_take_seconds">यसलाई केही सेकेन्ड मात्र लाग्छ</string>
+    <string name="warning_emoji">⚠️</string>
+    <string name="setup_not_complete">सेटअप पूरा भएन</string>
+    <string name="try_again">फेरि प्रयास गर्नुहोस्</string>
+    <string name="privacy_protected">तपाईंको गोपनीयता सुरक्षित छ</string>
+    <string name="privacy_bullets">• कुनै ट्र्याकिङ वा डेटा सङ्कलन छैन\n• ब्लुटुथ मेष च्याट पूर्णतया अफलाइन\n• Geohash च्याट इन्टरनेट प्रयोग गर्छ</string>
+    <string name="permissions_header">अनुमति</string>
+    <string name="grant_permissions">अनुमति दिनुहोस्</string>
+    <string name="perm_required_label">आवश्यक</string>
+    <string name="perm_recommended_label">सिफारिस गरिएको</string>
+    <string name="perm_info_dialog_ok">ठीक छ</string>
+    <string name="perm_benefit_nearby_devices">ब्लुटुथ अनुमतिले Zemzeme लाई नजिकका अन्य प्रयोगकर्ताहरूसँग मेष सञ्जालमार्फत सञ्चार गर्न अनुमति दिन्छ। यसले इन्टरनेट जडान बिना पूर्णतया अफलाइन, peer-to-peer सन्देशन सक्षम गर्छ।</string>
+    <string name="perm_benefit_location">Android ले नजिकका ब्लुटुथ यन्त्रहरू स्क्यान गर्न स्थान अनुमति आवश्यक पार्छ। Zemzeme ले तपाईंको स्थान पछ्याउँदैन वा भण्डारण गर्दैन।</string>
+    <string name="perm_benefit_background_location">ब्याकग्राउन्ड स्थानले एप ब्याकग्राउन्डमा हुँदा पनि Zemzeme लाई नजिकका प्रयोगकर्ताहरू खोज्न अनुमति दिन्छ। यो बिना, मेष सञ्जाल एप स्क्रिनमा खुल्दा मात्र काम गर्छ।</string>
+    <string name="perm_benefit_notifications">सूचनाले तपाईंलाई निजी सन्देश प्राप्त हुँदा वा तपाईंका च्यानलहरूमा नयाँ गतिविधि हुँदा जानकारी दिन्छ, एप ब्याकग्राउन्डमा हुँदा पनि।</string>
+    <string name="perm_benefit_battery_optimization">ब्याट्री अनुकूलन बन्द गर्दा Zemzeme पछाडिबाट भरपर्दो रूपमा चल्छ र मेष सञ्जाल जडानहरू कायम रहन्छन्। यो बिना, Android ले ब्याट्री बचत गर्न एप बन्द गर्न सक्छ, तपाईंलाई मेषबाट विच्छेद गर्दै।</string>
+    <string name="location_tracking_warning">Zemzeme ले तपाईंको स्थान पछ्याउँदैन</string>
+    <string name="at_symbol">@</string>
+    <string name="app_brand">Zemzeme/</string>
+    <string name="channel_count_prefix"> · ⧉ </string>
+    <string name="geohash_people_header">मानिसहरू</string>
+    <string name="nobody_around">वरिपरि कोही छैन…</string>
+    <string name="you_suffix"> (तपाईं)</string>
+    <string name="pan_zoom_instruction">geohash छान्न प्यान र जुम गर्नुहोस्</string>
+    <string name="select">छान्नुहोस्</string>
+    <string name="type_a_message_placeholder">सन्देश टाइप गर्नुहोस्…</string>
+    <string name="mention_suggestion_at">@%1$s</string>
+    <string name="mention">उल्लेख</string>
+    <string name="image_counter">%1$d / %2$d</string>
+    <string name="pow_time_estimate">(~%1$s)</string>
+    <string name="at_nickname">@%1$s</string>
+    <string name="version_prefix">v%1$s</string>
+    <string name="hash_symbol">#</string>
+    <string name="underscore">_</string>
+    <string name="progress_bar_brackets">[%1$s] %2$d%%</string>
+    <string name="progress_filled">█</string>
+    <string name="progress_empty">░</string>
+    <string name="image_star">image/*</string>
+    <string name="media_type_image">तस्वीर</string>
+    <string name="media_type_file">फाइल</string>
+
+    <!-- सन्देश स्थिति -->
+    <string name="status_sending">○</string>
+    <string name="status_pending">○</string>
+    <string name="status_sent">✓</string>
+    <string name="status_delivered">✓✓</string>
+    <string name="status_failed">⚠</string>
+    <string name="status_read">✓</string>
+
+    <!-- सूचना पाठ सहायक -->
+    <string name="notification_sent_image">📷 तस्वीर पठाइयो</string>
+    <string name="notification_sent_voice">🎤 भ्वाइस सन्देश पठाइयो</string>
+    <string name="notification_sent_file">📎 फाइल पठाइयो</string>
+    <string name="notification_file_pdf">📄</string>
+    <string name="notification_file_zip">🗜️</string>
+    <string name="notification_file_doc">📄</string>
+    <string name="notification_file_xls">📊</string>
+    <string name="notification_file_ppt">📈</string>
+    <string name="notification_file_generic">📎</string>
+
+    <!-- भ्वाइस प्लेयर पहुँचयोग्यता -->
+    <string name="cd_play_voice">प्ले</string>
+    <string name="cd_pause_voice">पज</string>
+
+    <!-- अनुमति विवरण -->
+    <string name="perm_nearby_devices_desc">ब्लुटुथमार्फत Zemzeme प्रयोगकर्ता फेला पार्न आवश्यक</string>
+    <string name="perm_nearby_devices_system">Zemzeme लाई नजिकका यन्त्र जडान गर्न अनुमति दिनुहोस्</string>
+    <string name="perm_location_desc">Android अनुसार ब्लुटुथमार्फत नजिकका प्रयोगकर्ता फेला पार्न आवश्यक</string>
+    <string name="perm_location_system">नजिकका यन्त्र स्क्यान गर्न Zemzeme लाई आवश्यक</string>
+    <string name="perm_background_location_desc">ब्याकग्राउन्डमा नजिकका यन्त्रहरू स्क्यान गर्न सिफारिस गरिएको</string>
+    <string name="perm_background_location_system">ब्याकग्राउन्ड स्थान पहुँच अनुमति दिनुहोस्</string>
+    <string name="perm_notifications_desc">निजी सन्देश आउँदा सूचना पाउनुहोस्</string>
+    <string name="perm_notifications_system">Zemzeme लाई तपाईंलाई सूचना पठाउन दिनुहोस्</string>
+    <string name="perm_battery_desc">Zemzeme लाई पछाडिबाट भरपर्दो रूपमा चलाउन र मेष जडान कायम राख्न ब्याट्री अनुकूलन बन्द गर्नुहोस्</string>
+    <string name="perm_battery_system">ब्याट्री प्रतिबन्ध बिना चल्न अनुमति दिनुहोस्</string>
+
+    <!-- अनुमति प्रकार -->
+    <string name="perm_type_nearby_devices">नजिकका यन्त्रहरू</string>
+    <string name="perm_type_precise_location">ठ्याक्कै स्थान</string>
+    <string name="perm_type_background_location">ब्याकग्राउन्ड स्थान</string>
+    <string name="perm_type_microphone">माइक</string>
+    <string name="perm_type_notifications">सूचना</string>
+    <string name="perm_type_battery_optimization">ब्याट्री अनुकूलन</string>
+    <string name="perm_type_other">अन्य</string>
+
+    <!-- एप लक -->
+    <string name="app_lock_title">एप लक</string>
+    <string name="app_lock_subtitle_off">बन्द</string>
+    <string name="app_lock_subtitle_on">बायोमेट्रिक + PIN</string>
+    <string name="app_lock_security_section">सुरक्षा</string>
+    <string name="app_lock_enter_pin">PIN हाल्नुहोस्</string>
+    <string name="app_lock_set_pin">PIN सेट गर्नुहोस्</string>
+    <string name="app_lock_confirm_pin">PIN पुष्टि गर्नुहोस्</string>
+    <string name="app_lock_biometric_title">Zemzeme अनलक गर्नुहोस्</string>
+    <string name="app_lock_biometric_subtitle">अनलक गर्न बायोमेट्रिक प्रयोग गर्नुहोस्</string>
+    <string name="app_lock_use_pin">PIN प्रयोग गर्नुहोस्</string>
+    <string name="app_lock_wrong_pin">गलत PIN</string>
+    <string name="app_lock_too_many_attempts">धेरै प्रयास भयो। %1$d सेकेन्डमा पुनः प्रयास गर्नुहोस्।</string>
+    <string name="app_lock_cooldown">%1$d सेकेन्ड बाँकी</string>
+    <string name="app_lock_pin_mismatch">PIN मेल खाएन</string>
+    <string name="app_lock_pin_min_length">PIN कम्तिमा ४ अंकको हुनुपर्छ</string>
+    <string name="app_lock_disable_title">एप लक निष्क्रिय गर्नुहोस्</string>
+    <string name="app_lock_disable_msg">एप लक निष्क्रिय गर्न पहिचान प्रमाणित गर्नुहोस्</string>
+    <string name="app_lock_protect_title">तपाईंका च्याटहरू सुरक्षित गर्नुहोस्</string>
+    <string name="app_lock_protect_desc">६-अंकको PIN ले एप लक गर्छ। तुरुन्त पहुँचका लागि बायोमेट्रिक प्रयोग गर्नुहोस्।</string>
+    <string name="app_lock_enable">एप लक सक्षम गर्नुहोस्</string>
+    <string name="app_lock_not_now">अहिले होइन</string>
+
+    <!-- पासवर्ड संवाद -->
+    <string name="pwd_prompt_title">च्यानल पासवर्ड प्रविष्ट गर्नुहोस्</string>
+    <string name="pwd_prompt_message">%1$s च्यानल पासवर्ड सुरक्षित छ। जडान हुन पासवर्ड लेख्नुहोस्।</string>
+    <string name="pwd_label">पासवर्ड</string>
+    <string name="join">जोडिनुहोस्</string>
+    <string name="cancel">रद्द</string>
+    <string name="tor_not_available_in_this_build">यस build मा Tor उपलब्ध छैन</string>
+
+    <!-- Plurals -->
+    <plurals name="notification_and_more">
+        <item quantity="one">र %d थप</item>
+        <item quantity="other">र %d थप</item>
+    </plurals>
+
+    <plurals name="people_count">
+        <item quantity="one">1 जना</item>
+        <item quantity="other">%d जना</item>
+    </plurals>
+
+    <!-- मेष परिचय -->
+    <string name="mesh_intro_title">ब्लुटुथ</string>
+    <string name="mesh_intro_body">यो समूहमा सञ्चार पूर्णतया ब्लुटुथमा आधारित छ। नजिकका यन्त्रहरूले मानिसहरू बीच सन्देश रिले गर्छन् — इन्टरनेट जडान आवश्यक छैन।</string>
+    <string name="mesh_intro_close">बन्द गर्नुहोस्</string>
+    <string name="mesh_intro_dont_show">फेरि नदेखाउनुहोस्</string>
+
+    <!-- एप साझा खण्ड -->
+    <string name="about_share_app_header">एप साझा गर्नुहोस्</string>
+    <string name="about_share_system_title">एप साझा गर्नुहोस्</string>
+    <string name="about_share_system_desc">Bluetooth, Nearby Share, वा Wi-Fi Direct मार्फत APK पठाउनुहोस् (%1$s)</string>
+    <string name="about_share_failed">साझा गर्न APK तयार गर्न सकिएन</string>
+    <string name="about_share_chooser_title">%1$s APK साझा गर्नुहोस्</string>
+    <string name="about_share_helper_text">पठाउन Google Quick Share प्रयोग गर्नुहोस् (फोन सेटिङमा सक्षम गर्नुहोस्)। ट्रान्सफरपछि, APK प्राप्तकर्ता यन्त्रको Downloads फोल्डरमा हुनेछ।</string>
+
+    <!-- आइकन स्विच -->
+    <string name="icon_switch_title">एप आइकन &amp; नाम ताजा गर्नुहोस्</string>
+    <string name="icon_switch_section">अनुकूलन</string>
+    <string name="icon_switch_subtitle">लन्चरमा एप आइकन र नाम परिवर्तन गर्नुहोस्</string>
+    <string name="icon_switch_confirm">एप आइकन र नाम यसमा परिवर्तन गर्ने?</string>
+    <string name="icon_switch_apply">लागू गर्नुहोस्</string>
+    <string name="icon_switch_toast">एप आइकन र नाम परिवर्तन भयो!</string>
+
+    <!-- Dynamic app names (100 variants) - Brand names, do not translate -->
+    <string name="app_name_1">Zemzeme</string>
+    <string name="app_name_2">NetChat</string>
+    <string name="app_name_3">TalkBox</string>
+    <string name="app_name_4">MsgHub</string>
+    <string name="app_name_5">BuzzTalk</string>
+    <string name="app_name_6">PingMe</string>
+    <string name="app_name_7">ChatNow</string>
+    <string name="app_name_8">QuickMsg</string>
+    <string name="app_name_9">TalkLine</string>
+    <string name="app_name_10">MsgWave</string>
+    <string name="app_name_11">ChatZone</string>
+    <string name="app_name_12">HiTalk</string>
+    <string name="app_name_13">TxtFlow</string>
+    <string name="app_name_14">ConnectMe</string>
+    <string name="app_name_15">ChatBolt</string>
+    <string name="app_name_16">MsgPulse</string>
+    <string name="app_name_17">TalkSnap</string>
+    <string name="app_name_18">ChatLink</string>
+    <string name="app_name_19">FlowChat</string>
+    <string name="app_name_20">PingTalk</string>
+    <string name="app_name_21">MsgDash</string>
+    <string name="app_name_22">ChatVibe</string>
+    <string name="app_name_23">TalkSync</string>
+    <string name="app_name_24">MsgNest</string>
+    <string name="app_name_25">ChatBee</string>
+    <string name="app_name_26">QuickTalk</string>
+    <string name="app_name_27">MsgLoop</string>
+    <string name="app_name_28">ChatGrid</string>
+    <string name="app_name_29">TalkNet</string>
+    <string name="app_name_30">MsgDrop</string>
+    <string name="app_name_31">ChatPing</string>
+    <string name="app_name_32">TalkWave</string>
+    <string name="app_name_33">MsgBlip</string>
+    <string name="app_name_34">ChatRush</string>
+    <string name="app_name_35">TalkMesh</string>
+    <string name="app_name_36">MsgLink</string>
+    <string name="app_name_37">ChatSpark</string>
+    <string name="app_name_38">TalkZap</string>
+    <string name="app_name_39">MsgBuzz</string>
+    <string name="app_name_40">ChatDrift</string>
+    <string name="app_name_41">TalkPad</string>
+    <string name="app_name_42">MsgVault</string>
+    <string name="app_name_43">ChatOrb</string>
+    <string name="app_name_44">TalkDeck</string>
+    <string name="app_name_45">MsgBeam</string>
+    <string name="app_name_46">ChatNode</string>
+    <string name="app_name_47">TalkBase</string>
+    <string name="app_name_48">MsgCore</string>
+    <string name="app_name_49">ChatFlux</string>
+    <string name="app_name_50">TalkEdge</string>
+    <string name="app_name_51">MsgRing</string>
+    <string name="app_name_52">ChatPlex</string>
+    <string name="app_name_53">TalkStar</string>
+    <string name="app_name_54">MsgHive</string>
+    <string name="app_name_55">ChatBit</string>
+    <string name="app_name_56">TalkNote</string>
+    <string name="app_name_57">MsgPort</string>
+    <string name="app_name_58">ChatWeave</string>
+    <string name="app_name_59">TalkCast</string>
+    <string name="app_name_60">MsgPeer</string>
+    <string name="app_name_61">ChatBridge</string>
+    <string name="app_name_62">TalkFusion</string>
+    <string name="app_name_63">MsgSwift</string>
+    <string name="app_name_64">ChatPulsar</string>
+    <string name="app_name_65">TalkRelay</string>
+    <string name="app_name_66">MsgHop</string>
+    <string name="app_name_67">ChatTrace</string>
+    <string name="app_name_68">TalkPath</string>
+    <string name="app_name_69">MsgRoute</string>
+    <string name="app_name_70">ChatAxis</string>
+    <string name="app_name_71">TalkGo</string>
+    <string name="app_name_72">MsgLift</string>
+    <string name="app_name_73">ChatDot</string>
+    <string name="app_name_74">TalkAir</string>
+    <string name="app_name_75">MsgWire</string>
+    <string name="app_name_76">ChatJet</string>
+    <string name="app_name_77">TalkBit</string>
+    <string name="app_name_78">MsgNova</string>
+    <string name="app_name_79">ChatRipple</string>
+    <string name="app_name_80">TalkMint</string>
+    <string name="app_name_81">MsgCloud</string>
+    <string name="app_name_82">ChatBreeze</string>
+    <string name="app_name_83">TalkEcho</string>
+    <string name="app_name_84">MsgWarp</string>
+    <string name="app_name_85">ChatStream</string>
+    <string name="app_name_86">TalkQuick</string>
+    <string name="app_name_87">MsgBolt</string>
+    <string name="app_name_88">ChatSphere</string>
+    <string name="app_name_89">TalkSpace</string>
+    <string name="app_name_90">MsgTap</string>
+    <string name="app_name_91">ChatFlash</string>
+    <string name="app_name_92">TalkBlaze</string>
+    <string name="app_name_93">MsgGlow</string>
+    <string name="app_name_94">ChatPulse</string>
+    <string name="app_name_95">TalkVolt</string>
+    <string name="app_name_96">MsgSnap</string>
+    <string name="app_name_97">ChatDial</string>
+    <string name="app_name_98">TalkRush</string>
+    <string name="app_name_99">MsgZone</string>
+    <string name="app_name_100">ChatWave</string>
+
+    <!-- संवाद शीर्षक र कार्यहरू -->
+    <string name="dialog_delete_chat">च्याट मेटाउनुहोस्</string>
+    <string name="dialog_delete_group">समूह मेटाउनुहोस्</string>
+    <string name="dialog_delete_confirm_body">के तपाईं \"%1$s\" मेटाउन निश्चित हुनुहुन्छ? यो पूर्ववत गर्न सकिँदैन।</string>
+    <string name="action_delete">मेटाउनुहोस्</string>
+    <string name="dialog_clear_chat">च्याट खाली गर्नुहोस्</string>
+    <string name="dialog_clear_confirm_body">के तपाईं \"%1$s\" का सबै सन्देश खाली गर्न निश्चित हुनुहुन्छ?</string>
+    <string name="action_clear">खाली गर्नुहोस्</string>
+    <string name="dialog_title_create_group">नयाँ समूह बनाउनुहोस्</string>
+    <string name="label_group_name">समूहको नाम</string>
+    <string name="action_create">बनाउनुहोस्</string>
+    <string name="dialog_title_join_group">समूहमा जोडिनुहोस्</string>
+    <string name="label_group_id">समूह आईडी</string>
+    <string name="label_nickname_optional">उपनाम (ऐच्छिक)</string>
+    <string name="dialog_title_rename_group">समूह पुन: नामकरण</string>
+    <string name="action_rename">पुन: नामकरण</string>
+
+    <!-- सेटिङ शीर्षकहरू -->
+    <string name="setting_ble_mesh">BLE मेष</string>
+    <string name="setting_p2p_network">P2P सञ्जाल</string>
+    <string name="setting_nostr_relays">Nostr रिलेहरू</string>
+    <string name="setting_tor_nostr">\u0020\u0020Tor (Nostr)</string>
+
+    <!-- Toast सन्देशहरू -->
+    <string name="toast_ble_mesh_enabled">BLE मेष सक्षम भयो</string>
+    <string name="toast_ble_mesh_disabled">BLE मेष निष्क्रिय भयो</string>
+    <string name="toast_nostr_enabled">Nostr सक्षम भयो</string>
+    <string name="toast_nostr_disabled">Nostr निष्क्रिय भयो</string>
+    <string name="toast_tor_p2p_unsupported">P2P सँग Tor समर्थित छैन। पहिले P2P निष्क्रिय गर्नुहोस्।</string>
+    <string name="toast_p2p_tor_disabled">Tor मार्फत P2P समर्थित छैन। Tor निष्क्रिय गरियो।</string>
+
+    <!-- छवि चयनकर्ता -->
+    <string name="action_gallery">ग्यालेरी</string>
+    <string name="action_camera">क्यामेरा</string>
+
+    <!-- पहुँचयोग्यता सामग्री विवरण -->
+    <string name="cd_refresh_p2p">P2P जडान ताजा गर्नुहोस्</string>
+    <string name="cd_direct_bluetooth">प्रत्यक्ष ब्लुटुथ</string>
+    <string name="cd_routed">रुट गरिएको</string>
+    <string name="cd_p2p_connection">P2P जडान</string>
+    <string name="cd_teleported_user">टेलिपोर्ट भएको प्रयोगकर्ता</string>
+    <string name="cd_user">प्रयोगकर्ता</string>
+    <string name="cd_backspace">ब्याकस्पेस</string>
+    <string name="cd_verified">सत्यापित</string>
+    <string name="cd_add_node">नोड थप्नुहोस्</string>
+    <string name="cd_remove">हटाउनुहोस्</string>
+    <string name="action_enable_location">स्थान सक्षम गर्नुहोस्</string>
+
+    <!-- समूह आईडी लेबल -->
+    <string name="label_group_id_fmt">समूह आईडी: %1$s</string>
+
+    <!-- PIN प्लेसहोल्डर -->
+    <string name="placeholder_6_digits">६ अंक</string>
+
+    <!-- P2P सेटिङ -->
+    <string name="p2p_settings_header">सेटिङ</string>
+    <string name="p2p_enable">P2P सक्षम गर्नुहोस्</string>
+    <string name="p2p_enable_desc">अन्य Zemzeme पियरहरूसँग सिधै जोडिनुहोस्</string>
+    <string name="p2p_use_default_nodes">पूर्वनिर्धारित नोडहरू प्रयोग गर्नुहोस्</string>
+    <string name="p2p_default_nodes_desc">सार्वजनिक IPFS बुटस्ट्र्याप नोडहरूसँग जोडिनुहोस्</string>
+    <string name="p2p_custom_nodes_header">अनुकूल बुटस्ट्र्याप नोडहरू</string>
+    <string name="p2p_no_custom_nodes">कुनै अनुकूल नोड कन्फिगर गरिएको छैन। थप्न + ट्याप गर्नुहोस्।</string>
+    <string name="p2p_add_bootstrap_node">बुटस्ट्र्याप नोड थप्नुहोस्</string>
+    <string name="p2p_enter_multiaddr">बुटस्ट्र्याप नोडको लागि multiaddr हाल्नुहोस्:</string>
+    <string name="p2p_recovering">पुनर्प्राप्ति हुँदैछ…</string>
+    <string name="p2p_recover_connection">जडान पुनर्प्राप्त गर्नुहोस्</string>
+    <string name="action_add">थप्नुहोस्</string>
+
+    <!-- सूचना च्यानलहरू -->
+    <string name="notification_channel_direct_messages">प्रत्यक्ष सन्देश</string>
+    <string name="notification_channel_dm_desc">अन्य प्रयोगकर्ताहरूबाट निजी सन्देशका सूचनाहरू</string>
+    <string name="notification_channel_geohash_chats">Geohash च्याटहरू</string>
+    <string name="notification_channel_geohash_desc">Geohash स्थान च्यानलहरूमा उल्लेख र सन्देशका सूचनाहरू</string>
+
+    <!-- डिबग: मेष टोपोलोजी -->
+    <string name="debug_mesh_topology">मेष टोपोलोजी</string>
+    <string name="debug_no_gossip">अझै कुनै gossip छैन</string>
+
+    <!-- डिबग: सेल्फ-अपडेट -->
+    <string name="debug_self_update">सेल्फ-अपडेट (dev)</string>
+    <string name="debug_current_version_fmt">हालको संस्करण: %1$s</string>
+    <string name="debug_download_updates_desc">GitHub releases बाट अपडेट डाउनलोड र इन्स्टल गर्नुहोस्</string>
+    <string name="update_status_ready">तयार</string>
+    <string name="update_status_checking">अपडेट जाँचिँदै…</string>
+    <string name="update_status_available">अपडेट उपलब्ध: %1$s</string>
+    <string name="update_status_downloading">डाउनलोड हुँदैछ: %1$d%%</string>
+    <string name="update_status_ready_install">इन्स्टल गर्न तयार: %1$s</string>
+    <string name="update_status_installing">इन्स्टल हुँदैछ…</string>
+    <string name="update_status_success">अपडेट इन्स्टल भयो! एप पुनः सुरु गर्नुहोस्।</string>
+    <string name="update_status_pending_action">प्रयोगकर्ताको पुष्टि पर्खिँदै…</string>
+    <string name="update_status_error">त्रुटि: %1$s</string>
+    <string name="update_grant_install_permission">इन्स्टल अनुमति दिनुहोस्</string>
+    <string name="update_install">अपडेट इन्स्टल गर्नुहोस्</string>
+    <string name="update_check">अपडेट जाँच्नुहोस्</string>
+    <string name="debug_test_update_dialog">अपडेट संवाद परीक्षण</string>
+
+    <!-- डिबग: ब्यान्डविथ ग्राफ -->
+    <string name="debug_overall">समग्र</string>
+    <string name="debug_per_device">प्रति यन्त्र</string>
+    <string name="debug_per_peer">प्रति पियर</string>
+    <string name="debug_incoming">आगमन</string>
+    <string name="debug_outgoing">प्रस्थान</string>
+
+    <!-- डिबग: कन्सोल -->
+    <string name="debug_refreshing">ताजा हुँदैछ…</string>
+    <string name="debug_refresh">ताजा गर्नुहोस्</string>
+    <string name="debug_clear_logs">लग खाली गर्नुहोस्</string>
+    <string name="debug_preparing_export">निर्यात तयार गर्दै…</string>
+    <string name="debug_share_logs">लग साझा गर्नुहोस्</string>
+
+    <string name="pow_label_format">pow: %1$dbit</string>
+    <string name="pow_mining_ellipsis">माइनिङ...</string>
+
+    <!-- FAB menu items -->
+    <string name="fab_scan_qr">QR स्क्यान गर्नुहोस्</string>
+    <string name="fab_choose_city">शहर छान्नुहोस्</string>
+    <string name="fab_join_group">समूहमा सामेल हुनुहोस्</string>
+    <string name="fab_create_group">समूह बनाउनुहोस्</string>
+    <!-- Section headers -->
+    <string name="section_nearby">नजिकै</string>
+    <string name="section_geographic_groups">भौगोलिक समूहहरू</string>
+    <string name="section_my_groups">मेरा समूहहरू</string>
+    <string name="section_contacts">सम्पर्कहरू</string>
+
+    <!-- New translated strings -->
+    <string name="section_username">प्रयोगकर्ता नाम</string>
+    <string name="section_theme">थिम</string>
+    <string name="section_settings">सेटिङ</string>
+    <string name="section_network">सञ्जाल</string>
+    <string name="section_status">स्थिति</string>
+    <string name="app_lock_subtitle_pin">PIN</string>
+    <string name="p2p_networking_title">P2P नेटवर्किङ</string>
+    <string name="p2p_status_no_peers">कुनै पियर छैन</string>
+    <string name="p2p_status_connected">जोडिएको</string>
+    <string name="p2p_status_connecting">जोडिँदैछ…</string>
+    <string name="p2p_status_disconnected">विच्छेद भएको</string>
+    <string name="p2p_status_error">त्रुटि</string>
+    <string name="p2p_peers_connected_fmt">%1$d पियरहरू जोडिएका</string>
+    <string name="p2p_dht_fmt">DHT: %1$s</string>
+    <string name="p2p_peer_id_fmt">Peer ID: %1$s…%2$s</string>
+    <string name="p2p_active_nodes_fmt">सक्रिय नोडहरू: %1$d</string>
+    <string name="location_acquiring_title">स्थान प्राप्त गर्दै</string>
+    <string name="location_acquiring_desc">कृपया तपाईंको स्थान निर्धारण हुँदा पर्खनुहोस्</string>
+    <string name="location_unavailable_title">स्थान उपलब्ध छैन</string>
+    <string name="location_permission_required_notes">नोटहरूका लागि स्थान अनुमति आवश्यक छ</string>
+
+    <!-- Connection indicator -->
+    <string name="connection_searching_peers">पियरहरू खोज्दै…</string>
+    <string name="connection_connecting_peers">पियरहरूसँग जोडिँदै…</string>
+    <plurals name="connection_peers_connected">
+        <item quantity="one">%1$d पियर जोडिएको</item>
+        <item quantity="other">%1$d पियरहरू जोडिएका</item>
+    </plurals>
+    <string name="connection_no_new_messages">जोडिएको - नयाँ सन्देश छैन</string>
+    <string name="connection_error">जडान त्रुटि</string>
+    <string name="connection_direct">प्रत्यक्ष</string>
+    <string name="connection_connected">जोडिएको</string>
+
+    <!-- Debug connection indicator -->
+    <string name="debug_p2p_no_info">P2P (जानकारी छैन)</string>
+    <string name="debug_nostr_relay">Nostr रिले</string>
+    <string name="debug_ble_direct">BLE प्रत्यक्ष</string>
+    <string name="debug_p2p_searching">P2P: पियरहरू खोज्दै…</string>
+    <string name="debug_p2p_connecting">P2P: पियरहरूसँग जोडिँदै…</string>
+    <string name="debug_nostr_no_messages">Nostr जोडिएको - नयाँ सन्देश छैन</string>
+    <string name="debug_connection_failed">जडान असफल</string>
+    <string name="debug_error_fmt">त्रुटि: %1$s</string>
+
+</resources>

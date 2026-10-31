@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">زمزمة</string>
+
+    <!-- مبررات الأذونات -->
+    <string name="permission_bluetooth_rationale">إذن البلوتوث مطلوب للدردشة مباشرة مع الآخرين بدون إنترنت.</string>
+    <string name="permission_location_rationale">إذن الموقع مطلوب للعثور على الأجهزة القريبة عبر البلوتوث.</string>
+    <string name="permission_notification_rationale">إذن الإشعارات مطلوب لتنبيهك بالرسائل الجديدة.</string>
+
+    <!-- عناصر نائبة / واجهة أساسية -->
+    <string name="nickname_hint">اسم مستعار</string>
+    <string name="message_hint">اكتب رسالة…</string>
+    <string name="channel_password_hint">كلمة المرور</string>
+    <string name="join_channel">الانضمام إلى القناة</string>
+    <string name="leave_channel">مغادرة</string>
+    <string name="send_message">إرسال</string>
+    <string name="show_commands">عرض الأوامر</string>
+    <string name="back">رجوع</string>
+    <string name="people">أشخاص</string>
+    <string name="channels">القنوات</string>
+    <string name="online_users">مستخدمون متصلون</string>
+    <string name="no_one_connected">لا أحد متصل</string>
+    <string name="emergency_clear_hint">انقر ثلاث مرات لمسح جميع البيانات</string>
+    <string name="your_network">شبكتك</string>
+
+    <!-- تحسين البطارية -->
+    <string name="battery_optimization_detected">تم اكتشاف تحسين البطارية</string>
+    <string name="battery_optimization_disabled">تحسين البطارية معطّل</string>
+    <string name="battery_optimization_not_required">لا حاجة لتحسين البطارية</string>
+    <string name="battery_optimization_checking">جارٍ التحقق من تحسين البطارية</string>
+    <string name="battery_optimization_why_disable">لماذا تعطيل تحسين البطارية؟</string>
+    <string name="battery_optimization_explanation">تعمل Zemzeme في الخلفية للحفاظ على اتصالات الشبكة المتشابكة مع الأجهزة القريبة. قد يقطع تحسين البطارية هذه الاتصالات مما يؤدي إلى تأخير الرسائل أو فقدانها.\n\nيساعد تعطيل تحسين البطارية في ضمان اتصال موثوق بين النظراء.</string>
+    <string name="battery_optimization_disable_button">تعطيل تحسين البطارية</string>
+    <string name="battery_optimization_note">ملاحظة: يمكنك تغيير ذلك لاحقًا من إعدادات أندرويد &gt; التطبيقات &gt; Zemzeme &gt; البطارية.</string>
+    <string name="battery_optimization_not_supported_explanation">جهازك لا يحتاج إلى إعدادات تحسين البطارية. ستعمل Zemzeme بشكل طبيعي.</string>
+    <string name="battery_optimization_not_supported_message">جهازك لا يحتاج إلى إعدادات تحسين البطارية. ستعمل Zemzeme بشكل طبيعي.</string>
+    <string name="battery_optimization_success_message">يمكن لـ Zemzeme العمل بشكل موثوق في الخلفية</string>
+    <string name="battery_optimization_benefits">• تسليم موثوق للرسائل\n• الحفاظ على اتصال الشبكة المتشابكة\n• تمرير الرسائل في الخلفية\n• منع انقطاع الاتصال</string>
+    <string name="battery_optimization_check_again">التحقق مرة أخرى</string>
+    <string name="battery_optimization_skip">تخطي الآن</string>
+    <string name="battery_optimization_continue">متابعة</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="skip">تخطي</string>
+
+    <!-- الإشعارات -->
+    <string name="notification_summary_more">و%1$d إضافية</string>
+    <string name="notification_messages_from_people">%1$d رسالة من %2$d أشخاص</string>
+    <string name="notification_more_conversations">و%1$d محادثات أخرى</string>
+    <string name="notification_active_peers_title">👥 مستخدمون قريبون!</string>
+    <string name="notification_active_peers_one">شخص واحد قريب</string>
+    <string name="notification_active_peers_many">%1$d أشخاص قريبون</string>
+    <string name="notification_new_messages">رسائل جديدة</string>
+    <string name="notification_new_location_messages">رسائل موقع جديدة</string>
+    <string name="notification_mentions_in">تم ذكرك في %1$s</string>
+    <string name="notification_mentions_in_more">تم ذكرك في %1$s (+%2$d أخرى)</string>
+    <string name="notification_mentions_in_plural">%1$d من الإشارات في %2$s</string>
+    <string name="notification_new_activity_in">نشاط جديد في %1$s</string>
+    <string name="notification_messages_in">رسائل في %1$s</string>
+    <string name="notification_joined_conversation">%1$s انضم إلى المحادثة</string>
+    <string name="notification_geohash_summary_title_mentions">Zemzeme – %1$d إشارات</string>
+    <string name="notification_geohash_summary_title">Zemzeme – محادثات المواقع</string>
+    <string name="notification_geohash_summary_text">%1$d رسائل من %2$d مواقع</string>
+    <string name="notification_mesh_mention_title_singular">تم ذكرك في محادثة Bluetooth</string>
+    <string name="notification_mesh_mention_title_plural">%1$d من الإشارات في محادثة الشبكة</string>
+    <string name="notification_more_locations">و%1$d مواقع أخرى</string>
+    <string name="notification_and_more">و%1$d إضافية</string>
+
+    <!-- سهولة الوصول للمفضلة -->
+    <string name="cd_add_favorite">إضافة إلى المفضلة</string>
+    <string name="cd_remove_favorite">إزالة من المفضلة</string>
+    <string name="cd_add_bookmark">إضافة إشارة مرجعية</string>
+
+    <!-- ترويسة الدردشة وسهولة الوصول -->
+    <string name="chat_back">رجوع</string>
+    <string name="chat_channel_prefix">القناة: %1$s</string>
+    <string name="chat_leave">مغادرة</string>
+    <string name="cd_nostr_reachable">يمكن الوصول عبر Nostr</string>
+    <string name="cd_unread_private_messages">رسائل خاصة غير مقروءة</string>
+    <string name="cd_toggle_bookmark">تبديل الإشارة المرجعية</string>
+    <string name="cd_teleported">تم الانتقال</string>
+    <string name="cd_tor_status">حالة Tor</string>
+    <string name="cd_connected_peers">الأقران المتصلون</string>
+    <string name="cd_geohash_participants">مشاركو geohash</string>
+    <string name="cd_ready_for_handshake">جاهز للمصافحة</string>
+    <string name="cd_handshake_in_progress">المصافحة جارية</string>
+    <string name="cd_encrypted">تشفير طرف إلى طرف</string>
+    <string name="cd_handshake_failed">فشلت المصافحة</string>
+
+    <!-- مربع عرض الملفات -->
+    <string name="file_viewer_title">📎 تم استلام ملف</string>
+    <string name="file_viewer_name">📄 %1$s</string>
+    <string name="file_viewer_size">📏 الحجم: %1$s</string>
+    <string name="file_viewer_type">🏷️ النوع: %1$s</string>
+    <string name="file_viewer_open_save">📂 فتح / حفظ</string>
+    <string name="close_with_emoji">❌ إغلاق</string>
+    <string name="pick_image">اختيار صورة</string>
+
+    <!-- ورقة حول التطبيق -->
+    <string name="about_tagline">رسائل خالية من المراقبة في جميع الظروف، مشفرة من طرف إلى طرف</string>
+    <string name="about_offline_mesh_title">دردشة بلوتوث دون اتصال</string>
+    <string name="about_offline_mesh_desc">تواصل مباشرة عبر Bluetooth LE بدون إنترنت أو خوادم. تُعاد توجيه الرسائل عبر الأجهزة القريبة لتوسيع النطاق.</string>
+    <string name="about_online_geohash_title">قنوات geohash عبر الإنترنت</string>
+    <string name="about_online_geohash_desc">تواصل مع أشخاص بالقرب منك عبر قنوات تعتمد على geohash. وسّع الشبكة عبر مرحلات الإنترنت العامة.</string>
+    <string name="about_e2e_title">تشفير طرف إلى طرف</string>
+    <string name="about_e2e_desc">الرسائل الخاصة مشفّرة. رسائل القنوات عامة.</string>
+    <string name="about_appearance">المظهر</string>
+    <string name="about_system">النظام</string>
+    <string name="about_light">فاتح</string>
+    <string name="about_dark">داكن</string>
+    <string name="about_pow">برهان العمل</string>
+    <string name="about_pow_off">PoW معطّل</string>
+    <string name="about_pow_on">PoW مفعّل</string>
+    <string name="about_pow_tip">أضف برهان العمل لرسائل geohash للحد من الرسائل المزعجة.</string>
+    <string name="about_pow_difficulty">الصعوبة: %1$d بت (~%2$s)</string>
+    <string name="about_pow_difficulty_attempts">الصعوبة %1$d تتطلب ~%2$s من محاولات الهاش</string>
+    <string name="about_pow_desc_none">لا حاجة لبرهان العمل</string>
+    <string name="about_pow_desc_very_low">منخفض جدًا – حماية دنيا من الرسائل المزعجة</string>
+    <string name="about_pow_desc_low">منخفض – حماية أساسية</string>
+    <string name="about_pow_desc_medium">متوسط – حماية جيدة</string>
+    <string name="about_pow_desc_high">عالٍ – حماية قوية</string>
+    <string name="about_pow_desc_very_high">عالٍ جدًا – قد يسبب تأخيرًا</string>
+    <string name="about_pow_desc_extreme">شديد – يتطلب قدرة حوسبية كبيرة</string>
+    <string name="about_network">الشبكة</string>
+    <string name="about_tor_off">Tor معطّل</string>
+    <string name="about_tor_on">Tor مفعّل</string>
+    <string name="about_tor_route">توجيه حركة الإنترنت عبر Tor لمزيد من الخصوصية.</string>
+    <string name="about_tor_status">حالة Tor: %1$s، التمهيد %2$d%%</string>
+    <string name="about_last">آخر: %1$s</string>
+    <string name="about_emergency_title">مسح البيانات الطارئ</string>
+    <string name="about_emergency_tip">تلميح: انقر ثلاث مرات على عنوان التطبيق لمسح كل البيانات المحفوظة – بما في ذلك الرسائل والمفاتيح والإعدادات.</string>
+    <string name="about_debug_settings">إعدادات التصحيح</string>
+    <string name="about_footer">مفتوح المصدر • الخصوصية أولاً • لامركزي</string>
+    <string name="close_plain">إغلاق</string>
+    <string name="cancel_lower">إلغاء</string>
+
+    <!-- أوصاف عامة للمحتوى -->
+    <string name="cd_warning">تحذير</string>
+    <string name="cd_location_services">خدمات الموقع</string>
+    <string name="cd_privacy">الخصوصية</string>
+    <string name="cd_error">خطأ</string>
+    <string name="cd_battery_optimization">تحسين البطارية</string>
+    <string name="cd_benefits">الفوائد</string>
+    <string name="cd_checking_battery_optimization">جارٍ التحقق من تحسين البطارية</string>
+    <string name="cd_not_supported_battery_optimization">تحسين البطارية غير مدعوم</string>
+    <string name="cd_bluetooth">Bluetooth</string>
+    <string name="cd_unread_message">رسالة غير مقروءة</string>
+    <string name="cd_open_map">فتح الخريطة</string>
+    <string name="cd_remove_bookmark">إزالة الإشارة المرجعية</string>
+    <string name="cd_teleport">انتقال</string>
+    <string name="cd_selected">محدد</string>
+    <string name="cd_leave_channel">مغادرة القناة</string>
+    <string name="cd_reachable_via_nostr">يمكن الوصول عبر Nostr</string>
+    <string name="cd_offline_favorite">مفضل (غير متصل)</string>
+    <string name="cd_decrease_precision">خفض الدقة</string>
+    <string name="cd_increase_precision">رفع الدقة</string>
+    <string name="cd_select_geohash">اختر geohash</string>
+    <string name="cd_scroll_to_bottom">التمرير إلى الأسفل</string>
+    <string name="cd_file">ملف</string>
+    <string name="cd_image">صورة</string>
+    <string name="cd_cancel">إلغاء</string>
+    <string name="cd_link">رابط</string>
+    <string name="cd_pick_media">اختيار وسائط</string>
+    <string name="cd_pick_file">اختيار ملف</string>
+    <string name="cd_save_current_image">حفظ الصورة الحالية</string>
+    <string name="cd_close">إغلاق</string>
+    <string name="cd_image_index_of">صورة %1$d من %2$d</string>
+    <string name="cd_privacy_protected">الخصوصية محمية</string>
+    <string name="cd_record_voice">تسجيل مذكرة صوتية</string>
+    <string name="cd_offline_mesh_chat">دردشة شبكية دون اتصال</string>
+    <string name="cd_online_geohash_channels">قنوات geohash عبر الإنترنت</string>
+    <string name="cd_end_to_end_encryption">تشفير طرف إلى طرف</string>
+
+    <!-- الصور والملفات -->
+    <string name="image_page_of">صورة %1$d من %2$d</string>
+    <string name="image_unavailable">الصورة غير متاحة</string>
+    <string name="image_saved_to_downloads">تم حفظ الصورة في "التنزيلات"</string>
+    <string name="image_save_failed">تعذّر حفظ الصورة</string>
+    <string name="toast_image_saved">تم حفظ الصورة في "التنزيلات"</string>
+    <string name="toast_failed_to_save_image">تعذّر حفظ الصورة</string>
+    <string name="pick_file">اختيار ملف</string>
+    <string name="file_unavailable">[الملف غير متاح]</string>
+    <string name="unknown">غير معروف</string>
+
+    <!-- ورقة إجراءات المستخدم -->
+    <string name="choose_action_message_or_user">اختر إجراءً لهذه الرسالة أو هذا المستخدم</string>
+    <string name="choose_action_user">اختر إجراءً لهذا المستخدم</string>
+    <string name="action_copy_message_title">نسخ الرسالة</string>
+    <string name="action_copy_message_subtitle">انسخ هذه الرسالة إلى الحافظة</string>
+    <string name="action_slap_title">صفع %1$s</string>
+    <string name="action_slap_subtitle">إرسال صفعة ودّية</string>
+    <string name="action_hug_title">عناق %1$s</string>
+    <string name="action_hug_subtitle">إرسال عناق ودي</string>
+    <string name="action_block_title">حظر %1$s</string>
+    <string name="action_block_subtitle">حظر جميع رسائل هذا المستخدم</string>
+
+    <!-- ورقة قنوات geohash -->
+    <string name="location_channels_title">#قنوات الموقع</string>
+    <string name="location_channels_desc">دردش مع أشخاص قريبين منك عبر قنوات geohash. تتم مشاركة geohash تقريبي فقط، وليس بيانات GPS الدقيقة. للحفاظ على خصوصيتك، لا تلتقط لقطات شاشة ولا تشارك هذه الشاشة.</string>
+    <string name="grant_location_permission">منح إذن الموقع</string>
+    <string name="location_permission_denied">تم رفض إذن الموقع. فعّله من الإعدادات لاستخدام قنوات الموقع.</string>
+    <string name="open_settings">فتح الإعدادات</string>
+    <string name="location_permission_granted">\u2713 تم منح إذن الموقع</string>
+    <string name="checking_permissions">جارٍ التحقق من الأذونات…</string>
+    <string name="finding_nearby_channels">البحث عن قنوات قريبة…</string>
+    <string name="bookmarked">محفوظة</string>
+    <string name="geohash_placeholder">Geohash</string>
+    <string name="invalid_geohash">geohash غير صالح</string>
+    <string name="teleport">انتقال</string>
+    <string name="disable_location_services">تعطيل خدمات الموقع</string>
+    <string name="enable_location_services">تمكين خدمات الموقع</string>
+    <string name="mesh_label">bluetooth</string>
+    <string name="location_level_block">مربّع سكني</string>
+    <string name="location_level_neighborhood">حيّ</string>
+    <string name="location_level_city">مدينة</string>
+    <string name="location_level_province">إقليم</string>
+    <string name="location_level_region">منطقة</string>
+    <string name="location_bluetooth_subtitle">#bluetooth • %1$s</string>
+
+    <!-- التصحيح / التشخيص -->
+    <string name="debug_tools">أدوات التصحيح</string>
+    <string name="debug_tools_desc">أدوات المطوّر للتشخيص والتحكم</string>
+    <string name="debug_verbose_logging">سجل تفصيلي</string>
+    <string name="debug_verbose_hint">تسجّل انضمام/مغادرة الأقران، اتجاه الاتصال، تمرير الحزم والمرحلين</string>
+    <string name="debug_bluetooth_roles">أدوار البلوتوث</string>
+    <string name="debug_gatt_server">خادم GATT</string>
+    <string name="debug_connections_fmt">الاتصالات: %1$d / %2$d</string>
+    <string name="debug_max_server">الحد الأقصى للخادم</string>
+    <string name="debug_gatt_client">عميل GATT</string>
+    <string name="debug_max_client">الحد الأقصى للعميل</string>
+    <string name="debug_overall_connections_fmt">الاتصالات: %1$d / %2$d</string>
+    <string name="debug_max_overall">الحد الأقصى الكلي</string>
+    <string name="debug_packet_relay">تمرير الحزم</string>
+    <string name="debug_since_start_fmt">منذ البدء: %1$d</string>
+    <string name="debug_roles_hint">تبديل الأدوار وإغلاق جميع الاتصالات عند التعطيل</string>
+    <string name="debug_sync_settings">إعدادات المزامنة</string>
+    <string name="debug_max_packets_per_sync_fmt">الحد الأقصى للحزم لكل مزامنة: %1$d</string>
+    <string name="debug_max_gcs_filter_size_fmt">الحد الأقصى لحجم مرشح GCS: %1$d بايت (128–1024)</string>
+    <string name="debug_target_fpr_fmt">نسبة الإيجابيات الكاذبة المستهدفة: %1$.2f%%</string>
+    <string name="debug_connected_devices">الأجهزة المتصلة</string>
+    <string name="debug_our_device_id_fmt">معرّف جهازنا: %1$s</string>
+    <string name="debug_none">لا شيء</string>
+    <string name="debug_disconnect">قطع الاتصال</string>
+    <string name="debug_recent_scan_results">الأجهزة التي تم فحصها مؤخرًا</string>
+    <string name="debug_connect">اتصال</string>
+    <string name="debug_debug_console">وحدة تصحيح</string>
+    <string name="debug_clear">مسح</string>
+    <string name="debug_relays_window_fmt">آخر 10 ثوان: %1$d • 1 دقيقة: %2$d • 15 دقيقة: %3$d</string>
+    <string name="debug_derived_p_fmt">قيمة P المشتقة: %1$s • الحد الأقصى للعناصر المقدّر: %2$s</string>
+    <string name="debug_direct_suffix"> • مباشر</string>
+    <string name="debug_role_server">كخادم (نحن نستضيف)</string>
+    <string name="debug_role_client">كعميل (نحن نتصل)</string>
+
+    <!-- شاشات البدء -->
+    <string name="location_services_required">خدمات الموقع مطلوبة</string>
+    <string name="privacy_first">الخصوصية أولاً</string>
+    <string name="location_explanation">Zemzeme لا يتتبع موقعك.\n\nخدمات الموقع مطلوبة لمسح البلوتوث وميزة دردشة geohash.</string>
+    <string name="location_needs_for">Zemzeme يحتاج خدمات الموقع من أجل:</string>
+    <string name="location_needs_bullets">• مسح أجهزة البلوتوث\n• اكتشاف المستخدمين القريبين في شبكة mesh\n• ميزة دردشة geohash\n• بدون تتبع أو جمع للموقع</string>
+    <string name="open_location_settings">فتح إعدادات الموقع</string>
+    <string name="check_again">التحقق مرة أخرى</string>
+    <string name="location_services_unavailable">خدمات الموقع غير متاحة</string>
+    <string name="location_unavailable_explanation">خدمات الموقع غير متاحة على هذا الجهاز. هذا غير معتاد لأن خدمات الموقع قياسية في أجهزة أندرويد.\n\nتتطلب Zemzeme خدمات الموقع لعمل مسح البلوتوث بشكل صحيح (متطلب أندرويد). بدون ذلك لا يمكن للتطبيق اكتشاف المستخدمين القريبين.</string>
+    <string name="checking_location_services">جارٍ التحقق من خدمات الموقع…</string>
+    <string name="bluetooth_required">البلوتوث مطلوب</string>
+    <string name="bluetooth_needs_for">Zemzeme يحتاج البلوتوث من أجل:</string>
+    <string name="bluetooth_needs_bullets">• اكتشاف المستخدمين القريبين\n• إنشاء اتصالات شبكة mesh\n• إرسال واستقبال الرسائل\n• العمل بدون إنترنت أو خوادم</string>
+    <string name="enable_bluetooth">تفعيل البلوتوث</string>
+    <string name="bluetooth_not_supported">البلوتوث غير مدعوم</string>
+    <string name="bluetooth_unsupported_explanation">هذا الجهاز لا يدعم Bluetooth Low Energy (BLE) المطلوب لعمل Zemzeme.\n\nتحتاج Zemzeme إلى BLE لإنشاء شبكات mesh والتواصل مع الأجهزة القريبة بدون إنترنت.</string>
+    <string name="checking_bluetooth_status">جارٍ التحقق من حالة البلوتوث…</string>
+    <string name="battery_optimization_detected_title">تم اكتشاف تحسين البطارية</string>
+    <string name="battery_optimization_enabled_title">تحسين البطارية مفعّل</string>
+    <string name="battery_optimization_explanation_short">تحتاج Zemzeme للعمل في الخلفية للحفاظ على اتصالات mesh. قد يقطع تحسين البطارية هذه الاتصالات.</string>
+    <string name="benefits_of_disabling">فوائد التعطيل</string>
+    <string name="battery_benefits_short">• تسليم موثوق للرسائل\n• يحافظ على اتصال mesh\n• يمنع انقطاع الاتصال</string>
+    <string name="disable_battery_optimization">تعطيل تحسين البطارية</string>
+    <string name="battery_optimization_disabled_title">تم تعطيل تحسين البطارية</string>
+    <string name="continue_btn">متابعة</string>
+    <string name="initializing_mesh_network">جارٍ تهيئة شبكة mesh</string>
+    <string name="setting_up_bluetooth">جارٍ إعداد شبكة Bluetooth mesh…</string>
+    <string name="should_take_seconds">يجب أن يستغرق ذلك بضع ثوانٍ فقط</string>
+    <string name="setup_not_complete">الإعداد غير مكتمل</string>
+    <string name="try_again">حاول مرة أخرى</string>
+    <string name="privacy_protected">خصوصيتك محمية</string>
+    <string name="privacy_bullets">• بدون تتبع أو جمع للبيانات\n• دردشات Bluetooth mesh تعمل دون اتصال بالكامل\n• دردشات geohash تستخدم الإنترنت</string>
+    <string name="permissions_header">الأذونات</string>
+    <string name="grant_permissions">منح الأذونات</string>
+    <string name="location_tracking_warning">Zemzeme لا يتتبع موقعك</string>
+    <string name="geohash_people_header">الأشخاص</string>
+    <string name="nobody_around">لا أحد هنا…</string>
+    <string name="you_suffix"> (أنت)</string>
+    <string name="pan_zoom_instruction">حرّك وقرّب لاختيار geohash</string>
+    <string name="select">اختيار</string>
+    <string name="type_a_message_placeholder">اكتب رسالة…</string>
+    <string name="mention">إشارة</string>
+    <string name="pow_time_estimate">(~%1$s)</string>
+    <string name="version_prefix">v%1$s</string>
+    <string name="image_star">image/*</string>
+    <string name="media_type_image">صورة</string>
+    <string name="media_type_file">ملف</string>
+
+    <!-- مساعدو نص الإشعارات -->
+    <string name="notification_sent_image">📷 أرسل صورة</string>
+    <string name="notification_sent_voice">🎤 أرسل مذكرة صوتية</string>
+    <string name="notification_sent_file">📎 أرسل ملفًا</string>
+
+    <!-- سهولة استخدام مشغّل الصوت -->
+    <string name="cd_play_voice">تشغيل</string>
+    <string name="cd_pause_voice">إيقاف مؤقت</string>
+    <string name="cd_mining_pow">تعدين PoW</string>
+    <string name="cd_pow_enabled">PoW مفعّل</string>
+    <string name="cd_proof_of_work">برهان العمل</string>
+    <string name="pow_mining_ellipsis">يتم التعدين…</string>
+    <string name="pow_label_format">pow: %1$dbit</string>
+
+    <!-- أوصاف الأذونات -->
+    <string name="perm_nearby_devices_desc">مطلوب لاكتشاف مستخدمي Zemzeme عبر البلوتوث</string>
+    <string name="perm_nearby_devices_system">اسمح لـ Zemzeme بالاتصال بالأجهزة القريبة</string>
+    <string name="perm_location_desc">مطلوب من أندرويد لاكتشاف مستخدمي Zemzeme القريبين عبر البلوتوث</string>
+    <string name="perm_location_system">Zemzeme يحتاج ذلك لمسح الأجهزة القريبة</string>
+    <string name="perm_notifications_desc">تلقي إشعارات عند استلام رسائل خاصة</string>
+    <string name="perm_notifications_system">اسمح لـ Zemzeme بإرسال الإشعارات إليك</string>
+    <string name="perm_battery_desc">تعطيل تحسين البطارية لضمان أن Zemzeme يعمل بشكل موثوق في الخلفية ويحافظ على اتصالات الشبكة المتشابكة</string>
+    <string name="perm_battery_system">اسمح لـ Zemzeme بالعمل بدون قيود البطارية</string>
+
+    <!-- أنواع الأذونات -->
+    <string name="perm_type_nearby_devices">الأجهزة القريبة</string>
+    <string name="perm_type_precise_location">موقع دقيق</string>
+    <string name="perm_type_microphone">ميكروفون</string>
+    <string name="perm_type_notifications">إشعارات</string>
+    <string name="perm_type_battery_optimization">تحسين البطارية</string>
+    <string name="perm_type_other">أخرى</string>
+
+    <!-- مربع كلمة المرور -->
+    <string name="pwd_prompt_title">أدخل كلمة مرور القناة</string>
+    <string name="pwd_prompt_message">القناة %1$s محمية بكلمة مرور. أدخل كلمة المرور للانضمام.</string>
+    <string name="pwd_label">كلمة المرور</string>
+    <string name="join">انضمام</string>
+    <string name="cancel">إلغاء</string>
+
+    <!-- صيغ الجمع -->
+    <plurals name="people_count">
+        <item quantity="one">شخص واحد</item>
+        <item quantity="other">%d أشخاص</item>
+    </plurals>
+
+    <plurals name="location_notes_title">
+        <item quantity="one">#%1$s ± 1 • %2$d ملاحظة</item>
+        <item quantity="other">#%1$s ± 1 • %2$d ملاحظات</item>
+    </plurals>
+    <string name="location_notes_description">أضف ملاحظات قصيرة ودائمة إلى هذا المكان ليتمكن الزوار الآخرون من العثور عليها.</string>
+    <string name="location_notes_relays_unavailable">قنوات الترحيل الجغرافية غير متاحة؛ تم إيقاف الملاحظات</string>
+    <string name="location_notes_no_relays_title">لا توجد قنوات ترحيل جغرافية قريبة</string>
+    <string name="location_notes_no_relays_desc">تعتمد الملاحظات على قنوات الترحيل الجغرافية. تحقق من الاتصال ثم أعد المحاولة.</string>
+    <string name="loading_location_notes">جارٍ تحميل الملاحظات…</string>
+    <string name="location_notes_empty_title">لا توجد ملاحظات بعد</string>
+    <string name="location_notes_empty_desc">كن أول من يضيف ملاحظة لهذا المكان.</string>
+    <string name="dismiss">إغلاق</string>
+    <string name="location_notes_input_placeholder">أضف ملاحظة لهذا المكان</string>
+    <string name="mesh_service_notification_content">Bluetooth يعمل — %1$d أقران</string>
+
+    <!-- تأيد هوية وبصمة -->
+    <string name="verify_title">التحقق</string>
+    <string name="verify_my_qr_title">امسح للتحقق مني</string>
+    <string name="verify_scan_prompt_friend">امسح رمز QR لشخص آخر</string>
+    <string name="verify_scan_someone">امسح رمز QR لشخص آخر</string>
+    <string name="verify_show_my_qr">عرض رمز QR الخاص بي</string>
+    <string name="verify_remove">إزالة التحقق</string>
+    <string name="verify_qr_unavailable">رمز QR غير متاح</string>
+    <string name="verify_camera_permission">إذن الكاميرا مطلوب لمسح رموز QR</string>
+    <string name="verify_request_camera">تفعيل الكاميرا</string>
+    <string name="verify_paste_label">لصق رابط التحقق</string>
+    <string name="verify_validate">التحقق</string>
+    <string name="verify_scanned">تم طلب التحقق</string>
+    <string name="security_verification_title">التحقق الأمني</string>
+    <string name="fingerprint_their">بصمتهم</string>
+    <string name="fingerprint_yours">بصمتك</string>
+    <string name="fingerprint_pending">المصافحة قيد الانتظار</string>
+    <string name="fingerprint_no_peer">افتح دردشة خاصة لعرض البصمات</string>
+    <string name="fingerprint_status_verified">مشفّر &amp; موثّق</string>
+    <string name="fingerprint_status_encrypted">مشفّر</string>
+    <string name="fingerprint_status_handshaking">جارٍ المصافحة</string>
+    <string name="fingerprint_status_failed">فشلت المصافحة</string>
+    <string name="fingerprint_status_uninitialized">غير مشفّر</string>
+    <string name="fingerprint_verified_label">موثّق</string>
+    <string name="fingerprint_verified_message">لقد تحققت من هوية هذا الشخص.</string>
+    <string name="fingerprint_not_verified_label">غير موثّق</string>
+    <string name="fingerprint_not_verified_message_fmt">قارن هذه البصمات مع %1$s عبر قناة آمنة.</string>
+    <string name="fingerprint_mark_verified">وضع علامة موثّق</string>
+    <string name="fingerprint_start_handshake">بدء المصافحة</string>
+    <string name="fingerprint_copy">نسخ</string>
+    <string name="verify_mutual_match_title">تحقق متبادل</string>
+    <string name="verify_mutual_match_body">أنت و%1$s تحققتما من بعضكما</string>
+    <string name="verify_mutual_system_message">تحقق متبادل مع %1$s</string>
+    <string name="verify_success_title">تم التحقق</string>
+    <string name="verify_success_body">لقد تحققت من %1$s</string>
+    <string name="verify_success_system_message">تم التحقق من %1$s</string>
+
+    <!-- مفاتيح مفقودة -->
+    <string name="cd_settings">الإعدادات</string>
+    <string name="cd_location_notes">ملاحظات الموقع</string>
+    <string name="notification_action_quit_bitchat">الخروج من Zemzeme</string>
+    <string name="about_background_title">التشغيل في الخلفية</string>
+    <string name="about_background_desc">إبقاء الشبكة المتشابكة نشطة عند إغلاق التطبيق (خدمة أمامية)</string>
+    <string name="about_p2p_subtitle">اتصالات مباشرة بين الأقران عبر p2p</string>
+    <string name="about_nostr_subtitle">رسائل عبر مرحّل الإنترنت</string>
+    <string name="about_ble_subtitle">شبكة البلوتوث المتشابكة للقرب</string>
+    <string name="ble_setting_off_subtitle">البلوتوث مُعطّل — قم بتفعيله لاستخدام شبكة BLE Mesh</string>
+    <string name="ble_banner_off">البلوتوث مُعطّل — شبكة BLE Mesh غير متاحة</string>
+    <string name="ble_setting_dialog_title">البلوتوث مطلوب</string>
+    <string name="ble_setting_dialog_msg">البلوتوث مُعطّل. قم بتفعيله لاستخدام شبكة BLE Mesh.</string>
+    <string name="ble_setting_dialog_btn">فتح إعدادات البلوتوث</string>
+    <string name="ble_banner_enable_btn">تفعيل</string>
+    <string name="ble_banner_mesh_disabled">شبكة BLE Mesh مُعطّلة</string>
+
+    <!-- الاتصال بالشبكة -->
+    <string name="network_setting_off_subtitle">لا يوجد إنترنت — تحقق من اتصالك</string>
+    <string name="network_not_available">لا يوجد اتصال بالإنترنت</string>
+    <string name="network_transports_off_hint">فعّل P2P أو Nostr</string>
+    <string name="network_no_internet">متصل ولكن لم يتم اكتشاف إنترنت</string>
+    <string name="network_setting_dialog_title">الإنترنت مطلوب</string>
+    <string name="network_setting_dialog_msg">اتصال الإنترنت مطلوب لنقل P2P وNostr.</string>
+    <string name="network_setting_dialog_btn">إعدادات الاتصال</string>
+    <string name="network_banner_disconnected">لا يوجد إنترنت — تحقق من إعدادات الاتصال</string>
+    <string name="network_banner_airplane_mode">وضع الطيران مفعّل</string>
+    <string name="network_airplane_mode">وضع الطيران مفعّل</string>
+    <string name="network_banner_no_internet">متصل ولكن لا يوجد إنترنت — تحقق من اتصالك</string>
+    <string name="network_banner_transports_disabled">لا يوجد نقل شبكة — فعّل P2P أو Nostr من الإعدادات</string>
+    <string name="network_banner_settings_btn">الإعدادات</string>
+
+    <string name="mesh_service_channel_name">خدمة Bluetooth في الخلفية</string>
+    <string name="mesh_service_channel_desc">تُبقي شبكة البلوتوث المتشابكة تعمل في الخلفية</string>
+    <string name="background_location_required_title">الموقع في الخلفية موصى به</string>
+    <string name="background_location_required_subtitle">اختياري، يحسّن موثوقية الشبكة المتشابكة</string>
+    <string name="background_location_explanation">يوصي أندرويد بالموقع في الخلفية حتى تتمكن Zemzeme من البحث عن الأجهزة القريبة عندما لا يكون التطبيق مفتوحًا. يُبقي الشبكة المتشابكة حية بعد إعادة التشغيل.</string>
+    <string name="background_location_settings_tip">عند فتح الإعدادات، اختر "السماح في جميع الأوقات".</string>
+    <string name="background_location_needs_for">تستخدم Zemzeme الموقع في الخلفية من أجل:</string>
+    <string name="background_location_needs_bullets">- البحث عن الأجهزة القريبة عند إغلاق التطبيق\n- إعادة الاتصال بعد إعادة التشغيل\n- إبقاء الشبكة المتشابكة تعمل في الخلفية</string>
+    <string name="background_location_privacy_note">نحن لا نجمع موقعك أو نخزّنه أبدًا. خصوصيتك في أمان.</string>
+    <string name="grant_background_location">السماح بالموقع في الخلفية</string>
+    <string name="skip_background_location">المتابعة بدون الموقع في الخلفية</string>
+    <string name="dot">.</string>
+    <string name="warning_emoji">⚠️</string>
+    <string name="at_symbol">@</string>
+    <string name="app_brand">Zemzeme/</string>
+    <string name="channel_count_prefix"> · ⧉ </string>
+    <string name="mention_suggestion_at">@%1$s</string>
+    <string name="image_counter">%1$d / %2$d</string>
+    <string name="at_nickname">@%1$s</string>
+    <string name="hash_symbol">#</string>
+    <string name="underscore">_</string>
+    <string name="progress_bar_brackets">[%1$s] %2$d%%</string>
+    <string name="progress_filled">█</string>
+    <string name="progress_empty">░</string>
+    <string name="status_sending">○</string>
+    <string name="status_pending">○</string>
+    <string name="status_sent">✓</string>
+    <string name="status_delivered">✓✓</string>
+    <string name="status_failed">⚠</string>
+    <string name="status_read">✓</string>
+    <string name="notification_file_pdf">📄</string>
+    <string name="notification_file_zip">🗜️</string>
+    <string name="notification_file_doc">📄</string>
+    <string name="notification_file_xls">📊</string>
+    <string name="notification_file_ppt">📈</string>
+    <string name="notification_file_generic">📎</string>
+    <string name="perm_background_location_desc">موصى به للبحث عن الأجهزة القريبة عندما يكون التطبيق في الخلفية</string>
+    <string name="perm_background_location_system">السماح بالوصول إلى الموقع في الخلفية</string>
+    <string name="perm_type_background_location">الموقع في الخلفية</string>
+    <string name="tor_not_available_in_this_build">Tor غير متاح في هذا الإصدار</string>
+    <string name="debug_rssi_fmt">RSSI: %1$s</string>
+    <string name="debug_question_mark">?</string>
+
+    <!-- قفل التطبيق -->
+    <string name="app_lock_title">قفل التطبيق</string>
+    <string name="app_lock_subtitle_off">إيقاف</string>
+    <string name="app_lock_subtitle_on">بيومتري + PIN</string>
+    <string name="app_lock_security_section">الأمان</string>
+    <string name="app_lock_enter_pin">أدخل PIN</string>
+    <string name="app_lock_set_pin">تعيين PIN</string>
+    <string name="app_lock_confirm_pin">تأكيد PIN</string>
+    <string name="app_lock_biometric_title">فتح Zemzeme</string>
+    <string name="app_lock_biometric_subtitle">المس المستشعر لفتح القفل</string>
+    <string name="app_lock_use_pin">استخدم PIN</string>
+    <string name="app_lock_wrong_pin">PIN خاطئ</string>
+    <string name="app_lock_too_many_attempts">%1$d محاولة(ات) متبقية</string>
+    <string name="app_lock_cooldown">حاول مرة أخرى خلال %1$d ثانية</string>
+    <string name="app_lock_pin_mismatch">لا تتطابق أرقام PIN</string>
+    <string name="app_lock_pin_min_length">يجب أن يتكون PIN من 4–6 أرقام</string>
+    <string name="app_lock_disable_title">تعطيل قفل التطبيق</string>
+    <string name="app_lock_disable_msg">تحقق من هويتك لتعطيل قفل التطبيق</string>
+    <string name="app_lock_protect_title">احمِ دردشاتك</string>
+    <string name="app_lock_protect_desc">رمز PIN مكوّن من 6 أرقام يقفل التطبيق. استخدم البيومتري للوصول الفوري.</string>
+    <string name="app_lock_enable">تفعيل قفل التطبيق</string>
+    <string name="app_lock_not_now">ليس الآن</string>
+
+    <plurals name="notification_and_more">
+        <item quantity="one">و%d إضافية</item>
+        <item quantity="other">و%d إضافية</item>
+    </plurals>
+
+    <!-- مقدمة Mesh -->
+    <string name="mesh_intro_title">Bluetooth</string>
+    <string name="mesh_intro_body">يعتمد التواصل في هذه المجموعة بالكامل على البلوتوث. تقوم الأجهزة القريبة بتمرير الرسائل بين الأشخاص — لا حاجة لاتصال إنترنت.</string>
+    <string name="mesh_intro_close">إغلاق</string>
+    <string name="mesh_intro_dont_show">لا تعرض مرة أخرى</string>
+
+    <!-- مشاركة التطبيق -->
+    <string name="about_share_app_header">مشاركة التطبيق</string>
+    <string name="about_share_system_title">مشاركة التطبيق</string>
+    <string name="about_share_system_desc">أرسل ملف APK عبر البلوتوث أو المشاركة القريبة أو Wi-Fi Direct (%1$s)</string>
+    <string name="about_share_failed">فشل في تحضير ملف APK للمشاركة</string>
+    <string name="about_share_chooser_title">مشاركة APK لـ %1$s</string>
+    <string name="about_share_helper_text">استخدم Google Quick Share للإرسال (فعّله في إعدادات الهاتف). بعد النقل، سيكون ملف APK في مجلد التنزيلات على الجهاز المستقبل.</string>
+
+    <!-- تبديل الأيقونة -->
+    <string name="icon_switch_title">تحديث أيقونة التطبيق &amp; الاسم</string>
+    <string name="icon_switch_section">التخصيص</string>
+    <string name="icon_switch_subtitle">تغيير أيقونة التطبيق واسمه على الشاشة الرئيسية</string>
+    <string name="icon_switch_confirm">تغيير أيقونة التطبيق واسمه إلى هذا؟</string>
+    <string name="icon_switch_apply">تطبيق</string>
+    <string name="icon_switch_toast">تم تغيير أيقونة التطبيق واسمه!</string>
+
+    <!-- تحديث الحساب -->
+    <string name="cd_refresh_account">تدمير الحساب</string>
+    <string name="refresh_account_title">تدمير الحساب؟</string>
+    <string name="refresh_account_message">سيؤدي هذا إلى حذف جميع الرسائل وإنشاء هوية جديدة. لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="refresh_account_confirm">تدمير</string>
+
+    <!-- عناوين الحوارات والإجراءات -->
+    <string name="dialog_delete_chat">حذف الدردشة</string>
+    <string name="dialog_delete_group">حذف المجموعة</string>
+    <string name="dialog_delete_confirm_body">هل أنت متأكد أنك تريد حذف \"%1$s\"؟ لا يمكن التراجع عن هذا.</string>
+    <string name="action_delete">حذف</string>
+    <string name="dialog_clear_chat">مسح الدردشة</string>
+    <string name="dialog_clear_confirm_body">هل أنت متأكد أنك تريد مسح جميع الرسائل في \"%1$s\"؟</string>
+    <string name="action_clear">مسح</string>
+    <string name="dialog_title_create_group">إنشاء مجموعة جديدة</string>
+    <string name="label_group_name">اسم المجموعة</string>
+    <string name="action_create">إنشاء</string>
+    <string name="dialog_title_join_group">الانضمام إلى مجموعة</string>
+    <string name="label_group_id">معرّف المجموعة</string>
+    <string name="label_nickname_optional">اسم مستعار (اختياري)</string>
+    <string name="dialog_title_rename_group">إعادة تسمية المجموعة</string>
+    <string name="action_rename">إعادة تسمية</string>
+
+    <!-- عناوين الإعدادات -->
+    <string name="setting_ble_mesh">BLE Mesh</string>
+    <string name="setting_p2p_network">شبكة P2P</string>
+    <string name="setting_nostr_relays">مرحّلات Nostr</string>
+    <string name="setting_tor_nostr">\u0020\u0020Tor (Nostr)</string>
+
+    <!-- رسائل Toast -->
+    <string name="toast_ble_mesh_enabled">تم تفعيل BLE Mesh</string>
+    <string name="toast_ble_mesh_disabled">تم تعطيل BLE Mesh</string>
+    <string name="toast_nostr_enabled">تم تفعيل Nostr</string>
+    <string name="toast_nostr_disabled">تم تعطيل Nostr</string>
+    <string name="toast_tor_p2p_unsupported">Tor مع P2P غير مدعوم. عطّل P2P أولاً.</string>
+    <string name="toast_p2p_tor_disabled">P2P عبر Tor غير مدعوم. تم تعطيل Tor.</string>
+
+    <!-- منتقي الصور -->
+    <string name="action_gallery">المعرض</string>
+    <string name="action_camera">الكاميرا</string>
+
+    <!-- أوصاف المحتوى للإمكانية -->
+    <string name="cd_refresh_p2p">تحديث اتصال P2P</string>
+    <string name="cd_direct_bluetooth">بلوتوث مباشر</string>
+    <string name="cd_routed">موجّه</string>
+    <string name="cd_p2p_connection">اتصال P2P</string>
+    <string name="cd_teleported_user">مستخدم منتقل</string>
+    <string name="cd_user">مستخدم</string>
+    <string name="cd_backspace">مسح حرف</string>
+    <string name="cd_verified">موثّق</string>
+    <string name="cd_add_node">إضافة عقدة</string>
+    <string name="cd_remove">إزالة</string>
+    <string name="action_enable_location">تفعيل الموقع</string>
+
+    <!-- معرّف المجموعة -->
+    <string name="label_group_id_fmt">معرّف المجموعة: %1$s</string>
+
+    <!-- عنصر نائب لـ PIN -->
+    <string name="placeholder_6_digits">6 أرقام</string>
+
+    <!-- إعدادات P2P -->
+    <string name="p2p_settings_header">الإعدادات</string>
+    <string name="p2p_enable">تفعيل P2P</string>
+    <string name="p2p_enable_desc">الاتصال مباشرة بأقران Zemzeme الآخرين</string>
+    <string name="p2p_use_default_nodes">استخدام العقد الافتراضية</string>
+    <string name="p2p_default_nodes_desc">الاتصال بعقد IPFS العامة</string>
+    <string name="p2p_custom_nodes_header">عقد التمهيد المخصصة</string>
+    <string name="p2p_no_custom_nodes">لا توجد عقد مخصصة. انقر + للإضافة.</string>
+    <string name="p2p_add_bootstrap_node">إضافة عقدة تمهيد</string>
+    <string name="p2p_enter_multiaddr">أدخل عنوان multiaddr لعقدة التمهيد:</string>
+    <string name="p2p_recovering">جارٍ الاستعادة…</string>
+    <string name="p2p_recover_connection">استعادة الاتصال</string>
+    <string name="action_add">إضافة</string>
+
+    <!-- قنوات الإشعارات -->
+    <string name="notification_channel_direct_messages">الرسائل المباشرة</string>
+    <string name="notification_channel_dm_desc">إشعارات الرسائل الخاصة من المستخدمين الآخرين</string>
+    <string name="notification_channel_geohash_chats">دردشات Geohash</string>
+    <string name="notification_channel_geohash_desc">إشعارات الإشارات والرسائل في قنوات geohash</string>
+
+    <!-- التصحيح: طوبولوجيا mesh -->
+    <string name="debug_mesh_topology">طوبولوجيا mesh</string>
+    <string name="debug_no_gossip">لا يوجد gossip بعد</string>
+
+    <!-- التصحيح: التحديث الذاتي -->
+    <string name="debug_self_update">التحديث الذاتي (مطوّر)</string>
+    <string name="debug_current_version_fmt">الإصدار الحالي: %1$s</string>
+    <string name="debug_download_updates_desc">تنزيل وتثبيت التحديثات من إصدارات GitHub</string>
+    <string name="update_status_ready">جاهز</string>
+    <string name="update_status_checking">جارٍ التحقق من التحديثات…</string>
+    <string name="update_status_available">تحديث متاح: %1$s</string>
+    <string name="update_status_downloading">جارٍ التنزيل: %1$d%%</string>
+    <string name="update_status_ready_install">جاهز للتثبيت: %1$s</string>
+    <string name="update_status_installing">جارٍ التثبيت…</string>
+    <string name="update_status_success">تم تثبيت التحديث! أعد تشغيل التطبيق.</string>
+    <string name="update_status_pending_action">في انتظار تأكيد المستخدم…</string>
+    <string name="update_status_error">خطأ: %1$s</string>
+    <string name="update_grant_install_permission">منح إذن التثبيت</string>
+    <string name="update_install">تثبيت التحديث</string>
+    <string name="update_check">التحقق من التحديثات</string>
+    <string name="debug_test_update_dialog">اختبار نافذة التحديث</string>
+
+    <!-- التصحيح: رسوم النطاق الترددي -->
+    <string name="debug_overall">الكلي</string>
+    <string name="debug_per_device">لكل جهاز</string>
+    <string name="debug_per_peer">لكل قرين</string>
+    <string name="debug_incoming">وارد</string>
+    <string name="debug_outgoing">صادر</string>
+
+    <!-- التصحيح: وحدة التحكم -->
+    <string name="debug_refreshing">جارٍ التحديث…</string>
+    <string name="debug_refresh">تحديث</string>
+    <string name="debug_clear_logs">مسح السجلات</string>
+    <string name="debug_preparing_export">جارٍ تحضير التصدير…</string>
+    <string name="debug_share_logs">مشاركة السجلات</string>
+
+    <!-- أذونات جديدة -->
+    <string name="continue_button">متابعة</string>
+    <string name="perm_required_label">مطلوب</string>
+    <string name="perm_recommended_label">موصى به</string>
+    <string name="perm_info_dialog_ok">موافق</string>
+    <string name="perm_benefit_nearby_devices">أذونات البلوتوث تسمح لـ Zemzeme باكتشاف المستخدمين القريبين والتواصل معهم عبر شبكة mesh. يتيح ذلك التراسل بين الأقران دون اتصال بالإنترنت.</string>
+    <string name="perm_benefit_location">يتطلب أندرويد إذن الموقع لمسح أجهزة البلوتوث القريبة. Zemzeme لا يتتبع أو يخزن موقعك.</string>
+    <string name="perm_benefit_background_location">يسمح الموقع في الخلفية لـ Zemzeme باكتشاف المستخدمين القريبين حتى عندما يكون التطبيق في الخلفية. بدون ذلك، تعمل شبكة mesh فقط أثناء فتح التطبيق على الشاشة.</string>
+    <string name="perm_benefit_notifications">تُعلمك الإشعارات عند تلقي رسالة خاصة أو عند وجود نشاط جديد في قنواتك، حتى عندما يكون التطبيق في الخلفية.</string>
+    <string name="perm_benefit_battery_optimization">تعطيل تحسين البطارية يضمن عمل Zemzeme بشكل موثوق في الخلفية والحفاظ على اتصالات شبكة mesh. بدون ذلك، قد يوقف أندرويد التطبيق لتوفير البطارية مما يفصلك عن الشبكة.</string>
+
+    <!-- FAB menu items -->
+    <string name="fab_scan_qr">مسح QR</string>
+    <string name="fab_choose_city">اختر مدينة</string>
+    <string name="fab_join_group">انضم لمجموعة</string>
+    <string name="fab_create_group">إنشاء مجموعة</string>
+    <!-- Section headers -->
+    <string name="section_nearby">القريبون</string>
+    <string name="section_geographic_groups">المجموعات الجغرافية</string>
+    <string name="section_my_groups">مجموعاتي</string>
+    <string name="section_contacts">جهات الاتصال</string>
+
+    <!-- P2P and location strings -->
+    <string name="section_username">اسم المستخدم</string>
+    <string name="section_theme">السمة</string>
+    <string name="section_settings">الإعدادات</string>
+    <string name="section_network">الشبكة</string>
+    <string name="section_status">الحالة</string>
+    <string name="app_lock_subtitle_pin">PIN</string>
+    <string name="p2p_networking_title">شبكة P2P</string>
+    <string name="p2p_status_no_peers">لا يوجد أقران</string>
+    <string name="p2p_status_connected">متصل</string>
+    <string name="p2p_status_connecting">جارٍ الاتصال…</string>
+    <string name="p2p_status_disconnected">غير متصل</string>
+    <string name="p2p_status_error">خطأ</string>
+    <string name="p2p_peers_connected_fmt">%1$d أقران متصلون</string>
+    <string name="p2p_dht_fmt">DHT: %1$s</string>
+    <string name="p2p_peer_id_fmt">Peer ID: %1$s…%2$s</string>
+    <string name="p2p_active_nodes_fmt">العُقد النشطة: %1$d</string>
+    <string name="location_acquiring_title">جارٍ تحديد الموقع</string>
+    <string name="location_acquiring_desc">يُرجى الانتظار أثناء تحديد موقعك</string>
+    <string name="location_unavailable_title">الموقع غير متاح</string>
+    <string name="location_permission_required_notes">إذن الموقع مطلوب للملاحظات</string>
+
+    <!-- مؤشر الاتصال -->
+    <string name="connection_searching_peers">جارٍ البحث عن أقران…</string>
+    <string name="connection_connecting_peers">جارٍ الاتصال بالأقران…</string>
+    <plurals name="connection_peers_connected">
+        <item quantity="one">%1$d قرين متصل</item>
+        <item quantity="other">%1$d أقران متصلون</item>
+    </plurals>
+    <string name="connection_no_new_messages">متصل - لا رسائل جديدة</string>
+    <string name="connection_error">خطأ في الاتصال</string>
+    <string name="connection_direct">مباشر</string>
+    <string name="connection_connected">متصل</string>
+
+    <!-- تصحيح مؤشر الاتصال -->
+    <string name="debug_p2p_no_info">P2P (لا معلومات)</string>
+    <string name="debug_nostr_relay">مرحّل Nostr</string>
+    <string name="debug_ble_direct">BLE مباشر</string>
+    <string name="debug_p2p_searching">P2P: جارٍ البحث عن أقران…</string>
+    <string name="debug_p2p_connecting">P2P: جارٍ الاتصال بالأقران…</string>
+    <string name="debug_nostr_no_messages">Nostr متصل - لا رسائل جديدة</string>
+    <string name="debug_connection_failed">فشل الاتصال</string>
+    <string name="debug_error_fmt">خطأ: %1$s</string>
+
+</resources>

@@ -1,0 +1,807 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ზემზემე</string>
+
+    <!-- ნებართვების ახსნა -->
+    <string name="permission_bluetooth_rationale">Bluetooth-ის ნებართვა საჭიროა, რომ ინტერნეტის გარეშე პირდაპირ ისაუბროთ სხვებთან.</string>
+    <string name="permission_location_rationale">მდებარეობის ნებართვა საჭიროა ახლომდებარე მოწყობილობების Bluetooth-ით საპოვნელად.</string>
+    <string name="permission_notification_rationale">შეტყობინებების ნებართვა საჭიროა ახალი შეტყობინებების შეგახსენებლად.</string>
+
+    <!-- Placeholder-ები / საბაზისო UI -->
+    <string name="nickname_hint">მეტსახელი</string>
+    <string name="message_hint">შეიყვანეთ შეტყობინება…</string>
+    <string name="channel_password_hint">პაროლი</string>
+    <string name="join_channel">არხში შეუერთება</string>
+    <string name="leave_channel">გამოსვლა</string>
+    <string name="send_message">გაგზავნა</string>
+    <string name="show_commands">ბრძანებების ჩვენება</string>
+    <string name="back">უკან</string>
+    <string name="people">ხალხი</string>
+    <string name="channels">არხები</string>
+    <string name="online_users">ონლაინ მომხმარებლები</string>
+    <string name="no_one_connected">არავინ არის დაკავშირებული</string>
+    <string name="emergency_clear_hint">სამჯერ დააჭირეთ ყველა მონაცემის წასაშლელად</string>
+    <string name="your_network">თქვენი ქსელი</string>
+
+    <!-- ბატარეის ოპტიმიზაცია -->
+    <string name="battery_optimization_detected">ბატარეის ოპტიმიზაცია აღმოჩნდა</string>
+    <string name="battery_optimization_disabled">ბატარეის ოპტიმიზაცია გამორთულია</string>
+    <string name="battery_optimization_not_required">ბატარეის ოპტიმიზაცია არ არის საჭირო</string>
+    <string name="battery_optimization_checking">ბატარეის ოპტიმიზაციის შემოწმება</string>
+    <string name="battery_optimization_why_disable">რატომ უნდა გამოირთოს ბატარეის ოპტიმიზაცია?</string>
+    <string name="battery_optimization_explanation">Zemzeme მუშაობს ფონში, რათა ახლომდებარე მოწყობილობებთან mesh-კავშირები შეინარჩუნოს. ბატარეის ოპტიმიზაციამ შეიძლება დააწყვეტინოს ეს კავშირები, რის გამოც შეტყობინებები დაგვიანდეს ან დაიკარგოს.\n\nბატარეის ოპტიმიზაციის გამორთვა უზრუნველყოფს სანდო peer-to-peer კომუნიკაციას.</string>
+    <string name="battery_optimization_disable_button">ბატარეის ოპტიმიზაციის გამორთვა</string>
+    <string name="battery_optimization_note">შენიშვნა: შეგიძლიათ შეცვალოთ მოგვიანებით Android-ის პარამეტრებში &gt; აპები &gt; Zemzeme &gt; ბატარეა.</string>
+    <string name="battery_optimization_not_supported_explanation">თქვენს მოწყობილობას ბატარეის ოპტიმიზაცია არ სჭირდება. Zemzeme ჩვეულებრივ იმუშავებს.</string>
+    <string name="battery_optimization_not_supported_message">თქვენს მოწყობილობას ბატარეის ოპტიმიზაცია არ სჭირდება. Zemzeme ჩვეულებრივ იმუშავებს.</string>
+    <string name="battery_optimization_success_message">Zemzeme შეძლებს სანდოდ იმუშაოს ფონში</string>
+    <string name="battery_optimization_benefits">• შეტყობინებების სანდო მიწოდება\n• mesh-კავშირის შენარჩუნება\n• ფონური გადაგზავნა\n• გათიშვების თავიდან აცილება</string>
+    <string name="battery_optimization_check_again">თავიდან შემოწმება</string>
+    <string name="battery_optimization_skip">ახლა გამოტოვება</string>
+    <string name="battery_optimization_continue">გაგრძელება</string>
+    <string name="retry">კვლავ ცდა</string>
+    <string name="skip">გამოტოვება</string>
+
+    <!-- შეტყობინებები -->
+    <string name="notification_summary_more">და კიდევ %1$d</string>
+    <string name="notification_messages_from_people">%2$d ადამიანიდან %1$d შეტყობინება</string>
+    <string name="notification_more_conversations">და კიდევ %1$d საუბარი</string>
+    <string name="notification_active_peers_title">👥 Zemzeme მომხმარებლები ახლოს!</string>
+    <string name="notification_active_peers_one">1 ადამიანი ახლოს</string>
+    <string name="notification_active_peers_many">ახლოს %1$d ადამიანი</string>
+    <string name="notification_new_messages">ახალი შეტყობინებები</string>
+    <string name="notification_new_location_messages">მდებარეობის ახალი შეტყობინებები</string>
+    <string name="notification_mentions_in">ხსენება %1$s-ში</string>
+    <string name="notification_mentions_in_more">ხსენება %1$s-ში (+%2$d)</string>
+    <string name="notification_mentions_in_plural">%2$s-ში %1$d ხსენება</string>
+    <string name="notification_new_activity_in">ახალი აქტივობა %1$s-ში</string>
+    <string name="notification_messages_in">შეტყობინებები %1$s-ში</string>
+    <string name="notification_joined_conversation">%1$s შეუერთდა საუბარს</string>
+    <string name="notification_geohash_summary_title_mentions">Zemzeme – %1$d ხსენება</string>
+    <string name="notification_geohash_summary_title">Zemzeme – მდებარეობის ჩათები</string>
+    <string name="notification_geohash_summary_text">%2$d ადგილიდან %1$d შეტყობინება</string>
+    <string name="notification_mesh_mention_title_singular">Bluetooth-ჩათში ხსენება</string>
+    <string name="notification_mesh_mention_title_plural">mesh-ჩათში %1$d ხსენება</string>
+    <string name="notification_more_locations">და კიდევ %1$d ადგილი</string>
+    <string name="notification_and_more">და კიდევ %1$d</string>
+
+    <!-- Mesh სერვისის ფონური შეტყობინება -->
+    <string name="mesh_service_channel_name">Bluetooth ფონური სერვისი</string>
+    <string name="mesh_service_channel_desc">Bluetooth mesh-ს ფონში მუშაობის უზრუნველყოფა</string>
+    <string name="mesh_service_notification_content">Bluetooth გაშვებულია — %1$d პირი</string>
+
+    <!-- რჩეულების ხელმისაწვდომობა -->
+    <string name="cd_add_favorite">რჩეულებში დამატება</string>
+    <string name="cd_remove_favorite">რჩეულებიდან წაშლა</string>
+    <string name="cd_add_bookmark">სანიშნეს დამატება</string>
+
+    <!-- ჩათის სათაური &amp; ხელმისაწვდომობა -->
+    <string name="chat_back">უკან</string>
+    <string name="chat_channel_prefix">არხი: %1$s</string>
+    <string name="chat_leave">გასვლა</string>
+    <string name="cd_nostr_reachable">მისაწვდომია Nostr-ით</string>
+    <string name="cd_unread_private_messages">წაუკითხავი პირადი შეტყობინებები</string>
+    <string name="cd_toggle_bookmark">სანიშნეს გადართვა</string>
+    <string name="cd_location_notes">მდებარეობის შენიშვნები</string>
+    <string name="cd_teleported">ტელეპორტირებული</string>
+    <string name="cd_tor_status">Tor-ის სტატუსი</string>
+    <string name="cd_connected_peers">დაკავშირებული პირები</string>
+    <string name="cd_geohash_participants">geohash მონაწილეები</string>
+    <string name="cd_ready_for_handshake">მზადაა ხელის ჩამოსართმევად</string>
+    <string name="cd_handshake_in_progress">მიმდინარეობს ხელის ჩამორთმევა</string>
+    <string name="cd_encrypted">ბოლოდან-ბოლომდე დაშიფრული</string>
+    <string name="cd_handshake_failed">ხელის ჩამორთმევა წარუმატებლად დასრულდა</string>
+    <string name="cd_settings">პარამეტრები</string>
+    <string name="cd_refresh_account">ანგარიშის წაშლა</string>
+    <string name="refresh_account_title">ანგარიშის წაშლა?</string>
+    <string name="refresh_account_message">ეს წაშლის ყველა შეტყობინებას და შექმნის ახალ ვინაობას. ეს ვერ გაუქმდება.</string>
+    <string name="refresh_account_confirm">წაშლა</string>
+
+    <!-- ფაილის დამთვალიერებელი დიალოგი -->
+    <string name="file_viewer_title">📎 ფაილი მიღებულია</string>
+    <string name="file_viewer_name">📄 %1$s</string>
+    <string name="file_viewer_size">📏 ზომა: %1$s</string>
+    <string name="file_viewer_type">🏷️ ტიპი: %1$s</string>
+    <string name="file_viewer_open_save">📂 გახსნა / შენახვა</string>
+    <string name="close_with_emoji">❌ დახურვა</string>
+    <string name="pick_image">სურათის არჩევა</string>
+    <string name="cd_save_current_image">მიმდინარე სურათის შენახვა</string>
+    <string name="cd_close">დახურვა</string>
+    <string name="toast_image_saved">სურათი შენახულია "ჩამოტვირთვებში"</string>
+    <string name="toast_failed_to_save_image">სურათის შენახვა ვერ მოხერხდა</string>
+    <string name="cd_image_index_of">სურათი %1$d %2$d-დან</string>
+    <string name="cd_pick_file">ფაილის არჩევა</string>
+
+    <!-- შიტი "შესახებ" -->
+    <string name="about_tagline">თვალთვალისგან თავისუფალი შეტყობინებები ყველა გარემოებაში, ბოლოდან-ბოლომდე დაშიფრული</string>
+    <string name="about_offline_mesh_title">ოფლაინ Bluetooth-ჩათი</string>
+    <string name="about_offline_mesh_desc">ესაუბრეთ პირდაპირ Bluetooth LE-ის საშუალებით ინტერნეტის ან სერვერების გარეშე. შეტყობინებები გადაიგზავნება ახლომდებარე მოწყობილობებზე, რათა გაიზარდოს დაფარვა.</string>
+    <string name="about_online_geohash_title">ონლაინ geohash არხები</string>
+    <string name="about_online_geohash_desc">დაუკავშირდით ახლომდებარე ხალხს geohash-ზე დაფუძნებული არხებით. გააფართოვეთ mesh საჯარო ინტერნეტ რილეებით.</string>
+    <string name="about_e2e_title">ბოლოდან-ბოლომდე დაშიფვრა</string>
+    <string name="about_e2e_desc">პირადი შეტყობინებები დაშიფრულია. არხის შეტყობინებები საჯაროა.</string>
+    <string name="about_appearance">გარეგნობა</string>
+    <string name="about_system">სისტემა</string>
+    <string name="about_light">ღია</string>
+    <string name="about_dark">მუქი</string>
+    <string name="about_pow">Proof of Work</string>
+    <string name="about_pow_off">PoW გამორთულია</string>
+    <string name="about_pow_on">PoW ჩართულია</string>
+    <string name="about_pow_tip">დაამატეთ Proof of Work geohash შეტყობინებებს სპამის შესამცირებლად.</string>
+    <string name="about_pow_difficulty">სირთულე: %1$d ბიტი (~%2$s)</string>
+    <string name="about_pow_difficulty_attempts">სირთულე %1$d მოითხოვს ~%2$s ჰეშის მცდელობას</string>
+    <string name="about_pow_desc_none">Proof of Work საჭირო არ არის</string>
+    <string name="about_pow_desc_very_low">ძალიან დაბალი – მინიმალური სპამის დაცვა</string>
+    <string name="about_pow_desc_low">დაბალი – საბაზისო დაცვა</string>
+    <string name="about_pow_desc_medium">საშუალო – კარგი დაცვა</string>
+    <string name="about_pow_desc_high">მაღალი – ძლიერი დაცვა</string>
+    <string name="about_pow_desc_very_high">ძალიან მაღალი – შეიძლება გამოიწვიოს დაყოვნება</string>
+    <string name="about_pow_desc_extreme">ექსტრემალური – საჭიროებს დიდ გამოთვლით რესურსს</string>
+    <string name="about_network">ქსელი</string>
+    <string name="about_tor_off">Tor გამორთულია</string>
+    <string name="about_tor_on">Tor ჩართულია</string>
+    <string name="about_tor_route">ინტერნეტ ტრაფიკის Tor-ით მარშრუტიზაცია კონფიდენციალურობისთვის.</string>
+    <string name="about_tor_status">Tor სტატუსი: %1$s, ჩატვირთვა %2$d%%</string>
+    <string name="about_last">ბოლო: %1$s</string>
+    <string name="about_emergency_title">სასწრაფო მონაცემების წაშლა</string>
+    <string name="about_emergency_tip">რჩევა: დააჭირეთ აპის სათაურს სამჯერ ყველა შენახული მონაცემის – შეტყობინებების, გასაღებებისა და პარამეტრების – წასაშლელად.</string>
+    <string name="about_debug_settings">დებაგ პარამეტრები</string>
+    <string name="about_footer">ღია კოდი • კონფიდენციალობა პირველია • დეცენტრალიზებული</string>
+    <string name="close_plain">დახურვა</string>
+    <string name="cd_privacy_protected">კონფიდენციალობა დაცულია</string>
+    <string name="cancel_lower">გაუქმება</string>
+
+    <!-- ზოგადი კონტენტის აღწერები -->
+    <string name="cd_warning">გაფრთხილება</string>
+    <string name="cd_location_services">მდებარეობის სერვისები</string>
+    <string name="cd_privacy">კონფიდენციალობა</string>
+    <string name="cd_error">შეცდომა</string>
+    <string name="cd_battery_optimization">ბატარეის ოპტიმიზაცია</string>
+    <string name="cd_benefits">სარგებელი</string>
+    <string name="cd_checking_battery_optimization">ბატარეის ოპტიმიზაციის შემოწმება</string>
+    <string name="cd_not_supported_battery_optimization">ბატარეის ოპტიმიზაცია მხარდაჭერილი არ არის</string>
+    <string name="cd_bluetooth">Bluetooth</string>
+    <string name="cd_unread_message">წაუკითხავი შეტყობინება</string>
+    <string name="cd_open_map">რუკის გახსნა</string>
+    <string name="cd_remove_bookmark">სანიშნეს წაშლა</string>
+    <string name="cd_teleport">ტელეპორტი</string>
+    <string name="cd_selected">მონიშნული</string>
+    <string name="notification_action_quit_bitchat">გასვლა</string>
+    <string name="about_background_title">ფონში მუშაობა</string>
+    <string name="about_background_desc">mesh აქტიური რჩება აპის დახურვისას (ფონური სერვისი)</string>
+    <string name="about_p2p_subtitle">პირდაპირი P2P კავშირები</string>
+    <string name="about_nostr_subtitle">ინტერნეტ რილე შეტყობინებები</string>
+    <string name="about_ble_subtitle">Bluetooth სიახლოვის mesh ქსელი</string>
+    <string name="ble_setting_off_subtitle">Bluetooth გამორთულია — ჩართეთ BLE Mesh-ის გამოსაყენებლად</string>
+    <string name="ble_banner_off">Bluetooth გამორთულია — BLE Mesh მიუწვდომელია</string>
+    <string name="ble_setting_dialog_title">Bluetooth საჭიროა</string>
+    <string name="ble_setting_dialog_msg">Bluetooth გამორთულია. ჩართეთ BLE Mesh-ის გამოსაყენებლად.</string>
+    <string name="ble_setting_dialog_btn">Bluetooth პარამეტრების გახსნა</string>
+    <string name="ble_banner_enable_btn">ჩართვა</string>
+    <string name="ble_banner_mesh_disabled">BLE Mesh გამორთულია</string>
+
+    <!-- ქსელის კავშირი -->
+    <string name="network_setting_off_subtitle">ინტერნეტი არ არის — შეამოწმეთ კავშირი</string>
+    <string name="network_not_available">ინტერნეტ კავშირი არ არის</string>
+    <string name="network_transports_off_hint">ჩართეთ P2P ან Nostr</string>
+    <string name="network_no_internet">დაკავშირებულია, მაგრამ ინტერნეტი არ არის</string>
+    <string name="network_setting_dialog_title">ინტერნეტი საჭიროა</string>
+    <string name="network_setting_dialog_msg">ინტერნეტ კავშირი საჭიროა P2P და Nostr ტრანსპორტებისთვის.</string>
+    <string name="network_setting_dialog_btn">კავშირის პარამეტრები</string>
+    <string name="network_banner_disconnected">ინტერნეტი არ არის — შეამოწმეთ კავშირის პარამეტრები</string>
+    <string name="network_banner_airplane_mode">თვითმფრინავის რეჟიმი ჩართულია</string>
+    <string name="network_airplane_mode">თვითმფრინავის რეჟიმი ჩართულია</string>
+    <string name="network_banner_no_internet">დაკავშირებულია, მაგრამ ინტერნეტი არ არის — შეამოწმეთ კავშირი</string>
+    <string name="network_banner_transports_disabled">ქსელის ტრანსპორტი არ არის — ჩართეთ P2P ან Nostr პარამეტრებში</string>
+    <string name="network_banner_settings_btn">პარამეტრები</string>
+
+    <string name="cd_leave_channel">არხიდან გამოსვლა</string>
+    <string name="cd_reachable_via_nostr">მისაწვდომია Nostr-ით</string>
+    <string name="cd_offline_favorite">რჩეული (ოფლაინ)</string>
+    <string name="cd_decrease_precision">სიზუსტის შემცირება</string>
+    <string name="cd_increase_precision">სიზუსტის გაზრდა</string>
+    <string name="cd_select_geohash">აირჩიეთ geohash</string>
+    <string name="cd_scroll_to_bottom">ქვემოთ გადახვევა</string>
+    <string name="cd_file">ფაილი</string>
+    <string name="cd_image">სურათი</string>
+    <string name="cd_cancel">გაუქმება</string>
+    <string name="cd_link">ბმული</string>
+    <string name="cd_record_voice">ხმოვანი ჩანაწერის ჩაწერა</string>
+    <string name="cd_pick_media">მედიის არჩევა</string>
+    <string name="cd_mining_pow">PoW მაინინგი</string>
+    <string name="cd_pow_enabled">PoW ჩართულია</string>
+    <string name="cd_proof_of_work">Proof of Work</string>
+    <string name="pow_mining_ellipsis">მაინინგი…</string>
+    <string name="pow_label_format">pow: %1$dbit</string>
+    <string name="cd_offline_mesh_chat">ოფლაინ mesh-ჩათი</string>
+    <string name="cd_online_geohash_channels">ონლაინ geohash არხები</string>
+    <string name="cd_end_to_end_encryption">ბოლოდან-ბოლომდე დაშიფვრა</string>
+    <string name="location_bluetooth_subtitle">#bluetooth • %1$s</string>
+
+    <!-- სურათები &amp; ფაილები -->
+    <string name="image_page_of">სურათი %1$d %2$d-დან</string>
+    <string name="image_unavailable">სურათი მიუწვდომელია</string>
+    <string name="image_saved_to_downloads">სურათი შენახულია "ჩამოტვირთვებში"</string>
+    <string name="image_save_failed">სურათის შენახვა ვერ მოხერხდა</string>
+    <string name="pick_file">ფაილის არჩევა</string>
+    <string name="file_unavailable">[ფაილი მიუწვდომელია]</string>
+    <string name="unknown">უცნობი</string>
+
+    <!-- მომხმარებლის ქმედებების შიტი -->
+    <string name="choose_action_message_or_user">აირჩიეთ ქმედება ამ შეტყობინებისთვის ან მომხმარებლისთვის</string>
+    <string name="choose_action_user">აირჩიეთ ქმედება ამ მომხმარებლისთვის</string>
+    <string name="action_copy_message_title">შეტყობინების კოპირება</string>
+    <string name="action_copy_message_subtitle">ამ შეტყობინების კოპირება ბუფერში</string>
+    <string name="action_slap_title">%1$s-ის ხელით დარტყმა</string>
+    <string name="action_slap_subtitle">გაგზავნეთ ხუმრობით ხელით დარტყმა</string>
+    <string name="action_hug_title">%1$s-ის ჩახუტება</string>
+    <string name="action_hug_subtitle">გაგზავნეთ მეგობრული ჩახუტება</string>
+    <string name="action_block_title">%1$s-ის დაბლოკვა</string>
+    <string name="action_block_subtitle">ამ მომხმარებლის ყველა შეტყობინების დაბლოკვა</string>
+
+    <!-- geohash არხების შიტი -->
+    <string name="location_channels_title">#მდებარეობის არხები</string>
+    <string name="location_channels_desc">ესაუბრეთ თქვენს ახლოს მყოფ ადამიანებს geohash არხებით. იზიარება მხოლოდ მიახლოებითი geohash, არასოდეს ზუსტი GPS მონაცემები. თქვენი კონფიდენციალურობის დასაცავად ნუ გადაიღებთ სკრინშოტებს და ნუ გააზიარებთ ამ ეკრანს.</string>
+    <string name="grant_location_permission">მდებარეობის ნებართვის მინიჭება</string>
+    <string name="location_permission_denied">მდებარეობის ნებართვა უარყოფილია. ჩართეთ პარამეტრებში მდებარეობის არხების გამოსაყენებლად.</string>
+    <string name="open_settings">პარამეტრების გახსნა</string>
+    <string name="location_permission_granted">\u2713 მდებარეობის ნებართვა მინიჭებულია</string>
+    <string name="checking_permissions">ნებართვების შემოწმება…</string>
+    <string name="finding_nearby_channels">ახლომდებარე არხების ძიება…</string>
+    <string name="bookmarked">სანიშნეები</string>
+    <string name="geohash_placeholder">Geohash</string>
+    <string name="invalid_geohash">არასწორი geohash</string>
+    <string name="teleport">ტელეპორტი</string>
+    <string name="disable_location_services">მდებარეობის სერვისების გამორთვა</string>
+    <string name="enable_location_services">მდებარეობის სერვისების ჩართვა</string>
+    <string name="mesh_label">bluetooth</string>
+    <string name="location_level_block">კვარტალი</string>
+    <string name="location_level_neighborhood">ახლომდებარე რაიონი</string>
+    <string name="location_level_city">ქალაქი</string>
+    <string name="location_level_province">პროვინცია</string>
+    <string name="location_level_region">რეგიონი</string>
+
+    <!-- მდებარეობის შენიშვნების შიტი -->
+    <plurals name="location_notes_title">
+        <item quantity="one">#%1$s ± 1 • %2$d შენიშვნა</item>
+        <item quantity="other">#%1$s ± 1 • %2$d შენიშვნა</item>
+    </plurals>
+    <string name="location_notes_description">დაამატეთ მოკლე მუდმივი შენიშვნები ამ ადგილზე სხვა სტუმრებისთვის.</string>
+    <string name="location_notes_relays_unavailable">გეო-რილეები მიუწვდომელია; შენიშვნები შეჩერებულია</string>
+    <string name="location_notes_no_relays_title">გეო-რილეები არ არის ახლოს</string>
+    <string name="location_notes_no_relays_desc">შენიშვნები გეო-რილეებს ეყრდნობა. შეამოწმეთ კავშირი და სცადეთ თავიდან.</string>
+    <string name="loading_location_notes">შენიშვნების ჩატვირთვა…</string>
+    <string name="location_notes_empty_title">შენიშვნები არ არის</string>
+    <string name="location_notes_empty_desc">იყავით პირველი, ვინც შენიშვნას დაამატებს ამ ადგილზე.</string>
+    <string name="dismiss">დახურვა</string>
+    <string name="location_notes_input_placeholder">დაწერეთ შენიშვნა ამ ადგილისთვის</string>
+
+    <!-- დებაგი / დიაგნოსტიკა -->
+    <string name="debug_tools">დებაგის ხელსაწყოები</string>
+    <string name="debug_tools_desc">დეველოპერის ხელსაწყოები დიაგნოსტიკისა და კონტროლისთვის</string>
+    <string name="debug_verbose_logging">დეტალური ლოგირება</string>
+    <string name="debug_verbose_hint">იწერება პირების ჩართვა/გამორთვა, კავშირის მიმართულება, პაკეტების გადაცემა და რილეები</string>
+    <string name="debug_bluetooth_roles">Bluetooth როლები</string>
+    <string name="debug_gatt_server">GATT სერვერი</string>
+    <string name="debug_connections_fmt">კავშირები: %1$d / %2$d</string>
+    <string name="debug_max_server">მაქს. სერვერი</string>
+    <string name="debug_gatt_client">GATT კლიენტი</string>
+    <string name="debug_max_client">მაქს. კლიენტი</string>
+    <string name="debug_overall_connections_fmt">კავშირები: %1$d / %2$d</string>
+    <string name="debug_max_overall">მაქს. სულ</string>
+    <string name="debug_packet_relay">პაკეტების რილე</string>
+    <string name="debug_since_start_fmt">გაშვებიდან: %1$d</string>
+    <string name="debug_roles_hint">როლების გადართვა და გამორთვისას ყველა კავშირის დახურვა</string>
+    <string name="debug_sync_settings">სინქრონიზაციის პარამეტრები</string>
+    <string name="debug_max_packets_per_sync_fmt">მაქს. პაკეტი სინქრონიზაციაზე: %1$d</string>
+    <string name="debug_max_gcs_filter_size_fmt">მაქს. GCS ფილტრის ზომა: %1$d ბაიტი (128–1024)</string>
+    <string name="debug_target_fpr_fmt">სამიზნე FPR: %1$.2f%%</string>
+    <string name="debug_connected_devices">დაკავშირებული მოწყობილობები</string>
+    <string name="debug_our_device_id_fmt">ჩვენი მოწყობილობის ID: %1$s</string>
+    <string name="debug_none">არცერთი</string>
+    <string name="debug_disconnect">გათიშვა</string>
+    <string name="debug_recent_scan_results">ბოლო სკანირებული მოწყობილობები</string>
+    <string name="debug_connect">დაკავშირება</string>
+    <string name="debug_debug_console">დებაგ კონსოლი</string>
+    <string name="debug_clear">გასუფთავება</string>
+    <string name="debug_relays_window_fmt">ბოლო 10 წმ: %1$d • 1 წთ: %2$d • 15 წთ: %3$d</string>
+    <string name="debug_derived_p_fmt">გამოყვანილი P: %1$s • სავარაუდო მაქს. ელემენტები: %2$s</string>
+    <string name="debug_direct_suffix"> • პირდაპირ</string>
+    <string name="debug_rssi_fmt">RSSI: %1$s</string>
+    <string name="debug_question_mark">?</string>
+    <string name="debug_role_server">სერვერის როლში (ჩვენ ვმასპინძლობთ)</string>
+    <string name="debug_role_client">კლიენტის როლში (ჩვენ ვუკავშირდებით)</string>
+
+    <!-- ვერიფიკაცია -->
+    <string name="verify_title">ვერიფიკაცია</string>
+    <string name="verify_my_qr_title">სკანირებით დაამოწმე მე</string>
+    <string name="verify_scan_prompt_friend">სკანირეთ სხვის QR კოდი</string>
+    <string name="verify_scan_someone">სკანირეთ სხვის QR კოდი</string>
+    <string name="verify_show_my_qr">ჩემი QR-ის ჩვენება</string>
+    <string name="verify_remove">ვერიფიკაციის წაშლა</string>
+    <string name="verify_qr_unavailable">QR მიუწვდომელია</string>
+    <string name="verify_camera_permission">კამერის ნებართვა საჭიროა QR კოდების სკანირებისთვის</string>
+    <string name="verify_request_camera">კამერის ჩართვა</string>
+    <string name="verify_paste_label">ჩასვით ვერიფიკაციის ბმული</string>
+    <string name="verify_validate">დამოწმება</string>
+    <string name="verify_scanned">ვერიფიკაცია მოთხოვნილია</string>
+    <string name="security_verification_title">უსაფრთხოების ვერიფიკაცია</string>
+    <string name="fingerprint_their">მათი თითის ანაბეჭდი</string>
+    <string name="fingerprint_yours">თქვენი თითის ანაბეჭდი</string>
+    <string name="fingerprint_pending">ხელის ჩამორთმევა მოლოდინში</string>
+    <string name="fingerprint_no_peer">გახსენით პირადი ჩათი თითის ანაბეჭდების სანახავად</string>
+    <string name="fingerprint_status_verified">დაშიფრული &amp; დამოწმებული</string>
+    <string name="fingerprint_status_encrypted">დაშიფრული</string>
+    <string name="fingerprint_status_handshaking">ხელის ჩამორთმევა მიმდინარეობს</string>
+    <string name="fingerprint_status_failed">ხელის ჩამორთმევა წარუმატებელია</string>
+    <string name="fingerprint_status_uninitialized">არ არის დაშიფრული</string>
+    <string name="fingerprint_verified_label">დამოწმებულია</string>
+    <string name="fingerprint_verified_message">თქვენ დაადასტურეთ ამ ადამიანის ვინაობა.</string>
+    <string name="fingerprint_not_verified_label">არ არის დამოწმებული</string>
+    <string name="fingerprint_not_verified_message_fmt">შეადარეთ ეს თითის ანაბეჭდები %1$s-ს უსაფრთხო არხით.</string>
+    <string name="fingerprint_mark_verified">მონიშვნა დამოწმებულად</string>
+    <string name="fingerprint_start_handshake">ხელის ჩამორთმევის დაწყება</string>
+    <string name="fingerprint_copy">კოპირება</string>
+    <string name="verify_mutual_match_title">ორმხრივი ვერიფიკაცია</string>
+    <string name="verify_mutual_match_body">თქვენ და %1$s ერთმანეთი დაამოწმეთ</string>
+    <string name="verify_mutual_system_message">ორმხრივი ვერიფიკაცია %1$s-თან</string>
+    <string name="verify_success_title">დამოწმებულია</string>
+    <string name="verify_success_body">თქვენ დაამოწმეთ %1$s</string>
+    <string name="verify_success_system_message">დამოწმებულია %1$s</string>
+
+    <!-- ონბორდინგის ეკრანები -->
+    <string name="location_services_required">მდებარეობის სერვისებია საჭირო</string>
+    <string name="privacy_first">კონფიდენციალობა პირველია</string>
+    <string name="location_explanation">Zemzeme არ აკონტროლებს თქვენს მდებარეობას.\n\nმდებარეობის სერვისები საჭიროა Bluetooth სკანირებისა და geohash ჩათის ფუნქციისთვის.</string>
+    <string name="location_needs_for">Zemzeme-ს სჭირდება მდებარეობის სერვისები შემდეგისთვის:</string>
+    <string name="location_needs_bullets">• Bluetooth მოწყობილობების სკანირება\n• mesh ქსელში ახლომდებარე მომხმარებლების აღმოჩენა\n• geohash ჩათის ფუნქცია\n• არც ტრეკინგი, არც მდებარეობის შეგროვება</string>
+    <string name="background_location_required_title">ფონური მდებარეობა რეკომენდებულია</string>
+    <string name="background_location_required_subtitle">არასავალდებულო, აუმჯობესებს mesh-ის სანდოობას</string>
+    <string name="background_location_explanation">Android რეკომენდებას უწევს ფონურ მდებარეობას, რათა Zemzeme-მ შეძლოს ახლომდებარე მოწყობილობების სკანირება აპის დახურვისას. ეს mesh-ს აქტიურს ინარჩუნებს გადატვირთვის შემდეგ.</string>
+    <string name="background_location_settings_tip">პარამეტრების გახსნისას აირჩიეთ \"ყოველთვის ნებადართულია\".</string>
+    <string name="background_location_needs_for">Zemzeme იყენებს ფონურ მდებარეობას შემდეგისთვის:</string>
+    <string name="background_location_needs_bullets">- ახლომდებარე მოწყობილობების სკანირება აპის დახურვისას\n- გადატვირთვის შემდეგ ხელახლა დაკავშირება\n- mesh-ის ფონში მუშაობის შენარჩუნება</string>
+    <string name="background_location_privacy_note">ჩვენ არასოდეს ვაგროვებთ ან ვინახავთ თქვენს მდებარეობას. თქვენი კონფიდენციალობა დაცულია.</string>
+    <string name="grant_background_location">ფონური მდებარეობის ნებართვა</string>
+    <string name="skip_background_location">გაგრძელება ფონური მდებარეობის გარეშე</string>
+    <string name="open_location_settings">მდებარეობის პარამეტრების გახსნა</string>
+    <string name="check_again">თავიდან შემოწმება</string>
+    <string name="location_services_unavailable">მდებარეობის სერვისები მიუწვდომელია</string>
+    <string name="location_unavailable_explanation">ამ მოწყობილობაზე მდებარეობის სერვისები მიუწვდომელია. ეს უჩვეულოა, რადგან Android მოწყობილობებზე ისინი სტანდარტულია.\n\nBluetooth სკანირებისთვის (Android-ის მოთხოვნა) საჭიროა მდებარეობის სერვისები. ამის გარეშე აპს არ შეუძლია ახლომდებარე მომხმარებლების აღმოჩენა.</string>
+    <string name="checking_location_services">მდებარეობის სერვისების შემოწმება…</string>
+    <string name="bluetooth_required">Bluetooth საჭიროა</string>
+    <string name="bluetooth_needs_for">Zemzeme-ს სჭირდება Bluetooth შემდეგისთვის:</string>
+    <string name="bluetooth_needs_bullets">• ახლომდებარე მომხმარებლების აღმოჩენა\n• mesh ქსელის კავშირების შექმნა\n• შეტყობინებების გაგზავნა/მიღება\n• მუშაობა ინტერნეტის ან სერვერების გარეშე</string>
+    <string name="enable_bluetooth">Bluetooth-ის ჩართვა</string>
+    <string name="bluetooth_not_supported">Bluetooth არ მხარდაჭერილია</string>
+    <string name="bluetooth_unsupported_explanation">ამ მოწყობილობას არ უჭერს მხარს Bluetooth Low Energy (BLE), რომელიც საჭიროა Zemzeme-ისთვის.\n\nBLE საჭიროა mesh ქსელების შესაქმნელად და ახლომდებარე მოწყობილობებთან ინტერნეტის გარეშე კომუნიკაციისთვის.</string>
+    <string name="checking_bluetooth_status">Bluetooth სტატუსის შემოწმება…</string>
+    <string name="battery_optimization_detected_title">ბატარეის ოპტიმიზაცია აღმოჩნდა</string>
+    <string name="battery_optimization_enabled_title">ბატარეის ოპტიმიზაცია ჩართულია</string>
+    <string name="battery_optimization_explanation_short">mesh კავშირების შესანარჩუნებლად Zemzeme უნდა იმუშავოს ფონში. ბატარეის ოპტიმიზაციამ შეიძლება დაარღვიოს ეს კავშირები.</string>
+    <string name="benefits_of_disabling">გამორთვის სარგებელი</string>
+    <string name="battery_benefits_short">• სანდო მიწოდება\n• mesh კავშირის შენარჩუნება\n• გათიშვების თავიდან აცილება</string>
+    <string name="disable_battery_optimization">ბატარეის ოპტიმიზაციის გამორთვა</string>
+    <string name="battery_optimization_disabled_title">ბატარეის ოპტიმიზაცია გამორთულია</string>
+    <string name="continue_btn">გაგრძელება</string>
+    <string name="continue_button">გაგრძელება</string>
+    <string name="initializing_mesh_network">mesh ქსელის ინიციალიზაცია</string>
+    <string name="setting_up_bluetooth">Bluetooth mesh ქსელის მოწყობა…</string>
+    <string name="should_take_seconds">ეს რამდენიმე წამს უნდა გაგრძელდეს</string>
+    <string name="setup_not_complete">მოწყობა დაუსრულებელია</string>
+    <string name="try_again">კვლავ ცდა</string>
+    <string name="privacy_protected">თქვენი კონფიდენციალობა დაცულია</string>
+    <string name="privacy_bullets">• ტრეკინგი ან მონაცემთა შეგროვება არა\n• Bluetooth mesh-ჩათები სრულად ოფლაინ\n• geohash ჩათი იყენებს ინტერნეტს</string>
+    <string name="permissions_header">ნებართვები</string>
+    <string name="grant_permissions">ნებართვების მინიჭება</string>
+    <string name="perm_required_label">სავალდებულო</string>
+    <string name="perm_recommended_label">რეკომენდებული</string>
+    <string name="perm_info_dialog_ok">კარგი</string>
+    <string name="perm_benefit_nearby_devices">Bluetooth ნებართვები საშუალებას აძლევს Zemzeme-ს აღმოაჩინოს და დაუკავშირდეს ახლომდებარე მომხმარებლებს mesh ქსელით. ეს უზრუნველყოფს სრულად ოფლაინ, peer-to-peer შეტყობინებებს ინტერნეტის გარეშე.</string>
+    <string name="perm_benefit_location">Android მოითხოვს მდებარეობის ნებართვას ახლომდებარე Bluetooth მოწყობილობების სკანირებისთვის. Zemzeme არ აკონტროლებს და არ ინახავს თქვენს მდებარეობას.</string>
+    <string name="perm_benefit_background_location">ფონური მდებარეობა საშუალებას აძლევს Zemzeme-ს აღმოაჩინოს ახლომდებარე მომხმარებლები აპის ფონში ყოფნისასაც. ამის გარეშე mesh ქსელი მუშაობს მხოლოდ აპის ეკრანზე გახსნისას.</string>
+    <string name="perm_benefit_notifications">შეტყობინებები გაცნობებთ, როცა პირადი შეტყობინება მიიღებთ ან ახალი აქტივობაა თქვენს არხებში, აპის ფონში ყოფნისასაც კი.</string>
+    <string name="perm_benefit_battery_optimization">ბატარეის ოპტიმიზაციის გამორთვა უზრუნველყოფს Zemzeme-ს სანდო ფონურ მუშაობას და mesh ქსელის კავშირების შენარჩუნებას. ამის გარეშე Android-მა შეიძლება გათიშოს აპი ბატარეის დაზოგვის მიზნით, რაც mesh-იდან გაგათიშავთ.</string>
+    <string name="location_tracking_warning">Zemzeme არ აკონტროლებს თქვენს მდებარეობას</string>
+    <string name="geohash_people_header">ხალხი</string>
+    <string name="nobody_around">არავინ არის ახლოს…</string>
+    <string name="you_suffix"> (თქვენ)</string>
+    <string name="pan_zoom_instruction">პანორამირება/ზუმი geohash-ის ასარჩევად</string>
+    <string name="select">არჩევა</string>
+    <string name="type_a_message_placeholder">შეიყვანეთ შეტყობინება…</string>
+    <string name="mention">ხსენება</string>
+    <string name="pow_time_estimate">(~%1$s)</string>
+    <string name="version_prefix">v%1$s</string>
+    <string name="image_star">image/*</string>
+    <string name="media_type_image">სურათი</string>
+    <string name="media_type_file">ფაილი</string>
+
+    <!-- შეტყობინებების ტექსტის დამხმარეები -->
+    <string name="notification_sent_image">📷 გაგზავნა სურათი</string>
+    <string name="notification_sent_voice">🎤 გაგზავნა ხმოვანი შენიშვნა</string>
+    <string name="notification_sent_file">📎 გაგზავნა ფაილი</string>
+
+    <!-- ხმოვანი დამკვრელის ხელმისაწვდომობა -->
+    <string name="cd_play_voice">დაკვრა</string>
+    <string name="cd_pause_voice">პაუზა</string>
+
+    <!-- ნებართვების აღწერები -->
+    <string name="perm_nearby_devices_desc">საჭიროა Zemzeme მომხმარებლების Bluetooth-ით აღმოსაჩენად</string>
+    <string name="perm_nearby_devices_system">დაუშვით Zemzeme-ს დაუკავშირდეს ახლომდებარე მოწყობილობებს</string>
+    <string name="perm_location_desc">Android მოითხოვს ახლომდებარე Zemzeme მომხმარებლების Bluetooth-ით აღმოსაჩენად</string>
+    <string name="perm_location_system">ეს საჭიროა ახლომდებარე მოწყობილობების სკანირებისთვის</string>
+    <string name="perm_background_location_desc">რეკომენდებულია ახლომდებარე მოწყობილობების სკანირებისთვის აპის ფონში ყოფნისას</string>
+    <string name="perm_background_location_system">ფონური მდებარეობის წვდომის ნებართვა</string>
+    <string name="perm_notifications_desc">საინფორმაციო შეტყობინებების მიღება პირადი მესიჯებისას</string>
+    <string name="perm_notifications_system">დაუშვით Zemzeme-ს გამოგიგზავნოთ შეტყობინებები</string>
+    <string name="perm_battery_desc">გამორთეთ ბატარეის ოპტიმიზაცია, რომ Zemzeme სანდოდ იმუშაოს ფონში და შეინარჩუნოს mesh-კავშირები</string>
+    <string name="perm_battery_system">დაუშვით Zemzeme-ს იმუშაოს ბატარეის შეზღუდვების გარეშე</string>
+
+    <!-- ნებართვების ტიპები -->
+    <string name="perm_type_nearby_devices">ახლომდებარე მოწყობილობები</string>
+    <string name="perm_type_precise_location">ზუსტი მდებარეობა</string>
+    <string name="perm_type_background_location">ფონური მდებარეობა</string>
+    <string name="perm_type_microphone">მიკროფონი</string>
+    <string name="perm_type_notifications">შეტყობინებები</string>
+    <string name="perm_type_battery_optimization">ბატარეის ოპტიმიზაცია</string>
+    <string name="perm_type_other">სხვა</string>
+
+    <!-- აპის დაბლოკვა -->
+    <string name="app_lock_title">აპის დაბლოკვა</string>
+    <string name="app_lock_subtitle_off">გამორთული</string>
+    <string name="app_lock_subtitle_on">ბიომეტრია + PIN</string>
+    <string name="app_lock_security_section">უსაფრთხოება</string>
+    <string name="app_lock_enter_pin">შეიყვანეთ PIN</string>
+    <string name="app_lock_set_pin">დააყენეთ PIN</string>
+    <string name="app_lock_confirm_pin">დაადასტურეთ PIN</string>
+    <string name="app_lock_biometric_title">Zemzeme-ს განბლოკვა</string>
+    <string name="app_lock_biometric_subtitle">შეეხეთ სენსორს განბლოკვისთვის</string>
+    <string name="app_lock_use_pin">PIN-ის გამოყენება</string>
+    <string name="app_lock_wrong_pin">არასწორი PIN</string>
+    <string name="app_lock_too_many_attempts">%1$d მცდელობა დარჩა</string>
+    <string name="app_lock_cooldown">სცადეთ %1$d წამში</string>
+    <string name="app_lock_pin_mismatch">PIN-ები არ ემთხვევა</string>
+    <string name="app_lock_pin_min_length">PIN უნდა იყოს 4–6 ციფრი</string>
+    <string name="app_lock_disable_title">აპის დაბლოკვის გამორთვა</string>
+    <string name="app_lock_disable_msg">დაადასტურეთ თქვენი ვინაობა აპის დაბლოკვის გამოსართავად</string>
+    <string name="app_lock_protect_title">დაიცავით თქვენი ჩათები</string>
+    <string name="app_lock_protect_desc">6-ციფრიანი PIN ბლოკავს აპს. გამოიყენეთ ბიომეტრია სწრაფი წვდომისთვის.</string>
+    <string name="app_lock_enable">აპის დაბლოკვის ჩართვა</string>
+    <string name="app_lock_not_now">ახლა არა</string>
+
+    <!-- პაროლის დიალოგი -->
+    <string name="pwd_prompt_title">შეიყვანეთ არხის პაროლი</string>
+    <string name="pwd_prompt_message">არხი %1$s დაცულია პაროლით. შეიყვანეთ პაროლი შესაერთებლად.</string>
+    <string name="pwd_label">პაროლი</string>
+    <string name="join">შეუერთდი</string>
+    <string name="cancel">გაუქმება</string>
+    <string name="tor_not_available_in_this_build">Tor ხელმისაწვდომი არ არის ამ build-ში</string>
+
+    <!-- მრავლობითი რიცხვები -->
+    <plurals name="notification_and_more">
+        <item quantity="one">და კიდევ %d</item>
+        <item quantity="other">და კიდევ %d</item>
+    </plurals>
+
+    <plurals name="people_count">
+        <item quantity="one">1 ადამიანი</item>
+        <item quantity="other">%d ადამიანი</item>
+    </plurals>
+
+    <!-- Mesh შესავალი -->
+    <string name="mesh_intro_title">Bluetooth</string>
+    <string name="mesh_intro_body">კომუნიკაცია ამ ჯგუფში მთლიანად Bluetooth-ზეა დაფუძნებული. ახლომდებარე მოწყობილობები გადაგზავნიან შეტყობინებებს ადამიანებს შორის — ინტერნეტ კავშირი არ არის საჭირო.</string>
+    <string name="mesh_intro_close">დახურვა</string>
+    <string name="mesh_intro_dont_show">აღარ მაჩვენო</string>
+
+    <!-- აპის გაზიარება -->
+    <string name="about_share_app_header">აპის გაზიარება</string>
+    <string name="about_share_system_title">აპის გაზიარება</string>
+    <string name="about_share_system_desc">APK-ის გაგზავნა Bluetooth-ით, Nearby Share-ით ან Wi-Fi Direct-ით (%1$s)</string>
+    <string name="about_share_failed">APK-ის გაზიარებისთვის მომზადება ვერ მოხერხდა</string>
+    <string name="about_share_chooser_title">%1$s APK-ის გაზიარება</string>
+    <string name="about_share_helper_text">გამოიყენეთ Google Quick Share გასაგზავნად (ჩართეთ ტელეფონის პარამეტრებში). გადაცემის შემდეგ APK იქნება მიმღები მოწყობილობის ჩამოტვირთვების საქაღალდეში.</string>
+
+    <!-- ხატულის შეცვლა -->
+    <string name="icon_switch_title">აპის ხატულისა &amp; სახელის განახლება</string>
+    <string name="icon_switch_section">მორგება</string>
+    <string name="icon_switch_subtitle">აპის ხატულისა და სახელის შეცვლა ლაუნჩერზე</string>
+    <string name="icon_switch_confirm">შეიცვალოს აპის ხატულა და სახელი ამით?</string>
+    <string name="icon_switch_apply">გამოყენება</string>
+    <string name="icon_switch_toast">აპის ხატულა და სახელი შეიცვალა!</string>
+
+    <!-- დინამიური აპის სახელები (100 ვარიანტი) -->
+    <string name="app_name_1">Zemzeme</string>
+    <string name="app_name_2">NetChat</string>
+    <string name="app_name_3">TalkBox</string>
+    <string name="app_name_4">MsgHub</string>
+    <string name="app_name_5">BuzzTalk</string>
+    <string name="app_name_6">PingMe</string>
+    <string name="app_name_7">ChatNow</string>
+    <string name="app_name_8">QuickMsg</string>
+    <string name="app_name_9">TalkLine</string>
+    <string name="app_name_10">MsgWave</string>
+    <string name="app_name_11">ChatZone</string>
+    <string name="app_name_12">HiTalk</string>
+    <string name="app_name_13">TxtFlow</string>
+    <string name="app_name_14">ConnectMe</string>
+    <string name="app_name_15">ChatBolt</string>
+    <string name="app_name_16">MsgPulse</string>
+    <string name="app_name_17">TalkSnap</string>
+    <string name="app_name_18">ChatLink</string>
+    <string name="app_name_19">FlowChat</string>
+    <string name="app_name_20">PingTalk</string>
+    <string name="app_name_21">MsgDash</string>
+    <string name="app_name_22">ChatVibe</string>
+    <string name="app_name_23">TalkSync</string>
+    <string name="app_name_24">MsgNest</string>
+    <string name="app_name_25">ChatBee</string>
+    <string name="app_name_26">QuickTalk</string>
+    <string name="app_name_27">MsgLoop</string>
+    <string name="app_name_28">ChatGrid</string>
+    <string name="app_name_29">TalkNet</string>
+    <string name="app_name_30">MsgDrop</string>
+    <string name="app_name_31">ChatPing</string>
+    <string name="app_name_32">TalkWave</string>
+    <string name="app_name_33">MsgBlip</string>
+    <string name="app_name_34">ChatRush</string>
+    <string name="app_name_35">TalkMesh</string>
+    <string name="app_name_36">MsgLink</string>
+    <string name="app_name_37">ChatSpark</string>
+    <string name="app_name_38">TalkZap</string>
+    <string name="app_name_39">MsgBuzz</string>
+    <string name="app_name_40">ChatDrift</string>
+    <string name="app_name_41">TalkPad</string>
+    <string name="app_name_42">MsgVault</string>
+    <string name="app_name_43">ChatOrb</string>
+    <string name="app_name_44">TalkDeck</string>
+    <string name="app_name_45">MsgBeam</string>
+    <string name="app_name_46">ChatNode</string>
+    <string name="app_name_47">TalkBase</string>
+    <string name="app_name_48">MsgCore</string>
+    <string name="app_name_49">ChatFlux</string>
+    <string name="app_name_50">TalkEdge</string>
+    <string name="app_name_51">MsgRing</string>
+    <string name="app_name_52">ChatPlex</string>
+    <string name="app_name_53">TalkStar</string>
+    <string name="app_name_54">MsgHive</string>
+    <string name="app_name_55">ChatBit</string>
+    <string name="app_name_56">TalkNote</string>
+    <string name="app_name_57">MsgPort</string>
+    <string name="app_name_58">ChatWeave</string>
+    <string name="app_name_59">TalkCast</string>
+    <string name="app_name_60">MsgPeer</string>
+    <string name="app_name_61">ChatBridge</string>
+    <string name="app_name_62">TalkFusion</string>
+    <string name="app_name_63">MsgSwift</string>
+    <string name="app_name_64">ChatPulsar</string>
+    <string name="app_name_65">TalkRelay</string>
+    <string name="app_name_66">MsgHop</string>
+    <string name="app_name_67">ChatTrace</string>
+    <string name="app_name_68">TalkPath</string>
+    <string name="app_name_69">MsgRoute</string>
+    <string name="app_name_70">ChatAxis</string>
+    <string name="app_name_71">TalkGo</string>
+    <string name="app_name_72">MsgLift</string>
+    <string name="app_name_73">ChatDot</string>
+    <string name="app_name_74">TalkAir</string>
+    <string name="app_name_75">MsgWire</string>
+    <string name="app_name_76">ChatJet</string>
+    <string name="app_name_77">TalkBit</string>
+    <string name="app_name_78">MsgNova</string>
+    <string name="app_name_79">ChatRipple</string>
+    <string name="app_name_80">TalkMint</string>
+    <string name="app_name_81">MsgCloud</string>
+    <string name="app_name_82">ChatBreeze</string>
+    <string name="app_name_83">TalkEcho</string>
+    <string name="app_name_84">MsgWarp</string>
+    <string name="app_name_85">ChatStream</string>
+    <string name="app_name_86">TalkQuick</string>
+    <string name="app_name_87">MsgBolt</string>
+    <string name="app_name_88">ChatSphere</string>
+    <string name="app_name_89">TalkSpace</string>
+    <string name="app_name_90">MsgTap</string>
+    <string name="app_name_91">ChatFlash</string>
+    <string name="app_name_92">TalkBlaze</string>
+    <string name="app_name_93">MsgGlow</string>
+    <string name="app_name_94">ChatPulse</string>
+    <string name="app_name_95">TalkVolt</string>
+    <string name="app_name_96">MsgSnap</string>
+    <string name="app_name_97">ChatDial</string>
+    <string name="app_name_98">TalkRush</string>
+    <string name="app_name_99">MsgZone</string>
+    <string name="app_name_100">ChatWave</string>
+
+    <!-- დიალოგის სათაურები და ქმედებები -->
+    <string name="dialog_delete_chat">ჩათის წაშლა</string>
+    <string name="dialog_delete_group">ჯგუფის წაშლა</string>
+    <string name="dialog_delete_confirm_body">ნამდვილად გსურთ \"%1$s\"-ის წაშლა? ეს ვერ გაუქმდება.</string>
+    <string name="action_delete">წაშლა</string>
+    <string name="dialog_clear_chat">ჩათის გასუფთავება</string>
+    <string name="dialog_clear_confirm_body">ნამდვილად გსურთ ყველა შეტყობინების წაშლა \"%1$s\"-ში?</string>
+    <string name="action_clear">გასუფთავება</string>
+    <string name="dialog_title_create_group">ახალი ჯგუფის შექმნა</string>
+    <string name="label_group_name">ჯგუფის სახელი</string>
+    <string name="action_create">შექმნა</string>
+    <string name="dialog_title_join_group">ჯგუფში შეუერთება</string>
+    <string name="label_group_id">ჯგუფის ID</string>
+    <string name="label_nickname_optional">მეტსახელი (არასავალდებულო)</string>
+    <string name="dialog_title_rename_group">ჯგუფის სახელის შეცვლა</string>
+    <string name="action_rename">სახელის შეცვლა</string>
+
+    <!-- პარამეტრების სათაურები -->
+    <string name="setting_ble_mesh">BLE Mesh</string>
+    <string name="setting_p2p_network">P2P ქსელი</string>
+    <string name="setting_nostr_relays">Nostr რილეები</string>
+    <string name="setting_tor_nostr">\u0020\u0020Tor (Nostr)</string>
+
+    <!-- Toast შეტყობინებები -->
+    <string name="toast_ble_mesh_enabled">BLE Mesh ჩართულია</string>
+    <string name="toast_ble_mesh_disabled">BLE Mesh გამორთულია</string>
+    <string name="toast_nostr_enabled">Nostr ჩართულია</string>
+    <string name="toast_nostr_disabled">Nostr გამორთულია</string>
+    <string name="toast_tor_p2p_unsupported">Tor P2P-სთან ერთად არ არის მხარდაჭერილი. ჯერ გამორთეთ P2P.</string>
+    <string name="toast_p2p_tor_disabled">P2P Tor-ით არ არის მხარდაჭერილი. Tor გამოირთო.</string>
+
+    <!-- სურათის ამომრჩეველი -->
+    <string name="action_gallery">გალერეა</string>
+    <string name="action_camera">კამერა</string>
+
+    <!-- ხელმისაწვდომობის კონტენტის აღწერები -->
+    <string name="cd_refresh_p2p">P2P კავშირის განახლება</string>
+    <string name="cd_direct_bluetooth">პირდაპირი Bluetooth</string>
+    <string name="cd_routed">მარშრუტიზებული</string>
+    <string name="cd_p2p_connection">P2P კავშირი</string>
+    <string name="cd_teleported_user">ტელეპორტირებული მომხმარებელი</string>
+    <string name="cd_user">მომხმარებელი</string>
+    <string name="cd_backspace">წაშლა</string>
+    <string name="cd_verified">დამოწმებული</string>
+    <string name="cd_add_node">კვანძის დამატება</string>
+    <string name="cd_remove">წაშლა</string>
+    <string name="action_enable_location">მდებარეობის ჩართვა</string>
+
+    <!-- ჯგუფის ID ლეიბლი -->
+    <string name="label_group_id_fmt">ჯგუფის ID: %1$s</string>
+
+    <!-- PIN placeholder -->
+    <string name="placeholder_6_digits">6 ციფრი</string>
+
+    <!-- P2P პარამეტრები -->
+    <string name="p2p_settings_header">პარამეტრები</string>
+    <string name="p2p_enable">P2P-ის ჩართვა</string>
+    <string name="p2p_enable_desc">პირდაპირი დაკავშირება სხვა Zemzeme მომხმარებლებთან</string>
+    <string name="p2p_use_default_nodes">ნაგულისხმევი კვანძების გამოყენება</string>
+    <string name="p2p_default_nodes_desc">დაკავშირება საჯარო IPFS bootstrap კვანძებთან</string>
+    <string name="p2p_custom_nodes_header">მორგებული BOOTSTRAP კვანძები</string>
+    <string name="p2p_no_custom_nodes">მორგებული კვანძები არ არის კონფიგურირებული. დააჭირეთ + დასამატებლად.</string>
+    <string name="p2p_add_bootstrap_node">Bootstrap კვანძის დამატება</string>
+    <string name="p2p_enter_multiaddr">შეიყვანეთ bootstrap კვანძის multiaddr:</string>
+    <string name="p2p_recovering">აღდგენა…</string>
+    <string name="p2p_recover_connection">კავშირის აღდგენა</string>
+    <string name="action_add">დამატება</string>
+
+    <!-- შეტყობინებების არხები -->
+    <string name="notification_channel_direct_messages">პირდაპირი შეტყობინებები</string>
+    <string name="notification_channel_dm_desc">შეტყობინებები სხვა მომხმარებლებისგან პირადი მესიჯებისთვის</string>
+    <string name="notification_channel_geohash_chats">Geohash ჩათები</string>
+    <string name="notification_channel_geohash_desc">შეტყობინებები ხსენებებისა და მესიჯებისთვის geohash მდებარეობის არხებში</string>
+
+    <!-- დებაგი: mesh ტოპოლოგია -->
+    <string name="debug_mesh_topology">mesh ტოპოლოგია</string>
+    <string name="debug_no_gossip">ჯერ gossip არ არის</string>
+
+    <!-- დებაგი: თვითგანახლება -->
+    <string name="debug_self_update">თვითგანახლება (dev)</string>
+    <string name="debug_current_version_fmt">მიმდინარე ვერსია: %1$s</string>
+    <string name="debug_download_updates_desc">განახლებების ჩამოტვირთვა და ინსტალაცია GitHub რელიზებიდან</string>
+    <string name="update_status_ready">მზადაა</string>
+    <string name="update_status_checking">განახლებების შემოწმება…</string>
+    <string name="update_status_available">ხელმისაწვდომია განახლება: %1$s</string>
+    <string name="update_status_downloading">ჩამოტვირთვა: %1$d%%</string>
+    <string name="update_status_ready_install">მზადაა ინსტალაციისთვის: %1$s</string>
+    <string name="update_status_installing">ინსტალაცია…</string>
+    <string name="update_status_success">განახლება დაინსტალდა! გადატვირთეთ აპი.</string>
+    <string name="update_status_pending_action">მომხმარებლის დადასტურების მოლოდინში…</string>
+    <string name="update_status_error">შეცდომა: %1$s</string>
+    <string name="update_grant_install_permission">ინსტალაციის ნებართვის მინიჭება</string>
+    <string name="update_install">განახლების ინსტალაცია</string>
+    <string name="update_check">განახლებების შემოწმება</string>
+    <string name="debug_test_update_dialog">განახლების დიალოგის ტესტი</string>
+
+    <!-- დებაგი: გამტარუნარიანობის გრაფიკები -->
+    <string name="debug_overall">საერთო</string>
+    <string name="debug_per_device">მოწყობილობაზე</string>
+    <string name="debug_per_peer">პირზე</string>
+    <string name="debug_incoming">შემომავალი</string>
+    <string name="debug_outgoing">გამავალი</string>
+
+    <!-- დებაგი: კონსოლი -->
+    <string name="debug_refreshing">განახლება…</string>
+    <string name="debug_refresh">განახლება</string>
+    <string name="debug_clear_logs">ლოგების გასუფთავება</string>
+    <string name="debug_preparing_export">ექსპორტის მომზადება…</string>
+    <string name="debug_share_logs">ლოგების გაზიარება</string>
+
+    <!-- ტექნიკური / სიმბოლოები (არ ითარგმნება) -->
+    <string name="dot">.</string>
+    <string name="warning_emoji">⚠️</string>
+    <string name="at_symbol">@</string>
+    <string name="app_brand">Zemzeme/</string>
+    <string name="channel_count_prefix"> · ⧉ </string>
+    <string name="mention_suggestion_at">@%1$s</string>
+    <string name="at_nickname">@%1$s</string>
+    <string name="hash_symbol">#</string>
+    <string name="underscore">_</string>
+    <string name="progress_bar_brackets">[%1$s] %2$d%%</string>
+    <string name="progress_filled">█</string>
+    <string name="progress_empty">░</string>
+    <string name="image_counter">%1$d / %2$d</string>
+    <string name="status_sending">○</string>
+    <string name="status_pending">○</string>
+    <string name="status_sent">✓</string>
+    <string name="status_delivered">✓✓</string>
+    <string name="status_failed">⚠</string>
+    <string name="status_read">✓</string>
+    <string name="notification_file_pdf">📄</string>
+    <string name="notification_file_zip">🗜️</string>
+    <string name="notification_file_doc">📄</string>
+    <string name="notification_file_xls">📊</string>
+    <string name="notification_file_ppt">📈</string>
+    <string name="notification_file_generic">📎</string>
+
+    <!-- FAB menu items -->
+    <string name="fab_scan_qr">QR სკანირება</string>
+    <string name="fab_choose_city">აირჩიეთ ქალაქი</string>
+    <string name="fab_join_group">ჯგუფში გაწევრიანება</string>
+    <string name="fab_create_group">ჯგუფის შექმნა</string>
+    <!-- Section headers -->
+    <string name="section_nearby">ახლომახლო</string>
+    <string name="section_geographic_groups">გეოგრაფიული ჯგუფები</string>
+    <string name="section_my_groups">ჩემი ჯგუფები</string>
+    <string name="section_contacts">კონტაქტები</string>
+
+    <!-- სექციები და P2P სტატუსი -->
+    <string name="section_username">მომხმარებლის სახელი</string>
+    <string name="section_theme">თემა</string>
+    <string name="section_settings">პარამეტრები</string>
+    <string name="section_network">ქსელი</string>
+    <string name="section_status">სტატუსი</string>
+    <string name="app_lock_subtitle_pin">PIN</string>
+    <string name="p2p_networking_title">P2P ქსელი</string>
+    <string name="p2p_status_no_peers">პირები არ არის</string>
+    <string name="p2p_status_connected">დაკავშირებულია</string>
+    <string name="p2p_status_connecting">დაკავშირება…</string>
+    <string name="p2p_status_disconnected">გათიშულია</string>
+    <string name="p2p_status_error">შეცდომა</string>
+    <string name="p2p_peers_connected_fmt">%1$d პირი დაკავშირებულია</string>
+    <string name="p2p_dht_fmt">DHT: %1$s</string>
+    <string name="p2p_peer_id_fmt">Peer ID: %1$s…%2$s</string>
+    <string name="p2p_active_nodes_fmt">აქტიური კვანძები: %1$d</string>
+    <string name="location_acquiring_title">მდებარეობის განსაზღვრა</string>
+    <string name="location_acquiring_desc">გთხოვთ დაელოდოთ, სანამ თქვენი მდებარეობა დგინდება</string>
+    <string name="location_unavailable_title">მდებარეობა მიუწვდომელია</string>
+    <string name="location_permission_required_notes">მდებარეობის ნებართვა საჭიროა ჩანაწერებისთვის</string>
+
+    <!-- კავშირის ინდიკატორი -->
+    <string name="connection_searching_peers">პირების ძიება…</string>
+    <string name="connection_connecting_peers">პირებთან დაკავშირება…</string>
+    <plurals name="connection_peers_connected">
+        <item quantity="one">%1$d პირი დაკავშირებულია</item>
+        <item quantity="other">%1$d პირი დაკავშირებულია</item>
+    </plurals>
+    <string name="connection_no_new_messages">დაკავშირებულია - ახალი შეტყობინებები არ არის</string>
+    <string name="connection_error">კავშირის შეცდომა</string>
+    <string name="connection_direct">პირდაპირი</string>
+    <string name="connection_connected">დაკავშირებულია</string>
+
+    <!-- დებაგ კავშირის ინდიკატორი -->
+    <string name="debug_p2p_no_info">P2P (ინფო არ არის)</string>
+    <string name="debug_nostr_relay">Nostr რელე</string>
+    <string name="debug_ble_direct">BLE პირდაპირი</string>
+    <string name="debug_p2p_searching">P2P: პირების ძიება…</string>
+    <string name="debug_p2p_connecting">P2P: პირებთან დაკავშირება…</string>
+    <string name="debug_nostr_no_messages">Nostr დაკავშირებულია - ახალი შეტყობინებები არ არის</string>
+    <string name="debug_connection_failed">კავშირი ვერ მოხერხდა</string>
+    <string name="debug_error_fmt">შეცდომა: %1$s</string>
+
+</resources>

@@ -1,0 +1,677 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Zemzeme</string>
+    <string name="permission_bluetooth_rationale">Bluetooth-behörighet krävs för direktmeddelanden utan internet.</string>
+    <string name="permission_location_rationale">Platsbehörighet krävs för att hitta enheter i närheten via Bluetooth.</string>
+    <string name="permission_notification_rationale">Aviseringsbehörighet krävs för att meddela nya meddelanden.</string>
+    <string name="nickname_hint">smeknamn</string>
+    <string name="message_hint">skriv ett meddelande…</string>
+    <string name="channel_password_hint">Lösenord</string>
+    <string name="join_channel">Gå med i kanal</string>
+    <string name="leave_channel">Lämna</string>
+    <string name="send_message">Skicka</string>
+    <string name="show_commands">Visa kommandon</string>
+    <string name="back">Tillbaka</string>
+    <string name="people">Personer</string>
+    <string name="channels">Kanaler</string>
+    <string name="online_users">Användare online</string>
+    <string name="no_one_connected">Ingen ansluten</string>
+    <string name="emergency_clear_hint">Tryck tre gånger för att rensa all data</string>
+    <string name="your_network">Nätverk</string>
+
+    <string name="battery_optimization_detected">Batterioptimering upptäckt</string>
+    <string name="battery_optimization_disabled">Batterioptimering inaktiverad</string>
+    <string name="battery_optimization_not_required">Batterioptimering krävs inte</string>
+    <string name="battery_optimization_checking">Kontrollerar batterioptimering</string>
+    <string name="battery_optimization_why_disable">Varför inaktivera?</string>
+    <string name="battery_optimization_explanation">Zemzeme körs i bakgrunden för att upprätthålla mesh-anslutningar till enheter i närheten. Batterioptimering kan avbryta dessa och orsaka fördröjda eller missade meddelanden.\n\nAtt inaktivera säkerställer tillförlitlig P2P-meddelandetrafik.</string>
+    <string name="battery_optimization_disable_button">Inaktivera optimering</string>
+    <string name="battery_optimization_note">Obs: kan ändras senare i Android-inställningar &gt; Appar &gt; Zemzeme &gt; Batteri</string>
+    <string name="battery_optimization_not_supported_explanation">Din enhet kräver inte batterioptimeringsinställningar. Zemzeme körs normalt.</string>
+    <string name="battery_optimization_not_supported_message">Din enhet kräver inte batterioptimeringsinställningar. Zemzeme körs normalt.</string>
+    <string name="battery_optimization_success_message">Zemzeme kan köras tillförlitligt i bakgrunden</string>
+    <string name="battery_optimization_benefits">• Tillförlitlig leverans\n• Upprätthåller mesh-anslutning\n• Bakgrundsrelä\n• Förhindrar avbrott</string>
+    <string name="battery_optimization_check_again">Kontrollera igen</string>
+    <string name="battery_optimization_skip">Hoppa över nu</string>
+    <string name="battery_optimization_continue">Fortsätt</string>
+    <string name="retry">Försök igen</string>
+    <string name="skip">Hoppa över</string>
+
+    <string name="notification_summary_more">och %1$d till</string>
+    <string name="notification_messages_from_people">%1$d meddelanden från %2$d personer</string>
+    <string name="notification_more_conversations">och %1$d fler konversationer</string>
+    <string name="notification_active_peers_title">👥 Zemzeme-användare i närheten!</string>
+    <string name="notification_active_peers_one">1 person i närheten</string>
+    <string name="notification_active_peers_many">%1$d personer i närheten</string>
+    <string name="notification_new_messages">Nya meddelanden</string>
+    <string name="notification_new_location_messages">Nya platsmeddelanden</string>
+    <string name="notification_mentions_in">Nämnd i %1$s</string>
+    <string name="notification_mentions_in_more">Nämnd i %1$s (+%2$d till)</string>
+    <string name="notification_mentions_in_plural">%1$d nämningar i %2$s</string>
+    <string name="notification_new_activity_in">Ny aktivitet i %1$s</string>
+    <string name="notification_messages_in">Meddelanden i %1$s</string>
+    <string name="notification_joined_conversation">%1$s gick med i konversationen</string>
+    <string name="notification_geohash_summary_title_mentions">Zemzeme – %1$d nämningar</string>
+    <string name="notification_geohash_summary_title">Zemzeme – platschattar</string>
+    <string name="notification_geohash_summary_text">%1$d meddelanden från %2$d platser</string>
+    <string name="notification_mesh_mention_title_singular">Nämnd i Bluetooth‑chatt</string>
+    <string name="notification_mesh_mention_title_plural">%1$d nämningar i Mesh‑chatt</string>
+    <string name="notification_more_locations">och %1$d fler platser</string>
+    <string name="notification_and_more">och %1$d till</string>
+
+    <string name="cd_add_favorite">Lägg till som favorit</string>
+    <string name="cd_remove_favorite">Ta bort favorit</string>
+    <string name="cd_add_bookmark">Lägg till bokmärke</string>
+
+    <string name="chat_back">tillbaka</string>
+    <string name="chat_channel_prefix">kanal: %1$s</string>
+    <string name="chat_leave">lämna</string>
+    <string name="cd_nostr_reachable">Nås via Nostr</string>
+    <string name="cd_unread_private_messages">Olästa privata meddelanden</string>
+    <string name="cd_toggle_bookmark">Växla bokmärke</string>
+    <string name="cd_teleported">Teleporterad</string>
+    <string name="cd_tor_status">Tor‑status</string>
+    <string name="cd_connected_peers">Anslutna noder</string>
+    <string name="cd_geohash_participants">Geohash‑deltagare</string>
+    <string name="cd_ready_for_handshake">Redo för handshake</string>
+    <string name="cd_handshake_in_progress">Handshake pågår</string>
+    <string name="cd_encrypted">Ända‑till‑ända‑krypterat</string>
+    <string name="cd_handshake_failed">Handshake misslyckades</string>
+
+    <string name="file_viewer_title">📎 Fil mottagen</string>
+    <string name="file_viewer_name">📄 %1$s</string>
+    <string name="file_viewer_size">📏 Storlek: %1$s</string>
+    <string name="file_viewer_type">🏷️ Typ: %1$s</string>
+    <string name="file_viewer_open_save">📂 Öppna / Spara</string>
+    <string name="close_with_emoji">❌ Stäng</string>
+    <string name="pick_image">Välj bild</string>
+
+    <string name="about_tagline">Övervakningsfri meddelandekommunikation under alla omständigheter, end-to-end-krypterad</string>
+    <string name="about_offline_mesh_title">Offline Bluetooth‑chatt</string>
+    <string name="about_offline_mesh_desc">Kommunicera direkt via Bluetooth LE utan internet eller servrar. Meddelanden reläas av enheter i närheten.</string>
+    <string name="about_online_geohash_title">Online Geohash‑kanaler</string>
+    <string name="about_online_geohash_desc">Anslut med personer i närheten via geohash‑kanaler. Utöka mesh via publika internetreläer.</string>
+    <string name="about_e2e_title">Ända‑till‑ända‑kryptering</string>
+    <string name="about_e2e_desc">Privata meddelanden är krypterade. Kanalmeddelanden är publika.</string>
+    <string name="about_appearance">utseende</string>
+    <string name="about_system">system</string>
+    <string name="about_light">ljus</string>
+    <string name="about_dark">mörk</string>
+    <string name="about_pow">proof of work</string>
+    <string name="about_pow_off">pow av</string>
+    <string name="about_pow_on">pow på</string>
+    <string name="about_pow_tip">lägg till proof of work i geohash‑meddelanden för att hindra spam.</string>
+    <string name="about_pow_difficulty">svårighet: %1$d bitar (~%2$s)</string>
+    <string name="about_pow_difficulty_attempts">svårighet %1$d kräver ~%2$s hash‑försök</string>
+    <string name="about_pow_desc_none">inget proof of work krävs</string>
+    <string name="about_pow_desc_very_low">mycket låg – minimal skydd</string>
+    <string name="about_pow_desc_low">låg – grundläggande skydd</string>
+    <string name="about_pow_desc_medium">medel – bra skydd</string>
+    <string name="about_pow_desc_high">hög – starkt skydd</string>
+    <string name="about_pow_desc_very_high">mycket hög – kan orsaka fördröjning</string>
+    <string name="about_pow_desc_extreme">extrem – kräver mycket beräkning</string>
+    <string name="about_network">nätverk</string>
+    <string name="about_tor_off">tor av</string>
+    <string name="about_tor_on">tor på</string>
+    <string name="about_tor_route">routa internet via Tor för ökad integritet.</string>
+    <string name="about_tor_status">Tor‑status: %1$s, bootstrap %2$d%%</string>
+    <string name="about_last">Senast: %1$s</string>
+    <string name="about_emergency_title">Nödradering av data</string>
+    <string name="about_emergency_tip">Tips: tryck tre gånger på appens titel för att radera alla data (meddelanden, nycklar, inställningar).</string>
+    <string name="about_debug_settings">Felsökningsinställningar</string>
+    <string name="about_footer">Open Source • Privacy First • Decentraliserad</string>
+    <string name="close_plain">Stäng</string>
+    <string name="cancel_lower">avbryt</string>
+
+    <string name="cd_warning">Varning</string>
+    <string name="cd_location_services">Plats­tjänster</string>
+    <string name="cd_privacy">Integritet</string>
+    <string name="cd_error">Fel</string>
+    <string name="cd_battery_optimization">Batterioptimering</string>
+    <string name="cd_benefits">Fördelar</string>
+    <string name="cd_checking_battery_optimization">Kontrollerar optimering</string>
+    <string name="cd_not_supported_battery_optimization">Stöds ej</string>
+    <string name="cd_bluetooth">Bluetooth</string>
+    <string name="cd_unread_message">Oläst meddelande</string>
+    <string name="cd_open_map">Öppna karta</string>
+    <string name="cd_remove_bookmark">Ta bort bokmärke</string>
+    <string name="cd_teleport">Teleportera</string>
+    <string name="cd_selected">Vald</string>
+    <string name="cd_leave_channel">Lämna kanal</string>
+    <string name="cd_reachable_via_nostr">Nås via Nostr</string>
+    <string name="cd_offline_favorite">Favorit (offline)</string>
+    <string name="cd_decrease_precision">Minska precision</string>
+    <string name="cd_increase_precision">Öka precision</string>
+    <string name="cd_select_geohash">Välj geohash</string>
+    <string name="cd_scroll_to_bottom">Rulla längst ned</string>
+    <string name="cd_file">Fil</string>
+    <string name="cd_image">Bild</string>
+    <string name="cd_cancel">Avbryt</string>
+    <string name="cd_link">Länk</string>
+    <string name="cd_pick_media">Välj media</string>
+    <string name="cd_record_voice">Spela in röstanteckning</string>
+    <string name="cd_offline_mesh_chat">Offline Mesh‑chatt</string>
+    <string name="cd_online_geohash_channels">Online Geohash‑kanaler</string>
+    <string name="cd_end_to_end_encryption">Ända‑till‑ända‑kryptering</string>
+
+    <string name="image_page_of">Bild %1$d / %2$d</string>
+    <string name="image_unavailable">Bild ej tillgänglig</string>
+    <string name="image_saved_to_downloads">Bild sparad i "Hämtade filer"</string>
+    <string name="image_save_failed">Kunde inte spara bild</string>
+    <string name="pick_file">Välj fil</string>
+    <string name="file_unavailable">[fil ej tillgänglig]</string>
+    <string name="unknown">okänd</string>
+
+    <string name="choose_action_message_or_user">välj en åtgärd för meddelandet eller användaren</string>
+    <string name="choose_action_user">välj en åtgärd för den här användaren</string>
+    <string name="action_copy_message_title">kopiera meddelande</string>
+    <string name="action_copy_message_subtitle">kopiera meddelandet till urklipp</string>
+    <string name="action_slap_title">ge %1$s en örfil</string>
+    <string name="action_slap_subtitle">skicka en skämtsam örfil</string>
+    <string name="action_hug_title">krama %1$s</string>
+    <string name="action_hug_subtitle">skicka en vänlig kram</string>
+    <string name="action_block_title">blockera %1$s</string>
+    <string name="action_block_subtitle">blockera alla meddelanden från den här användaren</string>
+
+    <string name="location_channels_title">#platskanaler</string>
+    <string name="location_channels_desc">chatta med folk nära dig via geohash‑kanaler. endast en grov geohash delas, aldrig exakt gps. ta inte skärmdumpar eller dela skärmen för att skydda din integritet.</string>
+    <string name="grant_location_permission">ge platsbehörighet</string>
+    <string name="location_permission_denied">platsbehörighet nekades. aktivera i inställningar för att använda platskanaler.</string>
+    <string name="open_settings">Öppna inställningar</string>
+    <string name="location_permission_granted">\u2713 platsbehörighet beviljad</string>
+    <string name="checking_permissions">kontrollerar behörigheter…</string>
+    <string name="finding_nearby_channels">söker efter kanaler i närheten…</string>
+    <string name="bookmarked">bokmärkt</string>
+    <string name="geohash_placeholder">geohash</string>
+    <string name="invalid_geohash">ogiltig geohash</string>
+    <string name="teleport">teleportera</string>
+    <string name="disable_location_services">inaktivera platstjänster</string>
+    <string name="enable_location_services">aktivera platstjänster</string>
+    <string name="location_bluetooth_subtitle">#bluetooth • %1$s</string>
+    <string name="mesh_label">bluetooth</string>
+    <string name="location_level_block">kvarter</string>
+    <string name="location_level_neighborhood">grannskap</string>
+    <string name="location_level_city">stad</string>
+    <string name="location_level_province">län</string>
+    <string name="location_level_region">region</string>
+
+    <string name="debug_tools">felsökningsverktyg</string>
+    <string name="debug_tools_desc">utvecklarverktyg för diagnostik och kontroll</string>
+    <string name="debug_verbose_logging">utförlig loggning</string>
+    <string name="debug_verbose_hint">loggar peer-anslutningar/-frånkopplingar, anslutningsriktning, paketrouting och reläer</string>
+    <string name="debug_bluetooth_roles">Bluetooth‑roller</string>
+    <string name="debug_gatt_server">GATT‑server</string>
+    <string name="debug_connections_fmt">anslutningar: %1$d / %2$d</string>
+    <string name="debug_max_server">max server</string>
+    <string name="debug_gatt_client">GATT‑klient</string>
+    <string name="debug_max_client">max klient</string>
+    <string name="debug_overall_connections_fmt">anslutningar: %1$d / %2$d</string>
+    <string name="debug_max_overall">max totalt</string>
+    <string name="debug_packet_relay">paketrelä</string>
+    <string name="debug_since_start_fmt">sedan start: %1$d</string>
+    <string name="debug_roles_hint">slå på/av roller och stäng alla anslutningar när de är avaktiverade</string>
+    <string name="debug_sync_settings">synkinställningar</string>
+    <string name="debug_max_packets_per_sync_fmt">max paket per synk: %1$d</string>
+    <string name="debug_max_gcs_filter_size_fmt">max GCS‑filterstorlek: %1$d byte (128–1024)</string>
+    <string name="debug_target_fpr_fmt">mål‑FPR: %1$.2f%%</string>
+    <string name="debug_connected_devices">anslutna enheter</string>
+    <string name="debug_our_device_id_fmt">vår enhets‑ID: %1$s</string>
+    <string name="debug_none">ingen</string>
+    <string name="debug_disconnect">koppla från</string>
+    <string name="debug_recent_scan_results">senaste skanningsresultat</string>
+    <string name="debug_connect">anslut</string>
+    <string name="debug_debug_console">felsökningskonsol</string>
+    <string name="debug_clear">rensa</string>
+    <string name="debug_relays_window_fmt">senaste 10 s: %1$d • 1 m: %2$d • 15 m: %3$d</string>
+    <string name="debug_derived_p_fmt">härlett P: %1$s • uppsk. max element: %2$s</string>
+    <string name="debug_direct_suffix"> • direkt</string>
+    <string name="debug_question_mark">?</string>
+    <string name="debug_role_server">som server (vi hostar)</string>
+    <string name="debug_role_client">som klient (vi ansluter)</string>
+
+    <string name="location_services_required">Platstjänster krävs</string>
+    <string name="privacy_first">Integritet först</string>
+    <string name="location_explanation">Zemzeme SPÅRAR INTE din plats.\n\nPlatstjänster krävs för Bluetooth‑skanning och Geohash‑chatt.</string>
+    <string name="location_needs_for">Zemzeme behöver platstjänster för:</string>
+    <string name="location_needs_bullets">• Bluetooth‑skanning av enheter\n• Hitta användare i närheten i mesh‑nätet\n• Geohash‑chatt\n• Ingen spårning eller insamling</string>
+    <string name="open_location_settings">Öppna platsinställningar</string>
+    <string name="check_again">Kontrollera igen</string>
+    <string name="location_services_unavailable">Platstjänster inte tillgängliga</string>
+    <string name="location_unavailable_explanation">Platstjänster saknas på den här enheten. Det är ovanligt.\n\nAndroid kräver dem för att Bluetooth‑skanning ska fungera. Utan dem kan vi inte hitta användare i närheten.</string>
+    <string name="checking_location_services">Kontrollerar platstjänster…</string>
+    <string name="bluetooth_required">Bluetooth krävs</string>
+    <string name="bluetooth_needs_for">Zemzeme behöver Bluetooth för:</string>
+    <string name="bluetooth_needs_bullets">• Hitta användare i närheten\n• Skapa mesh‑anslutningar\n• Skicka och ta emot meddelanden\n• Fungera utan internet/ servrar</string>
+    <string name="enable_bluetooth">Aktivera Bluetooth</string>
+    <string name="bluetooth_not_supported">Bluetooth stöds inte</string>
+    <string name="bluetooth_unsupported_explanation">Denna enhet stöder inte Bluetooth Low Energy (BLE), vilket krävs för Zemzeme.\n\nBLE behövs för att bygga mesh och kommunicera utan internet.</string>
+    <string name="checking_bluetooth_status">Kontrollerar Bluetooth‑status…</string>
+    <string name="battery_optimization_detected_title">batterioptimering upptäckt</string>
+    <string name="battery_optimization_enabled_title">Batterioptimering på</string>
+    <string name="battery_optimization_explanation_short">Zemzeme måste köra i bakgrunden för mesh; optimering kan bryta.</string>
+    <string name="benefits_of_disabling">Fördelar med inaktivering</string>
+    <string name="battery_benefits_short">• tillförlitlig leverans\n• håller anslutning\n• förhindrar avbrott</string>
+    <string name="disable_battery_optimization">Inaktivera optimering</string>
+    <string name="battery_optimization_disabled_title">optimering av</string>
+    <string name="continue_btn">Fortsätt</string>
+    <string name="initializing_mesh_network">Initierar mesh‑nätverk</string>
+    <string name="dot">.</string>
+    <string name="setting_up_bluetooth">Ställer in Bluetooth‑mesh…</string>
+    <string name="should_take_seconds">Det tar bara några sekunder</string>
+    <string name="warning_emoji">⚠️</string>
+    <string name="setup_not_complete">Installationen inte klar</string>
+    <string name="try_again">Försök igen</string>
+    <string name="privacy_protected">Din integritet är skyddad</string>
+    <string name="privacy_bullets">• ingen spårning eller insamling\n• Bluetooth‑mesh‑chattar helt offline\n• geohash‑chattar använder internet</string>
+    <string name="permissions_header">behörigheter</string>
+    <string name="grant_permissions">Ge behörigheter</string>
+    <string name="continue_button">Fortsätt</string>
+    <string name="perm_required_label">Krävs</string>
+    <string name="perm_recommended_label">Rekommenderas</string>
+    <string name="perm_info_dialog_ok">OK</string>
+    <string name="perm_benefit_nearby_devices">Bluetooth-behörigheter gör att Zemzeme kan upptäcka och kommunicera med andra användare i närheten via ett mesh-nätverk. Detta möjliggör helt offline peer-to-peer-meddelanden utan internetanslutning.</string>
+    <string name="perm_benefit_location">Android kräver platsbehörighet för att skanna efter Bluetooth-enheter i närheten. Zemzeme SPÅRAR INTE och lagrar inte din plats.</string>
+    <string name="perm_benefit_background_location">Bakgrundsplats gör att Zemzeme kan upptäcka användare i närheten även när appen är i bakgrunden. Utan detta fungerar mesh-nätverket bara när appen är öppen på skärmen.</string>
+    <string name="perm_benefit_notifications">Aviseringar låter dig veta när du får ett privat meddelande eller när ny aktivitet sker i dina kanaler, även när appen är i bakgrunden.</string>
+    <string name="perm_benefit_battery_optimization">Att inaktivera batterioptimering säkerställer att Zemzeme körs tillförlitligt i bakgrunden och upprätthåller mesh-anslutningar. Utan detta kan Android stänga appen för att spara batteri och koppla bort dig från mesh.</string>
+    <string name="location_tracking_warning">Zemzeme spårar INTE din plats</string>
+    <string name="at_symbol">@</string>
+    <string name="app_brand">Zemzeme/</string>
+    <string name="channel_count_prefix"> · ⧉ </string>
+    <string name="geohash_people_header">PERSONER</string>
+    <string name="nobody_around">ingen i närheten…</string>
+    <string name="you_suffix"> (du)</string>
+    <string name="pan_zoom_instruction">panorera och zooma för att välja geohash</string>
+    <string name="select">välj</string>
+    <string name="type_a_message_placeholder">skriv ett meddelande…</string>
+    <string name="mention_suggestion_at">@%1$s</string>
+    <string name="mention">nämn</string>
+    <string name="image_counter">%1$d / %2$d</string>
+    <string name="pow_time_estimate">(~%1$s)</string>
+    <string name="at_nickname">@%1$s</string>
+    <string name="version_prefix">v%1$s</string>
+    <string name="hash_symbol">#</string>
+    <string name="underscore">_</string>
+    <string name="progress_bar_brackets">[%1$s] %2$d%%</string>
+    <string name="progress_filled">█</string>
+    <string name="progress_empty">░</string>
+    <string name="image_star">image/*</string>
+    <string name="media_type_image">Bild</string>
+    <string name="media_type_file">Fil</string>
+
+    <string name="status_sending">○</string>
+    <string name="status_pending">○</string>
+    <string name="status_sent">✓</string>
+    <string name="status_delivered">✓✓</string>
+    <string name="status_failed">⚠</string>
+    <string name="status_read">✓</string>
+
+    <string name="notification_sent_image">📷 skickade en bild</string>
+    <string name="notification_sent_voice">🎤 skickade ett röstmeddelande</string>
+    <string name="notification_sent_file">📎 skickade en fil</string>
+    <string name="notification_file_pdf">📄</string>
+    <string name="notification_file_zip">🗜️</string>
+    <string name="notification_file_doc">📄</string>
+    <string name="notification_file_xls">📊</string>
+    <string name="notification_file_ppt">📈</string>
+    <string name="notification_file_generic">📎</string>
+
+    <string name="cd_play_voice">Spela</string>
+    <string name="cd_pause_voice">Pausa</string>
+
+    <string name="perm_nearby_devices_desc">Krävs för att hitta Zemzeme‑användare via Bluetooth</string>
+    <string name="perm_nearby_devices_system">Tillåt Zemzeme att ansluta till enheter i närheten</string>
+    <string name="perm_location_desc">Krävs av Android för att hitta användare via Bluetooth</string>
+    <string name="perm_location_system">Zemzeme behöver detta för att skanna enheter</string>
+    <string name="perm_notifications_desc">Ta emot aviseringar vid privata meddelanden</string>
+    <string name="perm_notifications_system">Tillåt Zemzeme att skicka aviseringar</string>
+    <string name="perm_battery_desc">Inaktivera batterioptimering för tillförlitlig drift i bakgrunden och mesh‑anslutning</string>
+    <string name="perm_battery_system">Tillåt körning utan batteribegränsningar</string>
+
+    <string name="perm_type_nearby_devices">Enheter i närheten</string>
+    <string name="perm_type_precise_location">Exakt plats</string>
+    <string name="perm_type_microphone">Mikrofon</string>
+    <string name="perm_type_notifications">Aviseringar</string>
+    <string name="perm_type_battery_optimization">Batterioptimering</string>
+    <string name="perm_type_other">Övrigt</string>
+
+    <string name="pwd_prompt_title">Ange kanalens lösenord</string>
+    <string name="pwd_prompt_message">Kanal %1$s är lösenordsskyddad. Ange lösenordet för att gå med.</string>
+    <string name="pwd_label">Lösenord</string>
+    <string name="join">Gå med</string>
+    <string name="cancel">Avbryt</string>
+
+    <plurals name="people_count">
+        <item quantity="one">1 person</item>
+        <item quantity="other">%d personer</item>
+    </plurals>
+
+  <plurals name="notification_and_more">
+    <item quantity="one">och %d till</item>
+    <item quantity="other">och %d till</item>
+  </plurals>
+
+  <plurals name="location_notes_title">
+    <item quantity="one">#%1$s ± 1 • %2$d anteckning</item>
+    <item quantity="other">#%1$s ± 1 • %2$d anteckningar</item>
+  </plurals>
+  <string name="location_notes_description">lägg till korta permanenta anteckningar för den här platsen så att andra besökare kan hitta dem.</string>
+  <string name="location_notes_relays_unavailable">geo-reläer är inte tillgängliga; anteckningar pausade</string>
+  <string name="location_notes_no_relays_title">inga geo-reläer i närheten</string>
+  <string name="location_notes_no_relays_desc">anteckningar är beroende av geo-reläer. kontrollera anslutningen och försök igen.</string>
+  <string name="loading_location_notes">laddar anteckningar…</string>
+  <string name="location_notes_empty_title">inga anteckningar ännu</string>
+  <string name="location_notes_empty_desc">var först med att lägga till en anteckning för den här platsen.</string>
+  <string name="dismiss">stäng</string>
+  <string name="location_notes_input_placeholder">lägg till en anteckning för den här platsen</string>
+    <string name="mesh_service_notification_content">Bluetooth körs — %1$d peers</string>
+
+  <string name="verify_title">verifiera</string>
+  <string name="verify_my_qr_title">skanna för att verifiera mig</string>
+  <string name="verify_scan_prompt_friend">skanna någon annans QR</string>
+  <string name="verify_scan_someone">skanna någon annans QR</string>
+  <string name="verify_show_my_qr">visa min QR</string>
+  <string name="verify_remove">ta bort verifiering</string>
+  <string name="verify_qr_unavailable">QR ej tillgänglig</string>
+  <string name="verify_camera_permission">kamerabehörighet krävs för att skanna QR-koder</string>
+  <string name="verify_request_camera">aktivera kamera</string>
+  <string name="verify_paste_label">klistra in verifierings-URL</string>
+  <string name="verify_validate">validera</string>
+  <string name="verify_scanned">verifiering begärd</string>
+  <string name="security_verification_title">säkerhetsverifiering</string>
+  <string name="fingerprint_their">deras fingeravtryck</string>
+  <string name="fingerprint_yours">ditt fingeravtryck</string>
+  <string name="fingerprint_pending">handshake väntar</string>
+  <string name="fingerprint_no_peer">öppna en privat chatt för att se fingeravtryck</string>
+  <string name="fingerprint_status_verified">krypterat &amp; verifierat</string>
+  <string name="fingerprint_status_encrypted">krypterat</string>
+  <string name="fingerprint_status_handshaking">handshake</string>
+  <string name="fingerprint_status_failed">handshake misslyckades</string>
+  <string name="fingerprint_status_uninitialized">ej krypterat</string>
+  <string name="fingerprint_verified_label">verifierad</string>
+  <string name="fingerprint_verified_message">du har verifierat denna persons identitet.</string>
+  <string name="fingerprint_not_verified_label">ej verifierad</string>
+  <string name="fingerprint_not_verified_message_fmt">jämför dessa fingeravtryck med %1$s via en säker kanal.</string>
+  <string name="fingerprint_mark_verified">markera som verifierad</string>
+  <string name="fingerprint_start_handshake">starta handshake</string>
+  <string name="fingerprint_copy">kopiera</string>
+  <string name="verify_mutual_match_title">Ömsesidig verifiering</string>
+  <string name="verify_mutual_match_body">Du och %1$s verifierade varandra</string>
+  <string name="verify_mutual_system_message">ömsesidig verifiering med %1$s</string>
+  <string name="verify_success_title">Verifierad</string>
+  <string name="verify_success_body">Du verifierade %1$s</string>
+  <string name="verify_success_system_message">verifierade %1$s</string>
+
+  <!-- Saknade nycklar -->
+  <string name="mesh_service_channel_name">Bluetooth-bakgrundstjänst</string>
+  <string name="mesh_service_channel_desc">Håller Bluetooth-meshen igång i bakgrunden</string>
+  <string name="cd_settings">Inställningar</string>
+  <string name="cd_location_notes">Platsanteckningar</string>
+  <string name="notification_action_quit_bitchat">Avsluta Zemzeme</string>
+  <string name="about_background_title">köra i bakgrunden</string>
+  <string name="about_background_desc">håll meshen aktiv när appen är stängd (förgrundsservice)</string>
+  <string name="about_p2p_subtitle">Direkta peerkopplingar via p2p</string>
+  <string name="about_nostr_subtitle">Meddelandehantering via internetreläer</string>
+  <string name="about_ble_subtitle">Bluetooth-närhetsmesh</string>
+    <string name="ble_setting_off_subtitle">Bluetooth är av — aktivera för att använda BLE Mesh</string>
+    <string name="ble_banner_off">Bluetooth är av — BLE Mesh otillgängligt</string>
+    <string name="ble_setting_dialog_title">Bluetooth krävs</string>
+    <string name="ble_setting_dialog_msg">Bluetooth är avstängt. Aktivera det för att använda BLE Mesh.</string>
+    <string name="ble_setting_dialog_btn">Öppna Bluetooth-inställningar</string>
+    <string name="ble_banner_enable_btn">Aktivera</string>
+    <string name="ble_banner_mesh_disabled">BLE Mesh är inaktiverat</string>
+
+  <!-- Nätverksanslutning -->
+  <string name="network_setting_off_subtitle">Inget internet — kontrollera din anslutning</string>
+  <string name="network_not_available">Ingen internetanslutning</string>
+  <string name="network_transports_off_hint">Aktivera P2P eller Nostr</string>
+  <string name="network_no_internet">Ansluten men inget internet upptäckt</string>
+  <string name="network_setting_dialog_title">Internet krävs</string>
+  <string name="network_setting_dialog_msg">En internetanslutning krävs för P2P- och Nostr-transporter.</string>
+  <string name="network_setting_dialog_btn">Anslutningsinställningar</string>
+  <string name="network_banner_disconnected">Inget internet — kontrollera dina anslutningsinställningar</string>
+  <string name="network_banner_airplane_mode">Flygläge är på</string>
+  <string name="network_airplane_mode">Flygläge är på</string>
+  <string name="network_banner_no_internet">Ansluten men inget internet — kontrollera din anslutning</string>
+  <string name="network_banner_transports_disabled">Ingen nätverkstransport — aktivera P2P eller Nostr i inställningar</string>
+  <string name="network_banner_settings_btn">Inställningar</string>
+
+  <string name="background_location_required_title">Bakgrundsplats rekommenderas</string>
+  <string name="background_location_required_subtitle">valfritt, förbättrar meshnätverkspålitligheten</string>
+  <string name="background_location_explanation">Android rekommenderar bakgrundsplats för att Zemzeme ska kunna söka efter enheter i närheten när appen inte är öppen. Detta håller meshen vid liv efter omstart.</string>
+  <string name="background_location_settings_tip">När inställningarna öppnas, välj "Tillåt hela tiden".</string>
+  <string name="background_location_needs_for">Zemzeme använder bakgrundsplats för:</string>
+  <string name="background_location_needs_bullets">- söka efter enheter i närheten när appen är stängd\n- återansluta efter omstart\n- hålla meshen igång i bakgrunden</string>
+  <string name="background_location_privacy_note">Vi samlar ALDRIG in eller lagrar din plats. Din integritet är skyddad.</string>
+  <string name="grant_background_location">Tillåt bakgrundsplats</string>
+  <string name="skip_background_location">Fortsätt utan bakgrundsplats</string>
+  <string name="perm_background_location_desc">Rekommenderas för att söka efter enheter i närheten när appen är i bakgrunden</string>
+  <string name="perm_background_location_system">Tillåt åtkomst till bakgrundsplats</string>
+  <string name="perm_type_background_location">Bakgrundsplats</string>
+  <string name="tor_not_available_in_this_build">Tor ej tillgängligt i denna version</string>
+  <string name="debug_rssi_fmt">RSSI: %1$s</string>
+
+  <string name="cd_close">Stäng</string>
+  <string name="cd_image_index_of">Bild %1$d av %2$d</string>
+  <string name="cd_mining_pow">Utvinner PoW</string>
+  <string name="cd_pick_file">Välj fil</string>
+  <string name="cd_pow_enabled">PoW aktiverat</string>
+  <string name="cd_privacy_protected">Integritet skyddad</string>
+  <string name="cd_proof_of_work">Arbetsbevis</string>
+  <string name="cd_save_current_image">Spara nuvarande bild</string>
+  <string name="pow_label_format">pow: %1$dbit</string>
+  <string name="pow_mining_ellipsis">utvinner...</string>
+  <string name="toast_failed_to_save_image">Det gick inte att spara bilden</string>
+  <string name="toast_image_saved">Bild sparad i Nedladdningar</string>
+
+    <!-- Applås -->
+    <string name="app_lock_title">Applås</string>
+    <string name="app_lock_subtitle_off">Av</string>
+    <string name="app_lock_subtitle_on">Biometrisk + PIN</string>
+    <string name="app_lock_security_section">SÄKERHET</string>
+    <string name="app_lock_enter_pin">Ange PIN</string>
+    <string name="app_lock_set_pin">Ställ in PIN</string>
+    <string name="app_lock_confirm_pin">Bekräfta PIN</string>
+    <string name="app_lock_biometric_title">Lås upp Zemzeme</string>
+    <string name="app_lock_biometric_subtitle">Tryck på sensorn för att låsa upp</string>
+    <string name="app_lock_use_pin">Använd PIN</string>
+    <string name="app_lock_wrong_pin">Fel PIN</string>
+    <string name="app_lock_too_many_attempts">%1$d försök kvar</string>
+    <string name="app_lock_cooldown">Försök igen om %1$d sekunder</string>
+    <string name="app_lock_pin_mismatch">PIN-koderna stämmer inte överens</string>
+    <string name="app_lock_pin_min_length">PIN måste ha 4–6 siffror</string>
+    <string name="app_lock_disable_title">Inaktivera applås</string>
+    <string name="app_lock_disable_msg">Verifiera din identitet för att inaktivera applåset</string>
+    <string name="app_lock_protect_title">Skydda dina chattar</string>
+    <string name="app_lock_protect_desc">En 6-siffrig PIN låser appen. Använd biometri för snabb åtkomst.</string>
+    <string name="app_lock_enable">Aktivera applås</string>
+    <string name="app_lock_not_now">Inte nu</string>
+
+    <!-- Mesh-introduktion -->
+    <string name="mesh_intro_title">Bluetooth</string>
+    <string name="mesh_intro_body">Kommunikation i denna grupp baseras helt på Bluetooth. Enheter i närheten vidarebefordrar meddelanden mellan personer — ingen internetanslutning behövs.</string>
+    <string name="mesh_intro_close">Stäng</string>
+    <string name="mesh_intro_dont_show">Visa inte igen</string>
+
+    <!-- Dela app -->
+    <string name="about_share_app_header">DELA APP</string>
+    <string name="about_share_system_title">Dela app</string>
+    <string name="about_share_system_desc">Skicka APK via Bluetooth, Nearby Share eller Wi-Fi Direct (%1$s)</string>
+    <string name="about_share_failed">Kunde inte förbereda APK för delning</string>
+    <string name="about_share_chooser_title">Dela %1$s APK</string>
+    <string name="about_share_helper_text">Använd Google Quick Share för att skicka (aktivera i telefoninställningar). Efter överföring finns APK:en i mappen Nedladdningar på mottagarenheten.</string>
+
+    <!-- Ikonbyte -->
+    <string name="icon_switch_title">Uppdatera appikon &amp; namn</string>
+    <string name="icon_switch_section">Anpassning</string>
+    <string name="icon_switch_subtitle">ändra appikon och namn på startskärmen</string>
+    <string name="icon_switch_confirm">Ändra appikon och namn till detta?</string>
+    <string name="icon_switch_apply">Tillämpa</string>
+    <string name="icon_switch_toast">Appikon och namn ändrat!</string>
+
+    <!-- Dialogrubriker och åtgärder -->
+    <string name="dialog_delete_chat">Ta bort chatt</string>
+    <string name="dialog_delete_group">Ta bort grupp</string>
+    <string name="dialog_delete_confirm_body">Är du säker på att du vill ta bort \"%1$s\"? Detta kan inte ångras.</string>
+    <string name="action_delete">Ta bort</string>
+    <string name="dialog_clear_chat">Rensa chatt</string>
+    <string name="dialog_clear_confirm_body">Är du säker på att du vill rensa alla meddelanden i \"%1$s\"?</string>
+    <string name="action_clear">Rensa</string>
+    <string name="dialog_title_create_group">Skapa ny grupp</string>
+    <string name="label_group_name">Gruppnamn</string>
+    <string name="action_create">Skapa</string>
+    <string name="dialog_title_join_group">Gå med i grupp</string>
+    <string name="label_group_id">Grupp-ID</string>
+    <string name="label_nickname_optional">Smeknamn (valfritt)</string>
+    <string name="dialog_title_rename_group">Byt namn på grupp</string>
+    <string name="action_rename">Byt namn</string>
+
+    <!-- Inställningsrubriker -->
+    <string name="setting_ble_mesh">BLE Mesh</string>
+    <string name="setting_p2p_network">P2P-nätverk</string>
+    <string name="setting_nostr_relays">Nostr Reläer</string>
+    <string name="setting_tor_nostr">\u0020\u0020Tor (Nostr)</string>
+
+    <!-- Toast-meddelanden -->
+    <string name="toast_ble_mesh_enabled">BLE Mesh aktiverat</string>
+    <string name="toast_ble_mesh_disabled">BLE Mesh inaktiverat</string>
+    <string name="toast_nostr_enabled">Nostr aktiverat</string>
+    <string name="toast_nostr_disabled">Nostr inaktiverat</string>
+    <string name="toast_tor_p2p_unsupported">Tor med P2P stöds inte. Inaktivera P2P först.</string>
+    <string name="toast_p2p_tor_disabled">P2P över Tor stöds inte. Tor inaktiverades.</string>
+
+    <!-- Bildväljare -->
+    <string name="action_gallery">Galleri</string>
+    <string name="action_camera">Kamera</string>
+
+    <!-- Tillgänglighetsbeskrivningar -->
+    <string name="cd_refresh_p2p">Uppdatera P2P-anslutning</string>
+    <string name="cd_direct_bluetooth">Direkt Bluetooth</string>
+    <string name="cd_routed">Routad</string>
+    <string name="cd_p2p_connection">P2P-anslutning</string>
+    <string name="cd_teleported_user">Teleporterad användare</string>
+    <string name="cd_user">Användare</string>
+    <string name="cd_backspace">backsteg</string>
+    <string name="cd_verified">Verifierad</string>
+    <string name="cd_add_node">Lägg till nod</string>
+    <string name="cd_remove">Ta bort</string>
+    <string name="action_enable_location">Aktivera plats</string>
+
+    <!-- Grupp-ID etikett -->
+    <string name="label_group_id_fmt">Grupp-ID: %1$s</string>
+
+    <!-- PIN-platshållare -->
+    <string name="placeholder_6_digits">6 siffror</string>
+
+    <!-- P2P-inställningar -->
+    <string name="p2p_settings_header">INSTÄLLNINGAR</string>
+    <string name="p2p_enable">Aktivera P2P</string>
+    <string name="p2p_enable_desc">Anslut direkt till andra Zemzeme-peers</string>
+    <string name="p2p_use_default_nodes">Använd standardnoder</string>
+    <string name="p2p_default_nodes_desc">Anslut till publika IPFS-bootstrap-noder</string>
+    <string name="p2p_custom_nodes_header">ANPASSADE BOOTSTRAP-NODER</string>
+    <string name="p2p_no_custom_nodes">Inga anpassade noder konfigurerade. Tryck + för att lägga till.</string>
+    <string name="p2p_add_bootstrap_node">Lägg till bootstrap-nod</string>
+    <string name="p2p_enter_multiaddr">Ange multiaddr för bootstrap-noden:</string>
+    <string name="p2p_recovering">Återställer…</string>
+    <string name="p2p_recover_connection">Återställ anslutning</string>
+    <string name="action_add">Lägg till</string>
+
+    <!-- Aviseringskanaler -->
+    <string name="notification_channel_direct_messages">Direktmeddelanden</string>
+    <string name="notification_channel_dm_desc">Aviseringar för privata meddelanden från andra användare</string>
+    <string name="notification_channel_geohash_chats">Geohash-chattar</string>
+    <string name="notification_channel_geohash_desc">Aviseringar för nämningar och meddelanden i geohash-platskanaler</string>
+
+    <!-- Debug: mesh-topologi -->
+    <string name="debug_mesh_topology">mesh-topologi</string>
+    <string name="debug_no_gossip">inget gossip ännu</string>
+
+    <!-- Debug: självuppdatering -->
+    <string name="debug_self_update">självuppdatering (dev)</string>
+    <string name="debug_current_version_fmt">Aktuell version: %1$s</string>
+    <string name="debug_download_updates_desc">Ladda ned och installera uppdateringar från GitHub-releaser</string>
+    <string name="update_status_ready">Redo</string>
+    <string name="update_status_checking">Letar efter uppdateringar…</string>
+    <string name="update_status_available">Uppdatering tillgänglig: %1$s</string>
+    <string name="update_status_downloading">Laddar ned: %1$d%%</string>
+    <string name="update_status_ready_install">Redo att installera: %1$s</string>
+    <string name="update_status_installing">Installerar…</string>
+    <string name="update_status_success">Uppdatering installerad! Starta om appen.</string>
+    <string name="update_status_pending_action">Väntar på användarbekräftelse…</string>
+    <string name="update_status_error">Fel: %1$s</string>
+    <string name="update_grant_install_permission">Ge installationsbehörighet</string>
+    <string name="update_install">Installera uppdatering</string>
+    <string name="update_check">Sök efter uppdateringar</string>
+    <string name="debug_test_update_dialog">Testa uppdateringsdialog</string>
+
+    <!-- Debug: bandbreddsgrafer -->
+    <string name="debug_overall">Totalt</string>
+    <string name="debug_per_device">Per enhet</string>
+    <string name="debug_per_peer">Per peer</string>
+    <string name="debug_incoming">Inkommande</string>
+    <string name="debug_outgoing">Utgående</string>
+
+    <!-- Debug: konsol -->
+    <string name="debug_refreshing">Uppdaterar…</string>
+    <string name="debug_refresh">Uppdatera</string>
+    <string name="debug_clear_logs">Rensa loggar</string>
+    <string name="debug_preparing_export">Förbereder export…</string>
+    <string name="debug_share_logs">Dela loggar</string>
+
+    <!-- FAB menu items -->
+    <string name="fab_scan_qr">Skanna QR</string>
+    <string name="fab_choose_city">Välj stad</string>
+    <string name="fab_join_group">Gå med i grupp</string>
+    <string name="fab_create_group">Skapa grupp</string>
+    <!-- Section headers -->
+    <string name="section_nearby">I närheten</string>
+    <string name="section_geographic_groups">Geografiska grupper</string>
+    <string name="section_my_groups">Mina grupper</string>
+    <string name="section_contacts">Kontakter</string>
+
+    <!-- New translated strings -->
+    <string name="section_username">ANVÄNDARNAMN</string>
+    <string name="section_theme">TEMA</string>
+    <string name="section_settings">INSTÄLLNINGAR</string>
+    <string name="section_network">NÄTVERK</string>
+    <string name="section_status">STATUS</string>
+    <string name="app_lock_subtitle_pin">PIN</string>
+    <string name="p2p_networking_title">P2P-nätverk</string>
+    <string name="p2p_status_no_peers">Inga noder</string>
+    <string name="p2p_status_connected">Ansluten</string>
+    <string name="p2p_status_connecting">Ansluter…</string>
+    <string name="p2p_status_disconnected">Frånkopplad</string>
+    <string name="p2p_status_error">Fel</string>
+    <string name="p2p_peers_connected_fmt">%1$d noder anslutna</string>
+    <string name="p2p_dht_fmt">DHT: %1$s</string>
+    <string name="p2p_peer_id_fmt">Peer ID: %1$s…%2$s</string>
+    <string name="p2p_active_nodes_fmt">Aktiva noder: %1$d</string>
+    <string name="location_acquiring_title">Hämtar plats</string>
+    <string name="location_acquiring_desc">Vänta medan din plats fastställs</string>
+    <string name="location_unavailable_title">Plats ej tillgänglig</string>
+    <string name="location_permission_required_notes">Platsbehörighet krävs för anteckningar</string>
+
+    <!-- Connection indicator -->
+    <string name="connection_searching_peers">Söker efter noder…</string>
+    <string name="connection_connecting_peers">Ansluter till noder…</string>
+    <plurals name="connection_peers_connected">
+        <item quantity="one">%1$d nod ansluten</item>
+        <item quantity="other">%1$d noder anslutna</item>
+    </plurals>
+    <string name="connection_no_new_messages">Ansluten – inga nya meddelanden</string>
+    <string name="connection_error">Anslutningsfel</string>
+    <string name="connection_direct">Direkt</string>
+    <string name="connection_connected">Ansluten</string>
+
+    <!-- Debug connection indicator -->
+    <string name="debug_p2p_no_info">P2P (ingen info)</string>
+    <string name="debug_nostr_relay">Nostr-relä</string>
+    <string name="debug_ble_direct">BLE direkt</string>
+    <string name="debug_p2p_searching">P2P: söker efter noder…</string>
+    <string name="debug_p2p_connecting">P2P: ansluter till noder…</string>
+    <string name="debug_nostr_no_messages">Nostr ansluten – inga nya meddelanden</string>
+    <string name="debug_connection_failed">anslutning misslyckades</string>
+    <string name="debug_error_fmt">fel: %1$s</string>
+
+</resources>

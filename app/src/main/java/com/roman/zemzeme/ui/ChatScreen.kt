@@ -1,0 +1,850 @@
+package com.roman.zemzeme.ui
+// [Goose] Bridge file share events to ViewModel via dispatcher is installed in ChatScreen composition
+
+// [Goose] Installing FileShareDispatcher handler in ChatScreen to forward file sends to ViewModel
+
+
+import androidx.compose.animation.*
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
+import android.content.Intent
+import android.provider.Settings
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.BluetoothDisabled
+import androidx.compose.material.icons.filled.WifiOff
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.AirplanemodeActive
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.roman.zemzeme.geohash.isMeshView
+import com.roman.zemzeme.BuildConfig
+import com.roman.zemzeme.model.ZemzemeMessage
+import com.roman.zemzeme.onboarding.NetworkStatus
+import com.roman.zemzeme.onboarding.NetworkStatusManager
+import com.roman.zemzeme.ui.media.FullScreenImageViewer
+
+/**
+ * Main ChatScreen - REFACTORED to use component-based architecture
+ * This is now a coordinator that orchestrates the following UI components:
+ * - ChatHeader: App bar, navigation, peer counter
+ * - MessageComponents: Message display and formatting
+ * - InputComponents: Message input and command suggestions
+ * - SidebarComponents: Navigation drawer with channels and people
+ * - AboutSheet: App info and password prompts
+ * - ChatUIUtils: Utility functions for formatting and colors
+ */
+@Composable
+fun ChatScreen(viewModel: ChatViewModel, isBluetoothEnabled: Boolean = true, onBackToHome: () -> Unit = {}) {
+    val colorScheme = MaterialTheme.colorScheme
+    val messages by viewModel.messages.collectAsStateWithLifecycle()
+    val connectedPeers by viewModel.connectedPeers.collectAsStateWithLifecycle()
+    val nickname by viewModel.nickname.collectAsStateWithLifecycle()
+    val selectedPrivatePeer by viewModel.selectedPrivateChatPeer.collectAsStateWithLifecycle()
+    val currentChannel by viewModel.currentChannel.collectAsStateWithLifecycle()
+    val joinedChannels by viewModel.joinedChannels.collectAsStateWithLifecycle()
+    val hasUnreadChannels by viewModel.unreadChannelMessages.collectAsStateWithLifecycle()
+    val hasUnreadPrivateMessages by viewModel.unreadPrivateMessages.collectAsStateWithLifecycle()
+    val privateChats by viewModel.privateChats.collectAsStateWithLifecycle()
+    val channelMessages by viewModel.channelMessages.collectAsStateWithLifecycle()
+    val showCommandSuggestions by viewModel.showCommandSuggestions.collectAsStateWithLifecycle()
+    val commandSuggestions by viewModel.commandSuggestions.collectAsStateWithLifecycle()
+    val showMentionSuggestions by viewModel.showMentionSuggestions.collectAsStateWithLifecycle()
+    val mentionSuggestions by viewModel.mentionSuggestions.collectAsStateWithLifecycle()
+    val showAppInfo by viewModel.showAppInfo.collectAsStateWithLifecycle()
+    val showMeshPeerListSheet by viewModel.showMeshPeerList.collectAsStateWithLifecycle()
+    val privateChatSheetPeer by viewModel.privateChatSheetPeer.collectAsStateWithLifecycle()
+    val showVerificationSheet by viewModel.showVerificationSheet.collectAsStateWithLifecycle()
+    val showSecurityVerificationSheet by viewModel.showSecurityVerificationSheet.collectAsStateWithLifecycle()
+
+    var messageText by remember { mutableStateOf(TextFieldValue("")) }
+    var showPasswordPrompt by remember { mutableStateOf(false) }
+    var showPasswordDialog by remember { mutableStateOf(false) }
+    var passwordInput by remember { mutableStateOf("") }
+    var showLocationChannelsSheet by remember { mutableStateOf(false) }
+    var showLocationNotesSheet by remember { mutableStateOf(false) }
+    var showUserSheet by remember { mutableStateOf(false) }
+    var selectedUserForSheet by remember { mutableStateOf("") }
+    var selectedMessageForSheet by remember { mutableStateOf<ZemzemeMessage?>(null) }
+    var showFullScreenImageViewer by remember { mutableStateOf(false) }
+    var viewerImagePaths by remember { mutableStateOf(emptyList<String>()) }
+    var initialViewerIndex by remember { mutableStateOf(0) }
+    var forceScrollToBottom by remember { mutableStateOf(false) }
+    var isScrolledUp by remember { mutableStateOf(false) }
+
+    // Show password dialog when needed
+    LaunchedEffect(showPasswordPrompt) {
+        showPasswordDialog = showPasswordPrompt
+    }
+
+    val isConnected by viewModel.isConnected.collectAsStateWithLifecycle()
+    val passwordPromptChannel by viewModel.passwordPromptChannel.collectAsStateWithLifecycle()
+
+    // Get location channel info for timeline switching
+    val selectedLocationChannel by viewModel.selectedLocationChannel.collectAsStateWithLifecycle()
+    val transportToggles by com.roman.zemzeme.p2p.P2PConfig.transportTogglesFlow.collectAsStateWithLifecycle()
+    val isBleSettingEnabled = transportToggles.bleEnabled
+    val isP2PEnabled = transportToggles.p2pEnabled
+    val isNostrEnabled = transportToggles.nostrEnabled
+    val networkStatus by NetworkStatusManager.networkStatusFlow.collectAsStateWithLifecycle()
+    val isAirplaneModeOn by NetworkStatusManager.airplaneModeFlow.collectAsStateWithLifecycle()
+
+    // Determine what messages to show based on current context (unified timelines)
+    // Legacy private chat timeline removed - private chats now exclusively use PrivateChatSheet
+    val displayMessages = when {
+        currentChannel != null -> channelMessages[currentChannel] ?: emptyList()
+        else -> {
+            val locationChannel = selectedLocationChannel
+            if (locationChannel is com.roman.zemzeme.geohash.ChannelID.Location) {
+                val geokey = "geo:${locationChannel.channel.geohash}"
+                channelMessages[geokey] ?: emptyList()
+            } else {
+                messages // Mesh timeline
+            }
+        }
+    }
+
+    // Show media buttons in all channel contexts (mesh, named channels, and geohash location channels)
+    val showMediaButtons = true
+
+    // Use WindowInsets to handle keyboard properly
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colorScheme.background) // Extend background to fill entire screen including status bar
+    ) {
+        val headerHeight = 82.dp
+
+        // Main content area that responds to keyboard/window insets
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.ime) // This handles keyboard insets
+                .windowInsetsPadding(WindowInsets.navigationBars) // Add bottom padding when keyboard is not expanded
+        ) {
+            // Header spacer - creates exact space for the floating header (status bar + compact header)
+            Spacer(
+                modifier = Modifier
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .height(headerHeight)
+            )
+
+            // BLE disconnection banner — shown in #mesh view when BT or BLE setting is off
+            if (shouldShowBleMeshBanner(isBluetoothEnabled, isBleSettingEnabled, currentChannel, selectedLocationChannel)) {
+                BleMeshBanner(
+                    isBluetoothEnabled = isBluetoothEnabled,
+                    isBleSettingEnabled = isBleSettingEnabled,
+                    onOpenAppSettings = { viewModel.showAppInfo() }
+                )
+            }
+
+            // Network banner — shown in internet-requiring channels when no internet or no transport enabled
+            if (shouldShowNetworkBanner(networkStatus, isP2PEnabled, isNostrEnabled, currentChannel, selectedLocationChannel)) {
+                NetworkBanner(
+                    networkStatus = networkStatus,
+                    isP2PEnabled = isP2PEnabled,
+                    isNostrEnabled = isNostrEnabled,
+                    isAirplaneModeOn = isAirplaneModeOn,
+                    onOpenAppSettings = { viewModel.showAppInfo() }
+                )
+            }
+
+            // Messages area - takes up available space, will compress when keyboard appears
+            MessagesList(
+                messages = displayMessages,
+                currentUserNickname = nickname,
+                meshService = viewModel.meshService,
+                modifier = Modifier.weight(1f),
+                forceScrollToBottom = forceScrollToBottom,
+                onScrolledUpChanged = { isUp -> isScrolledUp = isUp },
+                onNicknameClick = { fullSenderName ->
+                    // Single click - mention user in text input
+                    val currentText = messageText.text
+                    
+                    // Extract base nickname and hash suffix from full sender name
+                    val (baseName, hashSuffix) = splitSuffix(fullSenderName)
+                    
+                    // Check if we're in a geohash channel to include hash suffix
+                    val selectedLocationChannel = viewModel.selectedLocationChannel.value
+                    val mentionText = if (selectedLocationChannel is com.roman.zemzeme.geohash.ChannelID.Location && hashSuffix.isNotEmpty()) {
+                        // In geohash chat - include the hash suffix from the full display name
+                        "@$baseName$hashSuffix"
+                    } else {
+                        // Regular chat - just the base nickname
+                        "@$baseName"
+                    }
+                    
+                    val newText = when {
+                        currentText.isEmpty() -> "$mentionText "
+                        currentText.endsWith(" ") -> "$currentText$mentionText "
+                        else -> "$currentText $mentionText "
+                    }
+                    
+                    messageText = TextFieldValue(
+                        text = newText,
+                        selection = TextRange(newText.length)
+                    )
+                },
+                onMessageLongPress = { message ->
+                    // Message long press - open user action sheet with message context
+                    // Extract base nickname from message sender (contains all necessary info)
+                    val (baseName, _) = splitSuffix(message.sender)
+                    selectedUserForSheet = baseName
+                    selectedMessageForSheet = message
+                    showUserSheet = true
+                },
+                onCancelTransfer = { msg ->
+                    viewModel.cancelMediaSend(msg.id)
+                },
+                onImageClick = { currentPath, allImagePaths, initialIndex ->
+                    viewerImagePaths = allImagePaths
+                    initialViewerIndex = initialIndex
+                    showFullScreenImageViewer = true
+                }
+            )
+            // Input area - stays at bottom
+        // Bridge file share from lower-level input to ViewModel
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        com.roman.zemzeme.ui.events.FileShareDispatcher.setHandler { peer, channel, path ->
+            viewModel.sendFileNote(peer, channel, path)
+        }
+    }
+
+    ChatInputSection(
+        messageText = messageText,
+        onMessageTextChange = { newText: TextFieldValue ->
+            messageText = newText
+            viewModel.updateCommandSuggestions(newText.text)
+            viewModel.updateMentionSuggestions(newText.text)
+        },
+        onSend = {
+            if (messageText.text.trim().isNotEmpty()) {
+                viewModel.sendMessage(messageText.text.trim())
+                messageText = TextFieldValue("")
+                forceScrollToBottom = !forceScrollToBottom // Toggle to trigger scroll
+            }
+        },
+        onSendVoiceNote = { peer, onionOrChannel, path ->
+            viewModel.sendVoiceNote(peer, onionOrChannel, path)
+        },
+        onSendImageNote = { peer, onionOrChannel, path ->
+            viewModel.sendImageNote(peer, onionOrChannel, path)
+        },
+        onSendFileNote = { peer, onionOrChannel, path ->
+            viewModel.sendFileNote(peer, onionOrChannel, path)
+        },
+        
+        showCommandSuggestions = showCommandSuggestions,
+        commandSuggestions = commandSuggestions,
+        showMentionSuggestions = showMentionSuggestions,
+        mentionSuggestions = mentionSuggestions,
+        onCommandSuggestionClick = { suggestion: CommandSuggestion ->
+                    val commandText = viewModel.selectCommandSuggestion(suggestion)
+                    messageText = TextFieldValue(
+                        text = commandText,
+                        selection = TextRange(commandText.length)
+                    )
+                },
+                onMentionSuggestionClick = { mention: String ->
+                    val mentionText = viewModel.selectMentionSuggestion(mention, messageText.text)
+                    messageText = TextFieldValue(
+                        text = mentionText,
+                        selection = TextRange(mentionText.length)
+                    )
+                },
+                selectedPrivatePeer = null,
+                currentChannel = currentChannel,
+                nickname = nickname,
+                colorScheme = colorScheme,
+                showMediaButtons = showMediaButtons,
+                enabled = !shouldShowBleMeshBanner(isBluetoothEnabled, isBleSettingEnabled, currentChannel, selectedLocationChannel)
+                    && !shouldShowNetworkBanner(networkStatus, isP2PEnabled, isNostrEnabled, currentChannel, selectedLocationChannel)
+            )
+        }
+
+        // Floating header - positioned absolutely at top, ignores keyboard
+        ChatFloatingHeader(
+            headerHeight = headerHeight,
+            selectedPrivatePeer = null,
+            currentChannel = currentChannel,
+            nickname = nickname,
+            viewModel = viewModel,
+            colorScheme = colorScheme,
+            onSidebarToggle = { viewModel.showMeshPeerList() },
+            onBackToHome = onBackToHome,
+            onShowAppInfo = { viewModel.showAppInfo() },
+            onPanicClear = { viewModel.panicClearAllData() },
+            onLocationChannelsClick = { showLocationChannelsSheet = true },
+            onLocationNotesClick = { showLocationNotesSheet = true }
+        )
+
+        // Divider under header - positioned after status bar + header height
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .offset(y = headerHeight)
+                .zIndex(1f),
+            color = colorScheme.outline.copy(alpha = 0.3f)
+        )
+
+        // Scroll-to-bottom floating button
+        AnimatedVisibility(
+            visible = isScrolledUp,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 64.dp)
+                .zIndex(1.5f)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .windowInsetsPadding(WindowInsets.ime)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = colorScheme.background,
+                tonalElevation = 3.dp,
+                shadowElevation = 6.dp,
+                border = BorderStroke(2.dp, Color(0xFF00F5FF))
+            ) {
+                IconButton(onClick = { forceScrollToBottom = !forceScrollToBottom }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDownward,
+                        contentDescription = stringResource(com.roman.zemzeme.R.string.cd_scroll_to_bottom),
+                        tint = Color(0xFF00F5FF)
+                    )
+                }
+            }
+        }
+    }
+
+    // Full-screen image viewer - separate from other sheets to allow image browsing without navigation
+    if (showFullScreenImageViewer) {
+        FullScreenImageViewer(
+            imagePaths = viewerImagePaths,
+            initialIndex = initialViewerIndex,
+            onClose = { showFullScreenImageViewer = false }
+        )
+    }
+
+    // Dialogs and Sheets
+    ChatDialogs(
+        isBluetoothEnabled = isBluetoothEnabled,
+        showPasswordDialog = showPasswordDialog,
+        passwordPromptChannel = passwordPromptChannel,
+        passwordInput = passwordInput,
+        onPasswordChange = { passwordInput = it },
+        onPasswordConfirm = {
+            if (passwordInput.isNotEmpty()) {
+                val success = viewModel.joinChannel(passwordPromptChannel!!, passwordInput)
+                if (success) {
+                    showPasswordDialog = false
+                    passwordInput = ""
+                }
+            }
+        },
+        onPasswordDismiss = {
+            showPasswordDialog = false
+            passwordInput = ""
+        },
+        showAppInfo = showAppInfo,
+        onAppInfoDismiss = { viewModel.hideAppInfo() },
+        showLocationChannelsSheet = showLocationChannelsSheet,
+        onLocationChannelsSheetDismiss = { showLocationChannelsSheet = false },
+        showLocationNotesSheet = showLocationNotesSheet,
+        onLocationNotesSheetDismiss = { showLocationNotesSheet = false },
+        showUserSheet = showUserSheet,
+        onUserSheetDismiss = { 
+            showUserSheet = false
+            selectedMessageForSheet = null // Reset message when dismissing
+        },
+        selectedUserForSheet = selectedUserForSheet,
+        selectedMessageForSheet = selectedMessageForSheet,
+        viewModel = viewModel,
+        showVerificationSheet = showVerificationSheet,
+        onVerificationSheetDismiss = viewModel::hideVerificationSheet,
+        showSecurityVerificationSheet = showSecurityVerificationSheet,
+        onSecurityVerificationSheetDismiss = viewModel::hideSecurityVerificationSheet,
+        showMeshPeerListSheet = showMeshPeerListSheet,
+        onMeshPeerListDismiss = viewModel::hideMeshPeerList,
+        onBackToHome = onBackToHome,
+    )
+}
+
+private fun shouldShowBleMeshBanner(
+    isBluetoothEnabled: Boolean,
+    isBleSettingEnabled: Boolean,
+    currentChannel: String?,
+    selectedLocationChannel: com.roman.zemzeme.geohash.ChannelID?
+): Boolean = (!isBluetoothEnabled || !isBleSettingEnabled) && currentChannel == null && selectedLocationChannel.isMeshView
+
+@Composable
+private fun BleMeshBanner(
+    isBluetoothEnabled: Boolean,
+    isBleSettingEnabled: Boolean,
+    onOpenAppSettings: () -> Unit
+) {
+    val context = LocalContext.current
+    val bannerColor = Color(0xFFFF3B30)
+
+    val bannerText = if (!isBleSettingEnabled) {
+        stringResource(com.roman.zemzeme.R.string.ble_banner_mesh_disabled)
+    } else {
+        stringResource(com.roman.zemzeme.R.string.ble_banner_off)
+    }
+
+    // Setting disabled → go to app settings (the BT dialog handles the rest)
+    // Setting enabled but BT off → go to Android BT settings
+    val onEnableClick: () -> Unit = if (!isBleSettingEnabled) {
+        onOpenAppSettings
+    } else {
+        { context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS)) }
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = bannerColor.copy(alpha = 0.12f)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.BluetoothDisabled,
+                contentDescription = null,
+                tint = bannerColor,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = bannerText,
+                style = MaterialTheme.typography.bodySmall,
+                color = bannerColor,
+                modifier = Modifier.weight(1f)
+            )
+            TextButton(
+                onClick = onEnableClick,
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = stringResource(com.roman.zemzeme.R.string.ble_banner_enable_btn),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = bannerColor
+                )
+            }
+        }
+    }
+}
+
+private fun shouldShowNetworkBanner(
+    networkStatus: NetworkStatus,
+    isP2PEnabled: Boolean,
+    isNostrEnabled: Boolean,
+    currentChannel: String?,
+    selectedLocationChannel: com.roman.zemzeme.geohash.ChannelID?
+): Boolean {
+    // Network banner only applies to internet-requiring views (geohash location or joined channel)
+    val isInternetRequiringView = currentChannel != null ||
+        selectedLocationChannel is com.roman.zemzeme.geohash.ChannelID.Location
+    if (!isInternetRequiringView) return false
+
+    // Both transports disabled by user
+    if (!isP2PEnabled && !isNostrEnabled) return true
+
+    // No network or no validated internet
+    return networkStatus != NetworkStatus.CONNECTED
+}
+
+@Composable
+private fun NetworkBanner(
+    networkStatus: NetworkStatus,
+    isP2PEnabled: Boolean,
+    isNostrEnabled: Boolean,
+    isAirplaneModeOn: Boolean,
+    onOpenAppSettings: () -> Unit
+) {
+    val context = LocalContext.current
+
+    val bannerText: String
+    val bannerIcon: androidx.compose.ui.graphics.vector.ImageVector
+    val onActionClick: () -> Unit
+    val bannerColor: Color
+
+    when {
+        // User has both transports disabled — orange/yellow
+        !isP2PEnabled && !isNostrEnabled -> {
+            bannerColor = Color(0xFFFF9500)
+            bannerText = stringResource(com.roman.zemzeme.R.string.network_banner_transports_disabled)
+            bannerIcon = Icons.Filled.CloudOff
+            onActionClick = onOpenAppSettings
+        }
+        // Airplane mode on — red, open airplane mode settings directly
+        isAirplaneModeOn -> {
+            bannerColor = Color(0xFFFF3B30)
+            bannerText = stringResource(com.roman.zemzeme.R.string.network_banner_airplane_mode)
+            bannerIcon = Icons.Filled.AirplanemodeActive
+            onActionClick = {
+                try {
+                    context.startActivity(Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS))
+                } catch (_: Exception) {
+                    context.startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
+                }
+            }
+        }
+        // No network at all — red
+        networkStatus == NetworkStatus.DISCONNECTED -> {
+            bannerColor = Color(0xFFFF3B30)
+            bannerText = stringResource(com.roman.zemzeme.R.string.network_banner_disconnected)
+            bannerIcon = Icons.Filled.WifiOff
+            onActionClick = {
+                try {
+                    context.startActivity(Intent(android.provider.Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
+                } catch (_: Exception) {
+                    context.startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
+                }
+            }
+        }
+        // Connected but no validated internet — red
+        else -> {
+            bannerColor = Color(0xFFFF3B30)
+            bannerText = stringResource(com.roman.zemzeme.R.string.network_banner_no_internet)
+            bannerIcon = Icons.Filled.WifiOff
+            onActionClick = {
+                try {
+                    context.startActivity(Intent(android.provider.Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
+                } catch (_: Exception) {
+                    context.startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
+                }
+            }
+        }
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = bannerColor.copy(alpha = 0.12f)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = bannerIcon,
+                contentDescription = null,
+                tint = bannerColor,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = bannerText,
+                style = MaterialTheme.typography.bodySmall,
+                color = bannerColor,
+                modifier = Modifier.weight(1f)
+            )
+            TextButton(
+                onClick = onActionClick,
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = if (!isP2PEnabled && !isNostrEnabled) {
+                        stringResource(com.roman.zemzeme.R.string.network_banner_settings_btn)
+                    } else {
+                        stringResource(com.roman.zemzeme.R.string.ble_banner_enable_btn)
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = bannerColor
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ChatInputSection(
+    messageText: TextFieldValue,
+    onMessageTextChange: (TextFieldValue) -> Unit,
+    onSend: () -> Unit,
+    onSendVoiceNote: (String?, String?, String) -> Unit,
+    onSendImageNote: (String?, String?, String) -> Unit,
+    onSendFileNote: (String?, String?, String) -> Unit,
+    showCommandSuggestions: Boolean,
+    commandSuggestions: List<CommandSuggestion>,
+    showMentionSuggestions: Boolean,
+    mentionSuggestions: List<String>,
+    onCommandSuggestionClick: (CommandSuggestion) -> Unit,
+    onMentionSuggestionClick: (String) -> Unit,
+    selectedPrivatePeer: String?,
+    currentChannel: String?,
+    nickname: String,
+    colorScheme: ColorScheme,
+    showMediaButtons: Boolean,
+    enabled: Boolean = true
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = colorScheme.background
+    ) {
+        Column {
+            HorizontalDivider(color = colorScheme.outline.copy(alpha = 0.3f))
+            // Command suggestions box
+            if (showCommandSuggestions && commandSuggestions.isNotEmpty()) {
+                CommandSuggestionsBox(
+                    suggestions = commandSuggestions,
+                    onSuggestionClick = onCommandSuggestionClick,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                HorizontalDivider(color = colorScheme.outline.copy(alpha = 0.2f))
+            }
+            // Mention suggestions box
+            if (showMentionSuggestions && mentionSuggestions.isNotEmpty()) {
+                MentionSuggestionsBox(
+                    suggestions = mentionSuggestions,
+                    onSuggestionClick = onMentionSuggestionClick,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                HorizontalDivider(color = colorScheme.outline.copy(alpha = 0.2f))
+            }
+            MessageInput(
+                value = messageText,
+                onValueChange = onMessageTextChange,
+                onSend = onSend,
+                onSendVoiceNote = onSendVoiceNote,
+                onSendImageNote = onSendImageNote,
+                onSendFileNote = onSendFileNote,
+                selectedPrivatePeer = selectedPrivatePeer,
+                currentChannel = currentChannel,
+                nickname = nickname,
+                showMediaButtons = showMediaButtons,
+                enabled = enabled,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChatFloatingHeader(
+    headerHeight: Dp,
+    selectedPrivatePeer: String?,
+    currentChannel: String?,
+    nickname: String,
+    viewModel: ChatViewModel,
+    colorScheme: ColorScheme,
+    onSidebarToggle: () -> Unit,
+    onBackToHome: () -> Unit,
+    onShowAppInfo: () -> Unit,
+    onPanicClear: () -> Unit,
+    onLocationChannelsClick: () -> Unit,
+    onLocationNotesClick: () -> Unit
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val locationManager = remember { com.roman.zemzeme.geohash.LocationChannelManager.getInstance(context) }
+    
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .zIndex(1f)
+            .windowInsetsPadding(WindowInsets.statusBars), // Extend into status bar area
+        color = colorScheme.background // Solid background color extending into status bar
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(headerHeight)
+                .padding(horizontal = 4.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            ChatHeaderContent(
+                selectedPrivatePeer = selectedPrivatePeer,
+                currentChannel = currentChannel,
+                nickname = nickname,
+                viewModel = viewModel,
+                onBackClick = {
+                    when {
+                        selectedPrivatePeer != null -> viewModel.endPrivateChat()
+                        currentChannel != null -> viewModel.switchToChannel(null)
+                    }
+                },
+                onBackToHome = onBackToHome,
+                onSidebarClick = onSidebarToggle,
+                onTripleClick = onPanicClear,
+                onShowAppInfo = onShowAppInfo,
+                onLocationChannelsClick = onLocationChannelsClick,
+                onLocationNotesClick = {
+                    // Ensure location is loaded before showing sheet
+                    locationManager.refreshChannels()
+                    onLocationNotesClick()
+                }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChatDialogs(
+    isBluetoothEnabled: Boolean,
+    showPasswordDialog: Boolean,
+    passwordPromptChannel: String?,
+    passwordInput: String,
+    onPasswordChange: (String) -> Unit,
+    onPasswordConfirm: () -> Unit,
+    onPasswordDismiss: () -> Unit,
+    showAppInfo: Boolean,
+    onAppInfoDismiss: () -> Unit,
+    showLocationChannelsSheet: Boolean,
+    onLocationChannelsSheetDismiss: () -> Unit,
+    showLocationNotesSheet: Boolean,
+    onLocationNotesSheetDismiss: () -> Unit,
+    showUserSheet: Boolean,
+    onUserSheetDismiss: () -> Unit,
+    selectedUserForSheet: String,
+    selectedMessageForSheet: ZemzemeMessage?,
+    viewModel: ChatViewModel,
+    showVerificationSheet: Boolean,
+    onVerificationSheetDismiss: () -> Unit,
+    showSecurityVerificationSheet: Boolean,
+    onSecurityVerificationSheetDismiss: () -> Unit,
+    showMeshPeerListSheet: Boolean,
+    onMeshPeerListDismiss: () -> Unit,
+    onBackToHome: () -> Unit = {},
+) {
+    val privateChatSheetPeer by viewModel.privateChatSheetPeer.collectAsStateWithLifecycle()
+
+    // Password dialog
+    PasswordPromptDialog(
+        show = showPasswordDialog,
+        channelName = passwordPromptChannel,
+        passwordInput = passwordInput,
+        onPasswordChange = onPasswordChange,
+        onConfirm = onPasswordConfirm,
+        onDismiss = onPasswordDismiss
+    )
+
+    // About sheet
+    var showDebugSheet by remember { mutableStateOf(false) }
+    val debugUiEnabled by com.roman.zemzeme.ui.debug.DebugSettingsManager
+        .getInstance().debugUiEnabled.collectAsState()
+    val showDebugAccess = debugUiEnabled || BuildConfig.DEBUG
+    val currentNickname by viewModel.nickname.collectAsStateWithLifecycle()
+    AboutSheet(
+        isPresented = showAppInfo,
+        onDismiss = onAppInfoDismiss,
+        isBluetoothEnabled = isBluetoothEnabled,
+        onShowDebug = if (showDebugAccess) ({ showDebugSheet = true }) else null,
+        nickname = currentNickname,
+        onNicknameChange = { viewModel.setNickname(it) }
+    )
+    if (showDebugAccess && showDebugSheet) {
+        com.roman.zemzeme.ui.debug.DebugSettingsSheet(
+            isPresented = showDebugSheet,
+            onDismiss = { showDebugSheet = false },
+            meshService = viewModel.meshService
+        )
+    }
+    
+    // Location channels sheet
+    if (showLocationChannelsSheet) {
+        LocationChannelsSheet(
+            isPresented = showLocationChannelsSheet,
+            onDismiss = onLocationChannelsSheetDismiss,
+            viewModel = viewModel
+        )
+    }
+    
+    // Location notes sheet (extracted to separate presenter)
+    if (showLocationNotesSheet) {
+        LocationNotesSheetPresenter(
+            viewModel = viewModel,
+            onDismiss = onLocationNotesSheetDismiss
+        )
+    }
+    
+    // User action sheet
+    if (showUserSheet) {
+        ChatUserSheet(
+            isPresented = showUserSheet,
+            onDismiss = onUserSheetDismiss,
+            targetNickname = selectedUserForSheet,
+            selectedMessage = selectedMessageForSheet,
+            viewModel = viewModel
+        )
+    }
+    // MeshPeerList sheet (network view)
+    if (showMeshPeerListSheet){
+        MeshPeerListSheet(
+            isPresented = showMeshPeerListSheet,
+            viewModel = viewModel,
+            onDismiss = onMeshPeerListDismiss,
+            onShowVerification = {
+                onMeshPeerListDismiss()
+                viewModel.showVerificationSheet(fromSidebar = true)
+            }
+        )
+    }
+
+    if (showVerificationSheet) {
+        VerificationSheet(
+            isPresented = showVerificationSheet,
+            onDismiss = onVerificationSheetDismiss,
+            viewModel = viewModel
+        )
+    }
+
+    if (showSecurityVerificationSheet) {
+        SecurityVerificationSheet(
+            isPresented = showSecurityVerificationSheet,
+            onDismiss = onSecurityVerificationSheetDismiss,
+            viewModel = viewModel
+        )
+    }
+
+    if (privateChatSheetPeer != null) {
+        // Full-screen loading overlay to hide mesh timeline while PrivateChatSheet animates in
+        val cs = MaterialTheme.colorScheme
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(cs.background)
+                .zIndex(10f),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                color = cs.primary,
+                modifier = Modifier.size(36.dp),
+                strokeWidth = 3.dp
+            )
+        }
+
+        PrivateChatSheet(
+            isPresented = true,
+            peerID = privateChatSheetPeer!!,
+            viewModel = viewModel,
+            onDismiss = {
+                val goHome = viewModel.consumeEnteredViaContact()
+                viewModel.hidePrivateChatSheet()
+                viewModel.endPrivateChat()
+                if (goHome) {
+                    onBackToHome()
+                }
+            }
+        )
+    }
+}
