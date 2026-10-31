@@ -281,3 +281,10 @@ The dedicated Android CI run for the current channel-verification changes is que
 - Unknown TLV types remain skippable for forward compatibility. The parser still requires all three known identity fields.
 - Added unit tests for valid round trips, invalid key lengths, empty nicknames, duplicate fields, truncated headers, malformed UTF-8 and unknown-field compatibility.
 - This validates the structure of the announced identity data; it does not by itself prove that a peer ID is cryptographically bound to the Noise public key or provide out-of-band identity verification. That binding remains a separate item to verify against the transport's peer-ID derivation and rotation rules before changing behavior.
+
+### Peer-ID to Noise-key binding — 2026-10-31
+
+- Source inspection confirmed the local peer-ID derivation: the app uses the first 16 hexadecimal characters of SHA-256 over the 32-byte Noise static public key. RoutedPacket.peerID is parsed from the packet sender ID.
+- MessageHandler.handleAnnounce now checks that the announced Noise static key derives the incoming packet peer ID before trusting the self-announced Ed25519 signing key or storing the peer identity.
+- Added PeerIdentityBinding and unit tests for valid derivation, uppercase hex, mismatched IDs, malformed IDs and incorrect key lengths.
+- This closes the specific first-announcement spoofing gap where an attacker could previously sign an announcement with their own signing key while claiming another sender ID. It does not provide out-of-band human identity verification or prevent a legitimate identity owner from changing their signing key without a separate key-continuity policy.
