@@ -312,6 +312,22 @@ class SecurityManagerTest {
         )
     }
 
+    @Test
+    fun `public verifySignature rejects missing signatures for protected packet types`() {
+        val packet = ZemzemePacket(
+            type = MessageType.MESSAGE.value,
+            ttl = 10u,
+            senderID = otherPeerID,
+            payload = dummyPayload
+        )
+        packet.signature = null
+
+        assertFalse(
+            "Public verification must fail closed when a protected packet has no signature",
+            securityManager.verifySignature(packet, otherPeerID)
+        )
+    }
+
     private fun setupKnownPeer(peerID: String, signingKey: ByteArray) {
         val info = PeerInfo(
             id = peerID,
