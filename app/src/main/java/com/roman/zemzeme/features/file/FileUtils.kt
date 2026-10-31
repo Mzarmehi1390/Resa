@@ -212,7 +212,7 @@ object FileUtils {
         require(baseDir.isDirectory) { "Incoming file destination is not a directory" }
 
         val safeBaseName = file.fileName
-            .replace('\\\\', '_')
+            .replace('\\', '_')
             .replace('/', '_')
             .replace(Regex("[^A-Za-z0-9._-]"), "_")
             .trim('.', '_', ' ')
