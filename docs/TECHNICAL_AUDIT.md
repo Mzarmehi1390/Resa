@@ -310,4 +310,4 @@ The dedicated Android CI run for the current channel-verification changes is que
 - Trust state is monotonic for a pinned identity: a later update marked unverified cannot downgrade a peer whose identity is already pinned.
 - When a legacy in-memory peer entry lacks verified keys, PeerManager prefers the authenticated persisted record for signature-verification lookups.
 - The codec additionally bounds stored database size and rejects blank nicknames and unexpected GCM nonce sizes.
-
+- Unverified legacy peer-cache entries cannot override the nickname or public keys from a persisted verified identity during signature-verification lookups.
