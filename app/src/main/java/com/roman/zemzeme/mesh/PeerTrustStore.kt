@@ -49,7 +49,7 @@ internal object PeerTrustRecordCodec {
                 require(isValidPeerId(record.peerID)) { "Invalid peer ID" }
                 require(ids.add(record.peerID)) { "Duplicate peer ID" }
                 val nickname = record.nickname.toByteArray(Charsets.UTF_8)
-                require(nickname.isNotEmpty() && nickname.size <= MAX_NICKNAME_BYTES) {
+                require(record.nickname.isNotBlank() && nickname.isNotEmpty() && nickname.size <= MAX_NICKNAME_BYTES) {
                     "Invalid nickname length"
                 }
                 require(record.noisePublicKey.size == KEY_BYTES) { "Invalid Noise key length" }
@@ -128,6 +128,7 @@ internal class PeerTrustStore(context: Context) {
             val stored = preferences.getString(DATA_KEY, null)
             if (stored != null) {
                 try {
+                    require(stored.length <= 4 * 1024 * 1024) { "Stored trust database is too large" }
                     val encrypted = Base64.decode(stored, Base64.NO_WRAP)
                     val plaintext = decrypt(encrypted)
                     PeerTrustRecordCodec.decode(plaintext).forEach { records[it.peerID] = it }
@@ -191,6 +192,7 @@ internal class PeerTrustStore(context: Context) {
         cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKey())
         cipher.updateAAD(AAD)
         val ciphertext = cipher.doFinal(plaintext)
+        require(cipher.iv.size == NONCE_BYTES) { "Unexpected AES-GCM nonce length" }
         return cipher.iv + ciphertext
     }
 
