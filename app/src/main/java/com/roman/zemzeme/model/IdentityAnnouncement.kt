@@ -35,9 +35,11 @@ data class IdentityAnnouncement(
      */
     fun encode(): ByteArray? {
         val nicknameData = nickname.toByteArray(Charsets.UTF_8)
-        
-        // Check size limits
-        if (nicknameData.size > 255 || noisePublicKey.size > 255 || signingPublicKey.size > 255) {
+
+        // The identity keys are fixed-size protocol fields (Curve25519 and Ed25519).
+        if (nicknameData.isEmpty() || nicknameData.size > 255 ||
+            noisePublicKey.size != 32 || signingPublicKey.size != 32
+        ) {
             return null
         }
         
@@ -66,55 +68,56 @@ data class IdentityAnnouncement(
          * Decode from TLV binary data matching iOS implementation
          */
         fun decode(data: ByteArray): IdentityAnnouncement? {
-            // Create defensive copy
-            val dataCopy = data.copyOf()
-            
+            if (data.isEmpty()) return null
+
             var offset = 0
             var nickname: String? = null
             var noisePublicKey: ByteArray? = null
             var signingPublicKey: ByteArray? = null
-            
-            while (offset + 2 <= dataCopy.size) {
-                // Read TLV type
-                val typeValue = dataCopy[offset].toUByte()
-                val type = TLVType.fromValue(typeValue)
-                offset += 1
-                
-                // Read TLV length
-                val length = dataCopy[offset].toUByte().toInt()
-                offset += 1
-                
-                // Check bounds
-                if (offset + length > dataCopy.size) return null
-                
-                // Read TLV value
-                val value = dataCopy.sliceArray(offset until offset + length)
+
+            while (offset < data.size) {
+                // Every TLV needs a complete type/length header.
+                if (data.size - offset < 2) return null
+
+                val type = TLVType.fromValue(data[offset].toUByte())
+                val length = data[offset + 1].toUByte().toInt()
+                offset += 2
+
+                if (length > data.size - offset) return null
+                val value = data.copyOfRange(offset, offset + length)
                 offset += length
-                
-                // Process known TLV types, skip unknown ones for forward compatibility
+
                 when (type) {
                     TLVType.NICKNAME -> {
-                        nickname = String(value, Charsets.UTF_8)
+                        if (nickname != null || value.isEmpty()) return null
+                        nickname = try {
+                            Charsets.UTF_8.newDecoder()
+                                .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                                .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT)
+                                .decode(java.nio.ByteBuffer.wrap(value))
+                                .toString()
+                        } catch (_: java.nio.charset.CharacterCodingException) {
+                            return null
+                        }
                     }
                     TLVType.NOISE_PUBLIC_KEY -> {
+                        if (noisePublicKey != null || value.size != 32) return null
                         noisePublicKey = value
                     }
                     TLVType.SIGNING_PUBLIC_KEY -> {
+                        if (signingPublicKey != null || value.size != 32) return null
                         signingPublicKey = value
                     }
                     null -> {
-                        // Unknown TLV; skip (tolerant decoder for forward compatibility)
-                        continue
+                        // Unknown TLVs remain skippable for forward compatibility.
                     }
                 }
             }
-            
-            // All three fields are required
-            return if (nickname != null && noisePublicKey != null && signingPublicKey != null) {
-                IdentityAnnouncement(nickname, noisePublicKey, signingPublicKey)
-            } else {
-                null
-            }
+
+            val decodedNickname = nickname ?: return null
+            val decodedNoiseKey = noisePublicKey ?: return null
+            val decodedSigningKey = signingPublicKey ?: return null
+            return IdentityAnnouncement(decodedNickname, decodedNoiseKey, decodedSigningKey)
         }
     }
     
