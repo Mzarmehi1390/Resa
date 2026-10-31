@@ -1006,16 +1006,24 @@ class BluetoothMeshService(private val context: Context) {
     /**
      * Send public message
      */
-    fun sendMessage(content: String, mentions: List<String> = emptyList(), channel: String? = null) {
+    fun sendMessage(
+        content: String,
+        mentions: List<String> = emptyList(),
+        channel: String? = null,
+        messageId: String? = null,
+        messageTimestamp: java.util.Date? = null,
+        senderNickname: String? = null
+    ) {
         if (content.isEmpty()) return
         
         serviceScope.launch {
             // Use the shared iOS-compatible message payload so channel IDs and
             // mentions survive the mesh transport instead of being discarded.
             val wireMessage = ZemzemeMessage(
-                sender = myPeerID,
+                id = messageId ?: UUID.randomUUID().toString().uppercase(),
+                sender = senderNickname?.takeIf { it.isNotBlank() } ?: myPeerID,
                 content = content,
-                timestamp = java.util.Date(),
+                timestamp = messageTimestamp ?: java.util.Date(),
                 senderPeerID = myPeerID,
                 mentions = mentions.takeIf { it.isNotEmpty() },
                 channel = channel
@@ -1031,7 +1039,7 @@ class BluetoothMeshService(private val context: Context) {
                 type = MessageType.MESSAGE.value,
                 senderID = hexStringToByteArray(myPeerID),
                 recipientID = SpecialRecipients.BROADCAST,
-                timestamp = System.currentTimeMillis().toULong(),
+                timestamp = wireMessage.timestamp.time.toULong(),
                 payload = payload,
                 signature = null,
                 ttl = MAX_TTL
