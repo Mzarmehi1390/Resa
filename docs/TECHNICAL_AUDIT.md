@@ -204,6 +204,11 @@ The channel-encryption audit was extended across ChannelManager, ChatViewModel, 
 
 **Conclusion:** This is not a single missing callback. The current channel encryption feature lacks an end-to-end protocol: key distribution/verification, message envelope and transport encoding, receive-side decryption, restart behavior and reliable send status are not connected. Do not repair it by merely calling encryptChannelMessage and continuing to use the existing plaintext sendMessage; that would still leak plaintext. Design a versioned channel-message envelope and authenticated key-distribution flow, then test two independent app instances end to end before declaring the feature operational.
 
+
+### Private-message handshake/retry trace — additional finding (2026-10-31)
+
+6. **A first private-message attempt is not queued for delivery while the Noise session is absent.** BluetoothMeshService.sendPrivateMessage checks for an established session. If none exists, it initiates a Noise handshake and exits without retaining or retrying the message. The source comment explicitly describes this as fire-and-forget. The private-file send path has the same behavior: it initiates a handshake but does not queue the file. The UI-side message can therefore exist locally even though no transport packet for that message/file was sent. This is a reliability/UX gap rather than proof that Noise encryption itself is broken. Add a bounded, lifecycle-aware pending-send queue with explicit expiration/cancellation and retry only after session establishment; surface a truthful pending/failed state and test handshake success, timeout, peer disconnect and app process death.
+
 ## 8. Current phase
 
 **Phase 1 — Repository Audit (in progress; source archive now available locally).**
