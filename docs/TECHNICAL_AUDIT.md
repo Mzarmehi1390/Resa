@@ -311,3 +311,12 @@ The dedicated Android CI run for the current channel-verification changes is que
 - When a legacy in-memory peer entry lacks verified keys, PeerManager prefers the authenticated persisted record for signature-verification lookups.
 - The codec additionally bounds stored database size and rejects blank nicknames and unexpected GCM nonce sizes.
 - Unverified legacy peer-cache entries cannot override the nickname or public keys from a persisted verified identity during signature-verification lookups.
+
+
+### Private message handler signature enforcement — 2026-10-31
+
+- The public SecurityManager.verifySignature API now uses the same strict Ed25519 packet-signature verification policy as the primary ingress validator; it no longer treats a missing signature as valid.
+- MessageHandler.handlePrivateMessage now independently requires a present signature and a successful verification result before decoding or saving private MESSAGE/FILE_TRANSFER payloads.
+- This is defense in depth: the normal PacketProcessor ingress already validates these packet types, but internal call paths must not weaken the requirement by treating a missing signature or absent delegate result as success.
+- The change does not alter NOISE_ENCRYPTED transport packets, whose confidentiality/authentication is provided by the Noise session layer rather than this plain-packet handler.
+- CI is pending for the handler-level enforcement commit; do not mark it verified until unit tests, lint and debug APK assembly complete successfully.
