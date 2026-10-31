@@ -53,6 +53,7 @@ object FileUtils {
     /**
      * Copy file to app's outgoing directory for sending
      */
+    @Synchronized
     fun copyFileForSending(context: Context, uri: Uri, originalName: String? = null): String? {
         Log.d(TAG, "🔄 Starting file copy from URI: $uri")
         return try {
@@ -214,6 +215,7 @@ object FileUtils {
      * Save an incoming file packet to app storage and return absolute path.
      * Mirrors existing behavior used in MessageHandler (preserves names and folders).
      */
+    @Synchronized
     fun saveIncomingFile(
         context: Context,
         file: com.roman.zemzeme.model.ZemzemeFilePacket
