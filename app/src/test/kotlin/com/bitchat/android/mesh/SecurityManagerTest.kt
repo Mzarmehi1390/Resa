@@ -382,7 +382,13 @@ class SecurityManagerTest {
             timestamp = timestamp,
             payload = payloadA
         )
-        val second = first.copy(payload = payloadB)
+        val second = ZemzemePacket(
+            type = MessageType.FRAGMENT.value,
+            senderID = otherPeerID.chunked(2).map { it.toInt(16).toByte() }.toByteArray(),
+            timestamp = timestamp,
+            payload = payloadB,
+            ttl = 10u
+        )
 
         assertTrue("First fragment should be accepted", securityManager.validatePacket(first, otherPeerID))
         assertTrue(
@@ -402,7 +408,13 @@ class SecurityManagerTest {
             timestamp = timestamp,
             payload = payloadA
         )
-        val second = first.copy(payload = payloadB)
+        val second = ZemzemePacket(
+            type = MessageType.LEAVE.value,
+            senderID = otherPeerID.chunked(2).map { it.toInt(16).toByte() }.toByteArray(),
+            timestamp = timestamp,
+            payload = payloadB,
+            ttl = 10u
+        )
 
         assertTrue("First packet should be accepted", securityManager.validatePacket(first, otherPeerID))
         assertTrue(
