@@ -312,6 +312,17 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
             isVerified = true
         ) ?: false
 
+        // PeerManager pins keys after first verification. Confirm that the
+        // announcement was actually accepted before updating any derived identity state.
+        val acceptedPeer = delegate?.getPeerInfo(peerID)
+        if (acceptedPeer?.isVerifiedNickname != true ||
+            acceptedPeer.noisePublicKey?.contentEquals(noisePublicKey) != true ||
+            acceptedPeer.signingPublicKey?.contentEquals(signingPublicKey) != true
+        ) {
+            Log.w(TAG, "Rejecting announcement that conflicts with pinned identity for ${peerID.take(8)}")
+            return false
+        }
+
         // Update peer ID binding with noise public key for identity management
         delegate?.updatePeerIDBinding(
             newPeerID = peerID,
