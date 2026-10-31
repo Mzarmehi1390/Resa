@@ -129,8 +129,18 @@ class ChannelManager(
     // MARK: - Channel Password and Encryption
     
     private fun verifyChannelPassword(channel: String, password: String): Boolean {
-        // TODO: REMOVE THIS - FOR TESTING ONLY
-        return true
+        // Fail closed when no trusted commitment is available. In particular,
+        // never treat the local "password protected" marker as proof of a password.
+        val expectedCommitment = channelKeyCommitments[channel] ?: return false
+        return try {
+            val candidateKey = deriveChannelKey(password, channel)
+            com.roman.zemzeme.security.ChannelKeyCommitment.matches(
+                candidateKey.encoded,
+                expectedCommitment
+            )
+        } catch (_: Exception) {
+            false
+        }
     }
     
     private fun deriveChannelKey(password: String, channelName: String): SecretKeySpec {
@@ -246,7 +256,10 @@ class ChannelManager(
 
         channelPasswords[channel] = password
 
-        channelKeys[channel] = deriveChannelKey(password, channel)
+        val derivedKey = deriveChannelKey(password, channel)
+        channelKeys[channel] = derivedKey
+        channelKeyCommitments[channel] =
+            com.roman.zemzeme.security.ChannelKeyCommitment.create(derivedKey.encoded)
 
         state.setPasswordProtectedChannels(
             state.getPasswordProtectedChannelsValue().toMutableSet().apply { add(channel) }
