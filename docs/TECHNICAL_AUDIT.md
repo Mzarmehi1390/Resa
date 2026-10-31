@@ -265,3 +265,11 @@ The dedicated Android CI run for the current channel-verification changes is que
 - Added unit tests for UTF-8 round-trip, wrong keys, altered channel/message identifiers, modified ciphertext and empty plaintext.
 - **Security boundary:** this helper requires the caller to supply a trusted AES key. It does not establish peer identity, distribute or persist keys, provide replay protection, or connect to BLE/P2P. It is not yet used by the live channel send/receive path. Existing channel messaging must not be represented as end-to-end encrypted.
 - CI for these commits is required before this isolated crypto layer is considered verified.
+
+### Packet replay-cache poisoning correction — 2026-10-31
+
+- SecurityManager.validatePacket previously inserted a packet ID into the replay/duplicate cache before verifying the packet signature. An invalid or unsigned packet with the same generated ID could therefore reserve that ID and cause a later correctly signed copy to be rejected.
+- Signature verification now completes before the packet ID is recorded. The final duplicate check and cache insertion are synchronized so concurrent receive callbacks cannot both accept the same ordinary packet.
+- The existing direct-neighbor ANNOUNCE duplicate exception is preserved; it is still subject to signature verification.
+- Added regression tests proving that both unsigned and invalidly signed packets do not poison the cache and that a later valid signature for the same packet is accepted.
+- This cache remains in-memory and time-bounded; it is not durable replay protection across process restarts. The change does not replace message-level idempotency or authenticated transport/session sequencing.
