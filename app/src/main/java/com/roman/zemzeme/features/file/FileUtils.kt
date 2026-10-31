@@ -107,10 +107,30 @@ object FileUtils {
                 }
             }
 
-            inputStream.use { input ->
-                FileOutputStream(target).use { output ->
-                    input.copyTo(output)
+            val temporary = File.createTempFile(".outgoing-", ".part", outgoingDir)
+            try {
+                inputStream.use { input ->
+                    FileOutputStream(temporary).use { output ->
+                        val buffer = ByteArray(8 * 1024)
+                        var totalBytes = 0L
+                        while (true) {
+                            val count = input.read(buffer)
+                            if (count < 0) break
+                            totalBytes += count
+                            if (totalBytes > com.roman.zemzeme.model.FilePacketValidation.MAX_CONTENT_BYTES) {
+                                throw java.io.IOException("Selected file exceeds the current BLE transfer limit")
+                            }
+                            output.write(buffer, 0, count)
+                        }
+                        output.flush()
+                        output.fd.sync()
+                    }
                 }
+                if (!temporary.renameTo(target)) {
+                    throw java.io.IOException("Unable to finalize outgoing file copy")
+                }
+            } finally {
+                if (temporary.exists()) temporary.delete()
             }
 
             Log.d(TAG, "✅ Successfully copied file for sending: ${target.absolutePath}")
