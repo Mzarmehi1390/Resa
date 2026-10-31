@@ -43,68 +43,13 @@ class NoiseSession(
         private const val HIGH_NONCE_WARNING_THRESHOLD = com.roman.zemzeme.util.AppConstants.Noise.HIGH_NONCE_WARNING_THRESHOLD
         
         // MARK: - Sliding Window Replay Protection
-        
-        /**
-         * Check if nonce is valid for replay protection (matching iOS implementation)
-         */
-        private fun isValidNonce(receivedNonce: Long, highestReceivedNonce: Long, replayWindow: ByteArray): Boolean {
-            if (receivedNonce + REPLAY_WINDOW_SIZE <= highestReceivedNonce) {
-                return false  // Too old, outside window
-            }
-            
-            if (receivedNonce > highestReceivedNonce) {
-                return true  // Always accept newer nonces
-            }
-            
-            val offset = (highestReceivedNonce - receivedNonce).toInt()
-            val byteIndex = offset / 8
-            val bitIndex = offset % 8
-            
-            return (replayWindow[byteIndex].toInt() and (1 shl bitIndex)) == 0  // Not yet seen
-        }
-        
-        /**
-         * Mark nonce as seen in replay window (matching iOS implementation)
-         */
-        private fun markNonceAsSeen(receivedNonce: Long, highestReceivedNonce: Long, replayWindow: ByteArray): Pair<Long, ByteArray> {
-            var newHighestReceivedNonce = highestReceivedNonce
-            val newReplayWindow = replayWindow.copyOf()
-            
-            if (receivedNonce > highestReceivedNonce) {
-                val shift = (receivedNonce - highestReceivedNonce).toInt()
-                
-                if (shift >= REPLAY_WINDOW_SIZE) {
-                    // Clear entire window - shift is too large
-                    newReplayWindow.fill(0)
-                } else {
-                    // Shift window right by `shift` bits
-                    for (i in (REPLAY_WINDOW_BYTES - 1) downTo 0) {
-                        val sourceByteIndex = i - shift / 8
-                        var newByte = 0
-                        
-                        if (sourceByteIndex >= 0) {
-                            newByte = (newReplayWindow[sourceByteIndex].toInt() and 0xFF) ushr (shift % 8)
-                            if (sourceByteIndex > 0 && shift % 8 != 0) {
-                                newByte = newByte or ((newReplayWindow[sourceByteIndex - 1].toInt() and 0xFF) shl (8 - shift % 8))
-                            }
-                        }
-                        
-                        newReplayWindow[i] = (newByte and 0xFF).toByte()
-                    }
-                }
-                
-                newHighestReceivedNonce = receivedNonce
-                newReplayWindow[0] = (newReplayWindow[0].toInt() or 1).toByte()  // Mark most recent bit as seen
-            } else {
-                val offset = (highestReceivedNonce - receivedNonce).toInt()
-                val byteIndex = offset / 8
-                val bitIndex = offset % 8
-                newReplayWindow[byteIndex] = (newReplayWindow[byteIndex].toInt() or (1 shl bitIndex)).toByte()
-            }
-            
-            return Pair(newHighestReceivedNonce, newReplayWindow)
-        }
-        
+
+        private fun isValidNonce(receivedNonce: Long, highestReceivedNonce: Long, replayWindow: ByteArray): Boolean =
+            NoiseReplayWindow.isValidNonce(receivedNonce, highestReceivedNonce, replayWindow)
+
+        private fun markNonceAsSeen(receivedNonce: Long, highestReceivedNonce: Long, replayWindow: ByteArray): Pair<Long, ByteArray> =
+            NoiseReplayWindow.markNonceAsSeen(receivedNonce, highestReceivedNonce, replayWindow)
+
         /**
          * Extract nonce from combined payload <nonce><ciphertext> (matching iOS implementation)
          * Returns Pair of (nonce, ciphertext) or null if invalid
