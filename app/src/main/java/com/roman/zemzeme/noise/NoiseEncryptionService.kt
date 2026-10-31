@@ -189,7 +189,8 @@ class NoiseEncryptionService(private val context: Context) {
     
     /**
      * Process an incoming handshake message
-     * Returns response message if needed, null if handshake complete or failed
+     * Returns a response when the protocol requires one, or null for a valid step
+     * that has no outgoing response. Protocol failures are propagated to callers.
      */
     fun processHandshakeMessage(data: ByteArray, peerID: String): ByteArray? {
         // Keep protocol failures observable by the caller. Returning null for both
