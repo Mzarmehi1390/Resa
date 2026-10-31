@@ -334,10 +334,11 @@ class SecurityManagerTest {
 
         val packet = ZemzemePacket(
             type = MessageType.NOISE_HANDSHAKE.value,
-            ttl = 10u,
-            senderID = otherPeerID,
+            senderID = otherPeerID.chunked(2).map { it.toInt(16).toByte() }.toByteArray(),
             recipientID = myPeerID.chunked(2).map { it.toInt(16).toByte() }.toByteArray(),
-            payload = dummyPayload
+            timestamp = System.currentTimeMillis().toULong(),
+            payload = dummyPayload,
+            ttl = 10u
         )
         packet.signature = null
 
@@ -353,10 +354,11 @@ class SecurityManagerTest {
 
         val packet = ZemzemePacket(
             type = MessageType.NOISE_HANDSHAKE.value,
-            ttl = 10u,
-            senderID = otherPeerID,
+            senderID = otherPeerID.chunked(2).map { it.toInt(16).toByte() }.toByteArray(),
             recipientID = myPeerID.chunked(2).map { it.toInt(16).toByte() }.toByteArray(),
-            payload = dummyPayload
+            timestamp = System.currentTimeMillis().toULong(),
+            payload = dummyPayload,
+            ttl = 10u
         )
         packet.signature = validSignature
 
