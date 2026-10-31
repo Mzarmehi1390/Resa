@@ -378,16 +378,22 @@ class NoiseEncryptionService(private val context: Context) {
      * Handle session establishment (called when Noise handshake completes)
      */
     private fun handleSessionEstablished(peerID: String, remoteStaticKey: ByteArray) {
-        // Store fingerprint mapping via centralized manager
-        // This is the ONLY place where fingerprints are stored - after successful Noise handshake
+        // A completed Noise XX handshake authenticates possession of a static key,
+        // but it does not by itself prove that the key belongs to the claimed mesh
+        // peer ID. Enforce the protocol's peerID = first 8 bytes of SHA-256(static
+        // Noise key) binding before recording a fingerprint or notifying callers.
+        if (!com.roman.zemzeme.mesh.PeerIdentityBinding.matchesPeerId(peerID, remoteStaticKey)) {
+            Log.w(TAG, "Rejecting Noise session: remote static key does not match claimed peer ID $peerID")
+            // Do not leave an authenticated session attached to a mismatched identity.
+            sessionManager.removeSession(peerID)
+            return
+        }
+
+        // Store fingerprint mapping only after the static-key/peer-ID binding passes.
         fingerprintManager.storeFingerprintForPeer(peerID, remoteStaticKey)
-        
-        // Calculate fingerprint for logging and callback
+
         val fingerprint = calculateFingerprint(remoteStaticKey)
-        
         Log.d(TAG, "Session established with $peerID, fingerprint: ${fingerprint.take(16)}...")
-        
-        // Notify about authentication
         onPeerAuthenticated?.invoke(peerID, fingerprint)
     }
     
