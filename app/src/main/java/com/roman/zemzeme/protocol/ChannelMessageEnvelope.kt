@@ -47,6 +47,13 @@ data class ChannelMessageEnvelope(
             return buffer.array()
         }
 
+        /**
+         * Identifies frames using the reserved Resa channel-envelope magic.
+         * This deliberately does not imply that the frame is valid or trusted.
+         */
+        fun hasMagicPrefix(encoded: ByteArray): Boolean =
+            encoded.size >= MAGIC.size && MAGIC.indices.all { encoded[it] == MAGIC[it] }
+
         fun decode(encoded: ByteArray): ChannelMessageEnvelope? {
             if (encoded.size < HEADER_SIZE) return null
 
