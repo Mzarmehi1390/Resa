@@ -49,11 +49,14 @@ object ChannelMessageCrypto {
         cipher.updateAAD(associatedData(channelId, messageId))
         val encrypted = cipher.doFinal(plaintext)
 
-        return ChannelMessageEnvelope(
+        val envelope = ChannelMessageEnvelope(
             channelId = channelId,
             messageId = messageId,
             ciphertext = nonce + encrypted
         )
+        // Enforce the same maximum frame size as the transport codec.
+        ChannelMessageEnvelope.encode(envelope)
+        return envelope
     }
 
     /**
@@ -99,8 +102,9 @@ object ChannelMessageCrypto {
 
     private fun validateKey(key: SecretKey) {
         require(key.algorithm.equals("AES", ignoreCase = true)) { "AES key required" }
-        val encoded = key.encoded
-            ?: throw IllegalArgumentException("Exportable AES key required")
+        // Android Keystore keys may be non-exportable; let Cipher validate
+        // those keys rather than requiring raw key bytes to be extractable.
+        val encoded = key.encoded ?: return
         require(encoded.size in MIN_AES_KEY_SIZE_BYTES..MAX_AES_KEY_SIZE_BYTES) {
             "AES key must be 128, 192, or 256 bits"
         }
