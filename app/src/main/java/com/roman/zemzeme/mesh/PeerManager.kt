@@ -111,35 +111,36 @@ class PeerManager {
     ): Boolean {
         if (peerID == "unknown") return false
         
-        val now = System.currentTimeMillis()
-        val existingPeer = peers[peerID]
-        val isNewPeer = existingPeer == null
+        // Serialize identity check + replacement so simultaneous announcements
+        // cannot race to replace a peer's first accepted cryptographic identity.
+        val isNewPeer = synchronized(peers) {
+            val now = System.currentTimeMillis()
+            val existingPeer = peers[peerID]
 
-        // Once an identity has been verified, its cryptographic keys are pinned
-        // for this peer ID. Key rotation needs a separate authenticated protocol;
-        // silently accepting a new self-announced key would enable identity replacement.
-        if (existingPeer?.isVerifiedNickname == true) {
-            val noiseKeyChanged = existingPeer.noisePublicKey?.contentEquals(noisePublicKey) == false
-            val signingKeyChanged = existingPeer.signingPublicKey?.contentEquals(signingPublicKey) == false
-            if (noiseKeyChanged || signingKeyChanged) {
-                Log.w(TAG, "Rejecting cryptographic identity change for verified peer: $peerID")
-                return false
+            // Once verified, both cryptographic keys stay pinned to this peer ID.
+            // Rotation requires a separate authenticated protocol.
+            if (existingPeer?.isVerifiedNickname == true) {
+                val noiseKeyChanged = existingPeer.noisePublicKey?.contentEquals(noisePublicKey) == false
+                val signingKeyChanged = existingPeer.signingPublicKey?.contentEquals(signingPublicKey) == false
+                if (noiseKeyChanged || signingKeyChanged) {
+                    Log.w(TAG, "Rejecting cryptographic identity change for verified peer: $peerID")
+                    return false
+                }
             }
-        }
 
-        // Update or create peer info
-        val peerInfo = PeerInfo(
-            id = peerID,
-            nickname = nickname,
-            isConnected = true,
-            isDirectConnection = existingPeer?.isDirectConnection ?: false,
-            noisePublicKey = noisePublicKey,
-            signingPublicKey = signingPublicKey,
-            isVerifiedNickname = isVerified,
-            lastSeen = now
-        )
-        
-        peers[peerID] = peerInfo
+            val peerInfo = PeerInfo(
+                id = peerID,
+                nickname = nickname,
+                isConnected = true,
+                isDirectConnection = existingPeer?.isDirectConnection ?: false,
+                noisePublicKey = noisePublicKey,
+                signingPublicKey = signingPublicKey,
+                isVerifiedNickname = isVerified,
+                lastSeen = now
+            )
+            peers[peerID] = peerInfo
+            existingPeer == null
+        }
         
         // Update derived state only
         // No legacy maps; peers map is the single source of truth
