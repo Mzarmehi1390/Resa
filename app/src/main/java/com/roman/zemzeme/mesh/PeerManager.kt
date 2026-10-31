@@ -190,7 +190,7 @@ class PeerManager(context: Context? = null) {
         val info = when {
             trusted != null -> PeerInfo(
                 id = trusted.peerID,
-                nickname = activeInfo?.nickname ?: trusted.nickname,
+                nickname = if (activeInfo?.isVerifiedNickname == true) activeInfo.nickname else trusted.nickname,
                 isConnected = activeInfo?.isConnected ?: false,
                 isDirectConnection = activeInfo?.isDirectConnection ?: false,
                 noisePublicKey = trusted.noisePublicKey.copyOf(),
