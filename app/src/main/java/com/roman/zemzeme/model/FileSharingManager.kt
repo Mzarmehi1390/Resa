@@ -31,10 +31,15 @@ object FileSharingManager {
             // Determine MIME type
             val mimeType = FileUtils.getMimeTypeFromExtension(fileName)
 
-            // Read file content
+            // Enforce the transport's bounded file size before allocating a byte array.
             val file = File(localPath)
-            val content = file.readBytes()
             val fileSize = file.length()
+            if (fileSize > FilePacketValidation.MAX_CONTENT_BYTES) {
+                Log.w(TAG, "Selected file exceeds the current BLE transfer limit: $fileSize bytes")
+                file.delete()
+                return null
+            }
+            val content = file.readBytes()
 
             // Clean up temp file
             file.delete()
