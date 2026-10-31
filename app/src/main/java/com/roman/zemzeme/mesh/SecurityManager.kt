@@ -158,20 +158,13 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
     /**
      * Verify packet signature
      */
-    fun verifySignature(packet: ZemzemePacket, peerID: String): Boolean {
-        return packet.signature?.let { signature ->
-            try {
-                val isValid = encryptionService.verify(signature, packet.payload, peerID)
-                if (!isValid) {
-                    Log.w(TAG, "Invalid signature for packet from $peerID")
-                }
-                isValid
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to verify signature from $peerID: ${e.message}")
-                false
-            }
-        } ?: true // No signature means verification passes
-    }
+    /**
+     * Verify a packet using the same strict Ed25519 policy as the primary ingress path.
+     * In particular, missing signatures on ANNOUNCE, MESSAGE and FILE_TRANSFER
+     * packets must never be treated as successful verification.
+     */
+    fun verifySignature(packet: ZemzemePacket, peerID: String): Boolean =
+        verifyPacketSignature(packet, peerID)
     
     /**
      * Sign packet payload
