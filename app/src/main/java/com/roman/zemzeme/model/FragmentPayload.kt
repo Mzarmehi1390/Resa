@@ -1,6 +1,7 @@
 package com.roman.zemzeme.model
 
 import com.roman.zemzeme.protocol.MessageType
+import java.security.SecureRandom
 
 /**
  * FragmentPayload - 100% iOS-compatible fragment payload structure
