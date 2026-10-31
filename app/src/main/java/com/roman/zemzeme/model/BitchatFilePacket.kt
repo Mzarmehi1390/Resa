@@ -30,110 +30,118 @@ data class ZemzemeFilePacket(
     }
 
     fun encode(): ByteArray? {
-        try {
-            android.util.Log.d("ZemzemeFilePacket", "🔄 Encoding: name=$fileName, size=$fileSize, mime=$mimeType")
         val nameBytes = fileName.toByteArray(Charsets.UTF_8)
         val mimeBytes = mimeType.toByteArray(Charsets.UTF_8)
-        // Validate bounds for 2-byte TLV lengths (per-TLV). CONTENT may exceed 65535 and will be chunked.
-        if (nameBytes.size > 0xFFFF || mimeBytes.size > 0xFFFF) {
-                android.util.Log.e("ZemzemeFilePacket", "❌ TLV field too large: name=${nameBytes.size}, mime=${mimeBytes.size} (max: 65535)")
-                return null
-            }
-            if (content.size > 0xFFFF) {
-                android.util.Log.d("ZemzemeFilePacket", "📦 Content exceeds 65535 bytes (${content.size}); will be split into multiple CONTENT TLVs")
-            } else {
-                android.util.Log.d("ZemzemeFilePacket", "📏 TLV sizes OK: name=${nameBytes.size}, mime=${mimeBytes.size}, content=${content.size}")
-            }
-        val sizeFieldLen = 4 // UInt32 for FILE_SIZE (changed from 8 bytes)
-        val contentLenFieldLen = 4 // UInt32 for CONTENT TLV as requested
+        if (!FilePacketValidation.isValid(
+                nameBytes = nameBytes,
+                fileSize = fileSize,
+                mimeBytes = mimeBytes,
+                contentSize = content.size
+            )
+        ) return null
 
-        // Compute capacity: header TLVs + single CONTENT TLV with 4-byte length
-        val contentTLVBytes = 1 + contentLenFieldLen + content.size
-        val capacity = (1 + 2 + nameBytes.size) + (1 + 2 + sizeFieldLen) + (1 + 2 + mimeBytes.size) + contentTLVBytes
-        val buf = ByteBuffer.allocate(capacity).order(ByteOrder.BIG_ENDIAN)
+        return try {
+            // The current wire format uses 2-byte lengths for metadata and a
+            // 4-byte length for CONTENT. Keep that layout for protocol compatibility.
+            val capacity = (1 + 2 + nameBytes.size) +
+                (1 + 2 + 4) +
+                (1 + 2 + mimeBytes.size) +
+                (1 + 4 + content.size)
+            val buf = ByteBuffer.allocate(capacity).order(ByteOrder.BIG_ENDIAN)
 
-        // FILE_NAME
-        buf.put(TLVType.FILE_NAME.v.toByte())
-        buf.putShort(nameBytes.size.toShort())
-        buf.put(nameBytes)
+            buf.put(TLVType.FILE_NAME.v.toByte())
+            buf.putShort(nameBytes.size.toShort())
+            buf.put(nameBytes)
 
-        // FILE_SIZE (4 bytes)
-        buf.put(TLVType.FILE_SIZE.v.toByte())
-        buf.putShort(sizeFieldLen.toShort())
-        buf.putInt(fileSize.toInt())
+            buf.put(TLVType.FILE_SIZE.v.toByte())
+            buf.putShort(4.toShort())
+            buf.putInt(fileSize.toInt())
 
-        // MIME_TYPE
-        buf.put(TLVType.MIME_TYPE.v.toByte())
-        buf.putShort(mimeBytes.size.toShort())
-        buf.put(mimeBytes)
+            buf.put(TLVType.MIME_TYPE.v.toByte())
+            buf.putShort(mimeBytes.size.toShort())
+            buf.put(mimeBytes)
 
-        // CONTENT (single TLV with 4-byte length)
-        buf.put(TLVType.CONTENT.v.toByte())
-        buf.putInt(content.size)
-        buf.put(content)
-
-        val result = buf.array()
-            android.util.Log.d("ZemzemeFilePacket", "✅ Encoded successfully: ${result.size} bytes total")
-            return result
-        } catch (e: Exception) {
-            android.util.Log.e("ZemzemeFilePacket", "❌ Encoding failed: ${e.message}", e)
-            return null
+            buf.put(TLVType.CONTENT.v.toByte())
+            buf.putInt(content.size)
+            buf.put(content)
+            buf.array()
+        } catch (_: Exception) {
+            null
         }
     }
 
     companion object {
         fun decode(data: ByteArray): ZemzemeFilePacket? {
-            android.util.Log.d("ZemzemeFilePacket", "🔄 Decoding ${data.size} bytes")
-            try {
+            if (data.isEmpty()) return null
+            return try {
                 var off = 0
-                var name: String? = null
+                var nameBytes: ByteArray? = null
                 var size: Long? = null
-                var mime: String? = null
-                var contentBytes: ByteArray? = null
-                while (off + 3 <= data.size) { // minimum TLV header size (type + 2 bytes length)
-                    val t = TLVType.from(data[off].toUByte()) ?: return null
+                var mimeBytes: ByteArray? = null
+                val contentParts = ArrayList<ByteArray>()
+                var contentSize = 0
+
+                while (off < data.size) {
+                    // Every TLV needs at least type + 2-byte length.
+                    if (data.size - off < 3) return null
+                    val type = TLVType.from(data[off].toUByte()) ?: return null
                     off += 1
-                    // CONTENT uses 4-byte length; others use 2-byte length
-                    val len: Int
-                    if (t == TLVType.CONTENT) {
-                        if (off + 4 > data.size) return null
-                        len = ((data[off].toInt() and 0xFF) shl 24) or ((data[off + 1].toInt() and 0xFF) shl 16) or ((data[off + 2].toInt() and 0xFF) shl 8) or (data[off + 3].toInt() and 0xFF)
+
+                    val length: Int
+                    if (type == TLVType.CONTENT) {
+                        if (data.size - off < 4) return null
+                        length = ByteBuffer.wrap(data, off, 4).order(ByteOrder.BIG_ENDIAN).int
                         off += 4
                     } else {
-                        if (off + 2 > data.size) return null
-                        len = ((data[off].toInt() and 0xFF) shl 8) or (data[off + 1].toInt() and 0xFF)
+                        length = ((data[off].toInt() and 0xFF) shl 8) or
+                            (data[off + 1].toInt() and 0xFF)
                         off += 2
                     }
-                    if (len < 0 || off + len > data.size) return null
-                    val value = data.copyOfRange(off, off + len)
-                    off += len
-                    when (t) {
-                        TLVType.FILE_NAME -> name = String(value, Charsets.UTF_8)
-                        TLVType.FILE_SIZE -> {
-                            if (len != 4) return null
-                            val bb = ByteBuffer.wrap(value).order(ByteOrder.BIG_ENDIAN)
-                            size = bb.int.toLong()
+
+                    if (length < 0 || length > data.size - off) return null
+                    if (type == TLVType.CONTENT) {
+                        if (length == 0 || length > FilePacketValidation.MAX_CONTENT_BYTES - contentSize) return null
+                    }
+
+                    when (type) {
+                        TLVType.FILE_NAME -> {
+                            if (nameBytes != null) return null
+                            nameBytes = data.copyOfRange(off, off + length)
                         }
-                        TLVType.MIME_TYPE -> mime = String(value, Charsets.UTF_8)
+                        TLVType.FILE_SIZE -> {
+                            if (size != null || length != 4) return null
+                            val parsed = ByteBuffer.wrap(data, off, 4).order(ByteOrder.BIG_ENDIAN).int
+                            if (parsed < 0) return null
+                            size = parsed.toLong()
+                        }
+                        TLVType.MIME_TYPE -> {
+                            if (mimeBytes != null) return null
+                            mimeBytes = data.copyOfRange(off, off + length)
+                        }
                         TLVType.CONTENT -> {
-                            // Expect a single CONTENT TLV
-                            if (contentBytes == null) contentBytes = value else {
-                                // If multiple CONTENT TLVs appear, concatenate for tolerance
-                                contentBytes = (contentBytes!! + value)
-                            }
+                            contentParts.add(data.copyOfRange(off, off + length))
+                            contentSize += length
                         }
                     }
+                    off += length
                 }
-                val n = name ?: return null
-                val c = contentBytes ?: return null
-                val s = size ?: c.size.toLong()
-                val m = mime ?: "application/octet-stream"
-                val result = ZemzemeFilePacket(n, s, m, c)
-                android.util.Log.d("ZemzemeFilePacket", "✅ Decoded: name=$n, size=$s, mime=$m, content=${c.size} bytes")
-                return result
-            } catch (e: Exception) {
-                android.util.Log.e("ZemzemeFilePacket", "❌ Decoding failed: ${e.message}", e)
-                return null
+
+                val rawName = nameBytes ?: return null
+                val rawMime = mimeBytes ?: return null
+                val declaredSize = size ?: return null
+                if (!FilePacketValidation.isValid(rawName, declaredSize, rawMime, contentSize)) return null
+
+                val name = FilePacketValidation.decodeUtf8(rawName) ?: return null
+                val mime = FilePacketValidation.decodeUtf8(rawMime) ?: return null
+                val content = ByteArray(contentSize)
+                var destinationOffset = 0
+                for (part in contentParts) {
+                    System.arraycopy(part, 0, content, destinationOffset, part.size)
+                    destinationOffset += part.size
+                }
+                ZemzemeFilePacket(name, declaredSize, mime, content)
+            } catch (_: Exception) {
+                null
             }
         }
     }
