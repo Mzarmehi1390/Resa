@@ -26,6 +26,17 @@ class ChannelMessageEnvelopeTest {
     }
 
     @Test
+    fun magicPrefixDetectsReservedEnvelopeFramesOnly() {
+        val encoded = ChannelMessageEnvelope.encode(sample())
+
+        assertEquals(true, ChannelMessageEnvelope.hasMagicPrefix(encoded))
+        assertEquals(true, ChannelMessageEnvelope.hasMagicPrefix(encoded.copyOf(8)))
+        assertEquals(false, ChannelMessageEnvelope.hasMagicPrefix("RSCT".toByteArray()))
+        assertEquals(false, ChannelMessageEnvelope.hasMagicPrefix(byteArrayOf(0x52, 0x53, 0x43)))
+        assertEquals(false, ChannelMessageEnvelope.hasMagicPrefix(ByteArray(0)))
+    }
+
+    @Test
     fun decoderRejectsTruncatedAndTrailingData() {
         val encoded = ChannelMessageEnvelope.encode(sample())
 
