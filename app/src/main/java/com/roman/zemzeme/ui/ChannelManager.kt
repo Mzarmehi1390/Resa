@@ -134,10 +134,17 @@ class ChannelManager(
         val expectedCommitment = channelKeyCommitments[channel] ?: return false
         return try {
             val candidateKey = deriveChannelKey(password, channel)
-            com.roman.zemzeme.security.ChannelKeyCommitment.matches(
+            val matches = com.roman.zemzeme.security.ChannelKeyCommitment.matches(
                 candidateKey.encoded,
                 expectedCommitment
             )
+            if (!matches) return false
+
+            // Retain the verified key for this process so the caller can use it
+            // for channel encryption. The password is not persisted.
+            channelKeys[channel] = candidateKey
+            channelPasswords.remove(channel)
+            true
         } catch (_: Exception) {
             false
         }
