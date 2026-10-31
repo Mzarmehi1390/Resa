@@ -320,3 +320,10 @@ The dedicated Android CI run for the current channel-verification changes is que
 - This is defense in depth: the normal PacketProcessor ingress already validates these packet types, but internal call paths must not weaken the requirement by treating a missing signature or absent delegate result as success.
 - The change does not alter NOISE_ENCRYPTED transport packets, whose confidentiality/authentication is provided by the Noise session layer rather than this plain-packet handler.
 - CI is pending for the handler-level enforcement commit; do not mark it verified until unit tests, lint and debug APK assembly complete successfully.
+
+## Noise handshake peer-ID binding — 2026-10-31
+
+A completed Noise XX handshake proves possession of the remote static Noise key, but the handshake completion callback previously recorded the key fingerprint without independently checking that the key matched the packet's claimed mesh peer ID. The callback now validates the protocol binding (peer ID = first 8 bytes of SHA-256 of the 32-byte Noise static public key) before storing the fingerprint or notifying authenticated-peer listeners. A mismatch causes the session to be removed and prevents it from being treated as authenticated.
+
+This complements the signed ANNOUNCE binding check and the persistent verified-peer key pins. It does not provide out-of-band human identity verification, and the peer ID remains a truncated 64-bit identifier.
+
