@@ -73,6 +73,10 @@ class MeshDelegateHandler(
                 // Channel message: AppStateStore is the source of truth for list; only manage unread
                 if (state.getJoinedChannelsValue().contains(message.channel)) {
                     val channel = message.channel
+                    // Persist the received message into the process-wide source of truth.
+                    // The ViewModel observes this flow to render the channel timeline.
+                    com.roman.zemzeme.services.AppStateStore.addChannelMessage(channel, message)
+
                     val isOnChat = state.isOnChatScreen.value
                     val viewingClassic = isOnChat && state.getCurrentChannelValue() == channel
                     val viewingGeohash = isOnChat && try {
