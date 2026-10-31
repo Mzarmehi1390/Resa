@@ -307,4 +307,7 @@ The dedicated Android CI run for the current channel-verification changes is que
 - If encrypted data cannot be decrypted/authenticated (including a missing or invalidated Keystore key), the store enters an unavailable state and refuses trust updates rather than silently starting a new trust database.
 - Added JVM tests for codec round trips, duplicate IDs, malformed IDs, invalid key lengths, truncation, trailing bytes and unsupported versions.
 - **Limitations:** Android Keystore-backed storage is device-local and does not sync across devices or provide human/out-of-band identity verification. This change does not implement authenticated key rotation, trust export/recovery, hardware-backed-key attestation, or protection against a fully compromised/rooted running device. Android Keystore integration itself still requires device-level testing; JVM CI only validates the pure record codec.
+- Trust state is monotonic for a pinned identity: a later update marked unverified cannot downgrade a peer whose identity is already pinned.
+- When a legacy in-memory peer entry lacks verified keys, PeerManager prefers the authenticated persisted record for signature-verification lookups.
+- The codec additionally bounds stored database size and rejects blank nicknames and unexpected GCM nonce sizes.
 
