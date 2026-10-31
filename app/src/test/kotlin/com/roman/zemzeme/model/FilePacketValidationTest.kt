@@ -70,4 +70,15 @@ class FilePacketValidationTest {
         assertTrue(packet.encode() == null)
     }
 
+    @Test fun sanitizesTraversalAndSeparatorsInIncomingNames() {
+        val traversal = FilePacketValidation.sanitizeIncomingFileName("../../secret.txt", "file", ".bin")
+        assertFalse(traversal.contains('/'))
+        assertFalse(traversal.contains('\\\\'))
+        assertFalse(traversal == ".." || traversal.startsWith(".."))
+        assertTrue(traversal.endsWith(".txt"))
+
+        val blank = FilePacketValidation.sanitizeIncomingFileName("...///", "file", ".bin")
+        assertTrue(blank == "file.bin")
+    }
+
 }
