@@ -288,3 +288,13 @@ The dedicated Android CI run for the current channel-verification changes is que
 - MessageHandler.handleAnnounce now checks that the announced Noise static key derives the incoming packet peer ID before trusting the self-announced Ed25519 signing key or storing the peer identity.
 - Added PeerIdentityBinding and unit tests for valid derivation, uppercase hex, mismatched IDs, malformed IDs and incorrect key lengths.
 - This closes the specific first-announcement spoofing gap where an attacker could previously sign an announcement with their own signing key while claiming another sender ID. It does not provide out-of-band human identity verification or prevent a legitimate identity owner from changing their signing key without a separate key-continuity policy.
+
+### Verified peer signing-key continuity — 2026-10-31
+
+- PeerManager now pins both the Noise static public key and Ed25519 signing public key after a peer has been verified. An announcement that attempts to replace either key under the same peer ID is rejected without changing the stored nickname or key material.
+- The check and update are synchronized so concurrent first announcements cannot race to overwrite the first accepted identity.
+- MessageHandler confirms that the peer manager retained the exact keys from the accepted announcement before updating derived peer-ID/fingerprint state.
+- Added regression tests for rejecting signing-key replacement, rejecting Noise-key replacement and allowing nickname refreshes when both keys remain unchanged.
+- **Scope limitation:** this pinning currently lives in the in-memory PeerManager. It does not survive process restarts and is not a persistent trust store. There is no authenticated key-rotation/recovery protocol; legitimate key changes are intentionally rejected until such a protocol is designed. Out-of-band human identity verification is still not provided.
+- The CI run for the final commit containing this change must pass before it is considered verified.
+
