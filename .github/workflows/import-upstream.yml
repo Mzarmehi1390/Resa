@@ -1,0 +1,95 @@
+name: Import upstream baseline and verify
+
+on:
+  push:
+    branches:
+      - feat/resa-foundation
+    paths:
+      - .github/workflows/import-upstream.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: resa-upstream-import
+  cancel-in-progress: false
+
+jobs:
+  import-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out Resa
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Check out audited upstream source
+        uses: actions/checkout@v4
+        with:
+          repository: whisperbit-labs/zemzeme-android
+          ref: 1fc0e237f719514c7eb0920b503a4db103786479
+          path: upstream-src
+          persist-credentials: false
+
+      - name: Import application source without replacing Resa project records
+        shell: bash
+        run: |
+          set -euo pipefail
+          rsync -a upstream-src/ ./ --exclude='.git/' --exclude='.github/' --exclude='README.md' --exclude='LICENSE' --exclude='docs/'
+          mkdir -p licenses
+          cp upstream-src/LICENSE licenses/ZEMZEME-UPSTREAM-MIT-LICENSE
+          cat > UPSTREAM_BASELINE.md <<'EOF'
+          # Imported upstream baseline
+
+          - Repository: https://github.com/whisperbit-labs/zemzeme-android
+          - Commit: 1fc0e237f719514c7eb0920b503a4db103786479
+          - Import date: 2026-10-31
+          - Resa-specific audit and project documentation remain under docs/.
+          - This is an unmodified source baseline; Resa branding and code changes are tracked separately.
+          EOF
+          rm -rf upstream-src
+          git status --short
+
+      - name: Commit imported source to the Resa development branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add -A
+            git commit -m 'build: import audited Zemzeme Android baseline'
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+
+      - name: Run baseline unit tests and lint
+        run: ./gradlew :app:testDebugUnitTest :app:lintDebug --no-daemon
+
+      - name: Assemble baseline debug APKs
+        run: ./gradlew :app:assembleDebug --no-daemon
+
+      - name: Upload baseline APKs and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resa-baseline-${{ github.run_number }}
+          path: |
+            app/build/outputs/apk/debug/**/*.apk
+            app/build/reports/tests/testDebugUnitTest/**
+            app/build/reports/lint-results-debug.html
+          if-no-files-found: warn
