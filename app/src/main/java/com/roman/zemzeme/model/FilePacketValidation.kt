@@ -19,6 +19,17 @@ internal object FilePacketValidation {
             decodeUtf8(mimeBytes)?.isNotBlank() == true
     }
 
+    fun sanitizeIncomingFileName(value: String, fallback: String, extension: String): String {
+        val safeBase = value
+            .replace('\\\\', '_')
+            .replace('/', '_')
+            .replace(Regex("[^A-Za-z0-9._-]"), "_")
+            .trim('.', '_', ' ')
+            .take(120)
+            .ifBlank { fallback }
+        return if (safeBase.contains('.')) safeBase else safeBase + extension
+    }
+
     fun decodeUtf8(bytes: ByteArray): String? = try {
         StandardCharsets.UTF_8.newDecoder()
             .onMalformedInput(CodingErrorAction.REPORT)
