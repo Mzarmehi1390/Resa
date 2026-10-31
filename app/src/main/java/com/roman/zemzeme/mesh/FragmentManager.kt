@@ -108,7 +108,11 @@ class FragmentManager {
         }
         
         Log.d(TAG, "Creating ${fragmentChunks.size} fragments for ${fullData.size} byte packet (iOS compatible)")
-        
+        if (fragmentChunks.size > FragmentPayload.MAX_FRAGMENT_COUNT) {
+            Log.e(TAG, "Packet requires too many fragments: ${fragmentChunks.size}")
+            return emptyList()
+        }
+
         // iOS: for (index, fragment) in fragments.enumerated()
         for (index in fragmentChunks.indices) {
             val fragmentData = fragmentChunks[index]
