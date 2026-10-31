@@ -73,6 +73,10 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Initialize Android SDK command-line tools
+        uses: android-actions/setup-android@v3
+        continue-on-error: true
+
       - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses
 
