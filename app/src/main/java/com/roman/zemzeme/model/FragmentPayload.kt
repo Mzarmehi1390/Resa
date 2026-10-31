@@ -28,6 +28,8 @@ data class FragmentPayload(
     companion object {
         const val HEADER_SIZE = 13
         const val FRAGMENT_ID_SIZE = 8
+        const val MAX_FRAGMENT_COUNT = 1024
+        const val MAX_FRAGMENT_DATA_SIZE = 469
         
         /**
          * Decode fragment payload from binary data
@@ -73,7 +75,7 @@ data class FragmentPayload(
          */
         fun generateFragmentID(): ByteArray {
             val fragmentID = ByteArray(FRAGMENT_ID_SIZE)
-            kotlin.random.Random.nextBytes(fragmentID)
+            SecureRandom().nextBytes(fragmentID)
             return fragmentID
         }
     }
@@ -120,9 +122,11 @@ data class FragmentPayload(
     fun isValid(): Boolean {
         return fragmentID.size == FRAGMENT_ID_SIZE &&
                index >= 0 &&
-               total > 0 &&
+               total in 1..MAX_FRAGMENT_COUNT &&
                index < total &&
-               data.isNotEmpty()
+               originalType != MessageType.FRAGMENT.value &&
+               data.isNotEmpty() &&
+               data.size <= MAX_FRAGMENT_DATA_SIZE
     }
     
     override fun equals(other: Any?): Boolean {
