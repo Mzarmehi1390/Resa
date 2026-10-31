@@ -24,13 +24,6 @@ object FileUtils {
         originalName: String? = null
     ): String? {
         return try {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            if (inputStream == null) {
-                Log.e(TAG, "❌ Failed to open input stream for URI: $uri")
-                return null
-            }
-            Log.d(TAG, "📂 Opened input stream successfully")
-
             // Determine file extension
             val extension = originalName?.substringAfterLast(".") ?: "bin"
             val fileName = "file_${System.currentTimeMillis()}.$extension"
@@ -79,21 +72,26 @@ object FileUtils {
                     }
                 } catch (_: Exception) { null }
             }
-            val extension = displayName?.substringAfterLast('.', missingDelimiterValue = "")?.takeIf { it.isNotBlank() }
+            val rawExtension = displayName?.substringAfterLast('.', missingDelimiterValue = "")?.takeIf { it.isNotBlank() }
                 ?: run {
                     // Try mime type to extension
                     val mime = try { context.contentResolver.getType(uri) } catch (_: Exception) { null }
                     android.webkit.MimeTypeMap.getSingleton().getExtensionFromMimeType(mime) ?: "bin"
                 }
-            // Preserve original filename (without artificial prefixes), ensure uniqueness
-            val baseName = displayName?.substringBeforeLast('.')?.take(64)?.replace(Regex("[^A-Za-z0-9._-]"), "_")
-                ?: "file"
-            var fileName = if (extension.isNotBlank()) "$baseName.$extension" else baseName
+            val extension = rawExtension.replace(Regex("[^A-Za-z0-9]"), "").take(16).ifBlank { "bin" }
+            // Preserve a bounded, filesystem-safe base name and ensure uniqueness.
+            val baseName = displayName?.substringBeforeLast('.')?.take(64)
+                ?.replace(Regex("[^A-Za-z0-9._-]"), "_")
+                ?.trim('.', '_', ' ')
+                ?.ifBlank { "file" } ?: "file"
+            var fileName = "$baseName.$extension"
 
             // Create outgoing dir if needed
-            val outgoingDir = File(context.filesDir, "files/outgoing").apply {
-                if (!exists()) mkdirs()
+            val outgoingDir = File(context.filesDir, "files/outgoing")
+            if (!outgoingDir.exists() && !outgoingDir.mkdirs()) {
+                throw java.io.IOException("Unable to create outgoing directory")
             }
+            if (!outgoingDir.isDirectory) throw java.io.IOException("Outgoing path is not a directory")
 
             var target = File(outgoingDir, fileName)
             if (target.exists()) {
@@ -107,6 +105,11 @@ object FileUtils {
                 }
             }
 
+            if (target.exists()) throw java.io.IOException("Unable to allocate a unique outgoing filename")
+            if (target.canonicalFile.parentFile != outgoingDir.canonicalFile) {
+                throw java.io.IOException("Invalid outgoing file destination")
+            }
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
             val temporary = File.createTempFile(".outgoing-", ".part", outgoingDir)
             try {
                 inputStream.use { input ->
