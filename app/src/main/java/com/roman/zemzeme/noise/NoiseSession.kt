@@ -274,6 +274,19 @@ class NoiseSession(
                     val verifyPublic = ByteArray(32)
                     localKeyPair.getPrivateKey(verifyPrivate, 0)
                     localKeyPair.getPublicKey(verifyPublic, 0)
+
+                    // Reject inconsistent identity material before starting a handshake.
+                    // The Noise library derives the public key from the private key; both
+                    // must match the identity announced and used for peer-ID binding.
+                    if (!java.security.MessageDigest.isEqual(verifyPublic, localStaticPublicKey)) {
+                        verifyPrivate.fill(0)
+                        verifyPublic.fill(0)
+                        throw IllegalArgumentException(
+                            "Local Noise public key does not match the supplied private key"
+                        )
+                    }
+                    verifyPrivate.fill(0)
+                    verifyPublic.fill(0)
                     
                     Log.d(TAG, "Persistent identity public key: ${localStaticPublicKey.joinToString("") { "%02x".format(it) }}")
                     Log.d(TAG, "Set public key:               ${verifyPublic.joinToString("") { "%02x".format(it) }}")
