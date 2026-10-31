@@ -747,6 +747,15 @@ class ChatViewModel(
                         meshService.myPeerID,
                         state.getNicknameValue()
                     )
+                } else if (channel != null && channelManager.isChannelPasswordProtected(channel)) {
+                    // Protected-channel transport is intentionally fail-closed until
+                    // encrypted envelopes are wired into both BLE send and receive.
+                    android.widget.Toast.makeText(
+                        getApplication(),
+                        "ارسال پیام در کانال رمزدار تا تکمیل رمزگذاری سرتاسری غیرفعال است.",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                    Log.w(TAG, "Blocked command message to protected channel before E2E transport is available")
                 } else {
                     // Default: route via mesh
                     meshService.sendMessage(messageContent, mentions, channel)
@@ -835,6 +844,20 @@ class ChatViewModel(
                 )
 
                 if (currentChannelValue != null) {
+                    // Never downgrade a password-protected channel to plaintext BLE.
+                    // The current encrypted-envelope helper is not connected to the
+                    // transport receive path yet, so fail closed before optimistic UI
+                    // insertion or SEND logging.
+                    if (channelManager.isChannelPasswordProtected(currentChannelValue)) {
+                        android.widget.Toast.makeText(
+                            getApplication(),
+                            "ارسال پیام در کانال رمزدار تا تکمیل رمزگذاری سرتاسری غیرفعال است.",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                        Log.w(TAG, "Blocked plaintext send to protected channel: $currentChannelValue")
+                        return
+                    }
+
                     DebugLogger.log(
                         action = "SEND",
                         msgId = message.id,
