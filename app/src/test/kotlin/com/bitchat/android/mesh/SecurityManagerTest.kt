@@ -368,6 +368,49 @@ class SecurityManagerTest {
         )
     }
 
+    @Test
+    fun `fragment replay identifiers distinguish colliding 32 bit payload hashes`() {
+        // Java/Kotlin byte-array hash codes collide for these two distinct payloads.
+        val payloadA = byteArrayOf(0, 31)
+        val payloadB = byteArrayOf(1, 0)
+        assertTrue(payloadA.contentHashCode() == payloadB.contentHashCode())
+
+        val timestamp = 1_800_000_000_000uL
+        val first = ZemzemePacket(
+            type = MessageType.FRAGMENT.value,
+            senderID = otherPeerID,
+            timestamp = timestamp,
+            payload = payloadA
+        )
+        val second = first.copy(payload = payloadB)
+
+        assertTrue("First fragment should be accepted", securityManager.validatePacket(first, otherPeerID))
+        assertTrue(
+            "A distinct fragment with the same 32-bit hash must not be dropped as a replay",
+            securityManager.validatePacket(second, otherPeerID)
+        )
+    }
+
+    @Test
+    fun `replay identifiers include bytes beyond the old 64 byte prefix`() {
+        val payloadA = ByteArray(80) { 7 }
+        val payloadB = payloadA.copyOf().also { it[79] = 8 }
+        val timestamp = 1_800_000_000_001uL
+        val first = ZemzemePacket(
+            type = MessageType.LEAVE.value,
+            senderID = otherPeerID,
+            timestamp = timestamp,
+            payload = payloadA
+        )
+        val second = first.copy(payload = payloadB)
+
+        assertTrue("First packet should be accepted", securityManager.validatePacket(first, otherPeerID))
+        assertTrue(
+            "Payload differences after byte 64 must remain distinct in the replay cache",
+            securityManager.validatePacket(second, otherPeerID)
+        )
+    }
+
     private fun setupKnownPeer(peerID: String, signingKey: ByteArray) {
         val info = PeerInfo(
             id = peerID,
