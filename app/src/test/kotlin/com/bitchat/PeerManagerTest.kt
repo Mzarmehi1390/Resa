@@ -300,4 +300,20 @@ class PeerManagerTest {
         assertEquals(true, peerManager.getPeerInfo(peerID)?.noisePublicKey?.contentEquals(noiseKey))
     }
 
-}
+
+    @Test
+    fun verified_peer_cannot_be_downgraded_by_unverified_update() {
+        val peerID = "aabbccddeeff0011"
+        val noiseKey = ByteArray(32) { it.toByte() }
+        val signingKey = ByteArray(32) { (it + 1).toByte() }
+
+        assertEquals(true, peerManager.updatePeerInfo(
+            peerID, "trusted", noiseKey, signingKey, true
+        ))
+        assertEquals(false, peerManager.updatePeerInfo(
+            peerID, "trusted-updated", noiseKey, signingKey, false
+        ))
+        assertEquals(true, peerManager.isPeerVerified(peerID))
+        assertEquals(true, peerManager.getPeerInfo(peerID)?.isVerifiedNickname)
+    }
+\n}\n
