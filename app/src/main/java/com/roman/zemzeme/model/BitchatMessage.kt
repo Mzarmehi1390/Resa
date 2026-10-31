@@ -229,60 +229,54 @@ data class ZemzemeMessage(
                     encryptedContent = null
                 }
 
-                // Optional fields
-                val originalSender = if (hasOriginalSender && buffer.hasRemaining()) {
+                // Optional fields. Every field announced by a flag must be complete;
+                // accepting a truncated field would silently change message semantics.
+                fun readOptionalString(fieldName: String): String? {
+                    if (!buffer.hasRemaining()) throw IllegalArgumentException("Missing $fieldName length")
                     val length = buffer.get().toInt() and 0xFF
-                    if (buffer.remaining() >= length) {
-                        val bytes = ByteArray(length)
-                        buffer.get(bytes)
-                        String(bytes, Charsets.UTF_8)
-                    } else null
+                    if (buffer.remaining() < length) {
+                        throw IllegalArgumentException("Truncated $fieldName")
+                    }
+                    val bytes = ByteArray(length)
+                    buffer.get(bytes)
+                    return String(bytes, Charsets.UTF_8)
+                }
+
+                val originalSender = if (hasOriginalSender) {
+                    readOptionalString("original sender")
                 } else null
 
-                val recipientNickname = if (hasRecipientNickname && buffer.hasRemaining()) {
-                    val length = buffer.get().toInt() and 0xFF
-                    if (buffer.remaining() >= length) {
-                        val bytes = ByteArray(length)
-                        buffer.get(bytes)
-                        String(bytes, Charsets.UTF_8)
-                    } else null
+                val recipientNickname = if (hasRecipientNickname) {
+                    readOptionalString("recipient nickname")
                 } else null
 
-                val senderPeerID = if (hasSenderPeerID && buffer.hasRemaining()) {
-                    val length = buffer.get().toInt() and 0xFF
-                    if (buffer.remaining() >= length) {
-                        val bytes = ByteArray(length)
-                        buffer.get(bytes)
-                        String(bytes, Charsets.UTF_8)
-                    } else null
+                val senderPeerID = if (hasSenderPeerID) {
+                    readOptionalString("sender peer ID")
                 } else null
 
                 // Mentions array
-                val mentions = if (hasMentions && buffer.hasRemaining()) {
+                val mentions = if (hasMentions) {
+                    if (!buffer.hasRemaining()) {
+                        throw IllegalArgumentException("Missing mentions count")
+                    }
                     val mentionCount = buffer.get().toInt() and 0xFF
                     val mentionList = mutableListOf<String>()
                     repeat(mentionCount) {
-                        if (buffer.hasRemaining()) {
-                            val length = buffer.get().toInt() and 0xFF
-                            if (buffer.remaining() >= length) {
-                                val bytes = ByteArray(length)
-                                buffer.get(bytes)
-                                mentionList.add(String(bytes, Charsets.UTF_8))
-                            }
-                        }
+                        mentionList.add(readOptionalString("mention"))
                     }
-                    if (mentionList.isNotEmpty()) mentionList else null
+                    mentionList.takeIf { it.isNotEmpty() }
                 } else null
 
                 // Channel
-                val channel = if (hasChannel && buffer.hasRemaining()) {
-                    val length = buffer.get().toInt() and 0xFF
-                    if (buffer.remaining() >= length) {
-                        val bytes = ByteArray(length)
-                        buffer.get(bytes)
-                        String(bytes, Charsets.UTF_8)
-                    } else null
+                val channel = if (hasChannel) {
+                    readOptionalString("channel")
                 } else null
+
+                // The binary payload is a complete message, not a stream. Trailing
+                // bytes indicate corruption, concatenation, or an incompatible format.
+                if (buffer.hasRemaining()) {
+                    throw IllegalArgumentException("Unexpected trailing message bytes")
+                }
 
                 return ZemzemeMessage(
                     id = id,

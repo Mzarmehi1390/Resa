@@ -62,4 +62,41 @@ class ZemzemeMessagePayloadTest {
         val decoded = ZemzemeMessage.fromBinaryPayload("hello".toByteArray(Charsets.UTF_8))
         assertEquals(null, decoded)
     }
+    @Test
+    fun decoderRejectsTruncatedOptionalChannelField() {
+        val original = ZemzemeMessage(
+            sender = "peer-a",
+            content = "hello",
+            timestamp = Date(1_700_000_000_000L),
+            channel = "#general"
+        )
+        val encoded = original.toBinaryPayload()!!
+        // The channel is the final optional field: remove its final byte.
+        assertEquals(null, ZemzemeMessage.fromBinaryPayload(encoded.copyOf(encoded.size - 1)))
+    }
+
+    @Test
+    fun decoderRejectsTrailingBytes() {
+        val original = ZemzemeMessage(
+            sender = "peer-a",
+            content = "hello",
+            timestamp = Date(1_700_000_000_000L)
+        )
+        val encoded = original.toBinaryPayload()!!
+        assertEquals(null, ZemzemeMessage.fromBinaryPayload(encoded + byteArrayOf(0x00)))
+    }
+
+    @Test
+    fun decoderRejectsTruncatedMentionEntry() {
+        val original = ZemzemeMessage(
+            sender = "peer-a",
+            content = "hello",
+            timestamp = Date(1_700_000_000_000L),
+            mentions = listOf("peer-b")
+        )
+        val encoded = original.toBinaryPayload()!!
+        // Remove the final byte from the mention value.
+        assertEquals(null, ZemzemeMessage.fromBinaryPayload(encoded.copyOf(encoded.size - 1)))
+    }
+
 }
