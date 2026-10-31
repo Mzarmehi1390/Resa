@@ -175,6 +175,11 @@ The most recent workflow-run records visible during this audit were CodeQL and s
 - Consequently, the upstream application source has not been imported, no Android build has been run, and no runtime test has been executed in this environment.
 - Do not represent the project as buildable or claim completed app development until a complete source import and baseline build are verified.
 
+
+
+### Additional navigation observation
+- `androidx.navigation:navigation-compose` is declared in the version catalog and app dependencies, but no `NavHost`, `NavController` or `rememberNavController` usage was found in the inspected application source. The inspected `MainActivity` instead switches between HomeScreen and ChatScreen through ViewModel state. Confirm whether the dependency is unused and map all back-stack/sheet behavior before introducing a new navigation graph.
+
 ## 8. Current phase
 
 **Phase 1 — Repository Audit (in progress).**
