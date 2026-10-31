@@ -111,7 +111,12 @@ object FileUtils {
                 throw java.io.IOException("Invalid outgoing file destination")
             }
             val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val temporary = File.createTempFile(".outgoing-", ".part", outgoingDir)
+            val temporary = try {
+                File.createTempFile(".outgoing-", ".part", outgoingDir)
+            } catch (e: Exception) {
+                inputStream.close()
+                throw e
+            }
             try {
                 inputStream.use { input ->
                     FileOutputStream(temporary).use { output ->
