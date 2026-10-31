@@ -316,4 +316,5 @@ class PeerManagerTest {
         assertEquals(true, peerManager.isPeerVerified(peerID))
         assertEquals(true, peerManager.getPeerInfo(peerID)?.isVerifiedNickname)
     }
-\n}\n
+
+}
