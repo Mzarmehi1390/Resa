@@ -319,7 +319,7 @@ The dedicated Android CI run for the current channel-verification changes is que
 - MessageHandler.handlePrivateMessage now independently requires a present signature and a successful verification result before decoding or saving private MESSAGE/FILE_TRANSFER payloads.
 - This is defense in depth: the normal PacketProcessor ingress already validates these packet types, but internal call paths must not weaken the requirement by treating a missing signature or absent delegate result as success.
 - The change does not alter NOISE_ENCRYPTED transport packets, whose confidentiality/authentication is provided by the Noise session layer rather than this plain-packet handler.
-- CI is pending for the handler-level enforcement commit; do not mark it verified until unit tests, lint and debug APK assembly complete successfully.
+- CI run `41225500295` passed unit tests, lint and debug APK assembly for the handler-level enforcement commit.
 
 ## Noise handshake peer-ID binding — 2026-10-31
 
@@ -333,3 +333,15 @@ The session manager previously used a separate map lookup, destroy, and removal 
 
 Session teardown now coordinates with the transport cipher lock, preventing a concurrent encrypt/decrypt operation from using a `CipherState` while it is being destroyed. This is a local concurrency hardening change; it does not solve multi-device key synchronization or message delivery reliability.
 
+
+
+## Noise handshake ingress and replay handling — 2026-10-31
+
+- `SecurityManager` now requires a valid Ed25519 signature on `NOISE_HANDSHAKE` packets, using the signing key pinned for the already-announced peer. Previously this packet type bypassed the packet-signature allowlist, even though the sender signed outgoing handshake packets.
+- Handshake replay tracking now hashes the complete payload with SHA-256 rather than a short prefix/content-hash value, avoiding easy hash collisions between different handshake payloads.
+- `HandshakeReplayGuard` separates in-flight exchanges from completed exchanges. Concurrent duplicates are rejected; a failed Noise processing attempt releases its reservation so a legitimate retry is not permanently blocked; a successfully processed exchange is committed before response callbacks run.
+- A duplicate exchange is rejected before any existing session is replaced. A fresh, signed handshake may still replace an established session to support re-handshake.
+- `NoiseEncryptionService.processHandshakeMessage` now propagates protocol failures to its caller instead of converting them to `null`. `null` remains the valid result for a handshake step that requires no outgoing response. This distinction is necessary for retry-safe replay tracking.
+- Added unit tests for in-flight duplicate rejection, retry after abort, completed-exchange rejection, bounded cleanup, reset behavior, and ingress rejection/acceptance for unsigned/signed Noise handshakes.
+- **Verification status:** CI for the final commit containing these changes is pending. Do not treat these changes as verified until unit tests, lint and debug APK assembly all pass.
+- **Scope limitation:** these changes protect handshake packet authenticity and local replay bookkeeping. They do not establish a human identity beyond the existing pinned signing key, nor do they replace the need for real two-device BLE/mesh handshake tests.
