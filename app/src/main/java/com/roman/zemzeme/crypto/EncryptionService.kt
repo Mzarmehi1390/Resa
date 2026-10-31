@@ -207,22 +207,32 @@ open class EncryptionService(private val context: Context) {
      * Sign data using our static identity key
      * Note: This is now done at the packet level, not per-message
      */
+    /**
+     * Sign data with the local Ed25519 identity.
+     *
+     * Prefer [signData] or packet-level [com.roman.zemzeme.noise.NoiseEncryptionService.signPacket]
+     * at new call sites. This legacy method now returns a real signature rather than
+     * the empty placeholder previously emitted.
+     */
+    @Deprecated("Use signData() or signPacket() for packet signatures")
     @Throws(Exception::class)
     fun sign(data: ByteArray): ByteArray {
-        // Note: In Noise protocol, authentication is built into the handshake
-        // For compatibility, we return empty signature
-        return ByteArray(0)
+        return signData(data) ?: throw IllegalStateException("Ed25519 signing failed")
     }
     
     /**
      * Verify signature using peer's identity key
      * Note: This is now done at the packet level, not per-message
      */
+    /**
+     * Legacy signature-verification API. A Noise session is not an Ed25519
+     * signature, and this service does not own the peer's pinned signing key.
+     * Callers must verify packet signatures through SecurityManager instead.
+     */
+    @Deprecated("Use SecurityManager.verifySignature() with the pinned peer signing key")
     @Throws(Exception::class)
     fun verify(signature: ByteArray, data: ByteArray, peerID: String): Boolean {
-        // Note: In Noise protocol, authentication is built into the transport
-        // Messages are authenticated automatically when decrypted
-        return hasEstablishedSession(peerID)
+        return false
     }
     
     // MARK: - Noise Protocol Interface
