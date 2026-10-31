@@ -328,6 +328,44 @@ class SecurityManagerTest {
         )
     }
 
+    @Test
+    fun `validatePacket rejects Noise handshake without signature`() {
+        setupKnownPeer(otherPeerID, otherSigningKey)
+
+        val packet = ZemzemePacket(
+            type = MessageType.NOISE_HANDSHAKE.value,
+            ttl = 10u,
+            senderID = otherPeerID,
+            recipientID = myPeerID.chunked(2).map { it.toInt(16).toByte() }.toByteArray(),
+            payload = dummyPayload
+        )
+        packet.signature = null
+
+        assertFalse(
+            "Unsigned Noise handshakes must be rejected before session state changes",
+            securityManager.validatePacket(packet, otherPeerID)
+        )
+    }
+
+    @Test
+    fun `validatePacket accepts signed Noise handshake from known peer`() {
+        setupKnownPeer(otherPeerID, otherSigningKey)
+
+        val packet = ZemzemePacket(
+            type = MessageType.NOISE_HANDSHAKE.value,
+            ttl = 10u,
+            senderID = otherPeerID,
+            recipientID = myPeerID.chunked(2).map { it.toInt(16).toByte() }.toByteArray(),
+            payload = dummyPayload
+        )
+        packet.signature = validSignature
+
+        assertTrue(
+            "A validly signed Noise handshake from a known peer should pass ingress validation",
+            securityManager.validatePacket(packet, otherPeerID)
+        )
+    }
+
     private fun setupKnownPeer(peerID: String, signingKey: ByteArray) {
         val info = PeerInfo(
             id = peerID,
