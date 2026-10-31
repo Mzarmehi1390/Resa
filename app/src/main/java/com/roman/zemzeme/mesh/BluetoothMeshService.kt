@@ -1010,13 +1010,29 @@ class BluetoothMeshService(private val context: Context) {
         if (content.isEmpty()) return
         
         serviceScope.launch {
+            // Use the shared iOS-compatible message payload so channel IDs and
+            // mentions survive the mesh transport instead of being discarded.
+            val wireMessage = ZemzemeMessage(
+                sender = myPeerID,
+                content = content,
+                timestamp = java.util.Date(),
+                senderPeerID = myPeerID,
+                mentions = mentions.takeIf { it.isNotEmpty() },
+                channel = channel
+            )
+            val payload = wireMessage.toBinaryPayload()
+            if (payload == null) {
+                Log.e(TAG, "Unable to encode outgoing message payload")
+                return@launch
+            }
+
             val packet = ZemzemePacket(
                 version = 1u,
                 type = MessageType.MESSAGE.value,
                 senderID = hexStringToByteArray(myPeerID),
                 recipientID = SpecialRecipients.BROADCAST,
                 timestamp = System.currentTimeMillis().toULong(),
-                payload = content.toByteArray(Charsets.UTF_8),
+                payload = payload,
                 signature = null,
                 ttl = MAX_TTL
             )

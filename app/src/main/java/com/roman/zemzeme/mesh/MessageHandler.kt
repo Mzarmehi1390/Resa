@@ -479,7 +479,30 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
                 Log.w(TAG, "⚠️ FILE_TRANSFER decode failed (broadcast) from ${peerID.take(8)} payloadSize=${packet.payload.size}")
             }
 
-            // Fallback: plain text
+            // Decode the shared iOS-compatible message format first. Legacy UTF-8
+            // packets remain supported as a compatibility fallback.
+            val wireMessage = ZemzemeMessage.fromBinaryPayload(packet.payload)
+            if (wireMessage != null) {
+                if (wireMessage.isPrivate || wireMessage.isEncrypted) {
+                    Log.w(TAG, "Rejecting private/encrypted payload on public plaintext receive path")
+                    return
+                }
+                if (wireMessage.senderPeerID != null &&
+                    !wireMessage.senderPeerID.equals(peerID, ignoreCase = true)
+                ) {
+                    Log.w(TAG, "Rejecting message whose embedded sender ID does not match transport peer")
+                    return
+                }
+
+                val message = wireMessage.copy(
+                    sender = delegate?.getPeerNickname(peerID) ?: "unknown",
+                    senderPeerID = peerID
+                )
+                delegate?.onMessageReceived(message)
+                return
+            }
+
+            // Compatibility fallback for peers still sending legacy plain UTF-8.
             val textContent = String(packet.payload, Charsets.UTF_8)
             val message = ZemzemeMessage(
                 sender = delegate?.getPeerNickname(peerID) ?: "unknown",
