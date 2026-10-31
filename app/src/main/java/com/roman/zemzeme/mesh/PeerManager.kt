@@ -1,5 +1,6 @@
 package com.roman.zemzeme.mesh
 
+import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.*
 import java.util.concurrent.ConcurrentHashMap
@@ -63,7 +64,7 @@ data class PeerInfo(
  * Now includes centralized peer fingerprint management via PeerFingerprintManager singleton
  * and support for signed announcement verification
  */
-class PeerManager {
+class PeerManager(context: Context? = null) {
     
     companion object {
         private const val TAG = "PeerManager"
@@ -80,6 +81,9 @@ class PeerManager {
     
     // Legacy fields removed: use PeerInfo map exclusively
     
+    // Persistent trust records survive disconnects and process restarts.
+    private val trustStore = context?.let { PeerTrustStore(it.applicationContext) }
+
     // Centralized fingerprint management
     private val fingerprintManager = PeerFingerprintManager.getInstance()
     
@@ -111,21 +115,35 @@ class PeerManager {
     ): Boolean {
         if (peerID == "unknown") return false
         
-        // Serialize identity check + replacement so simultaneous announcements
-        // cannot race to replace a peer's first accepted cryptographic identity.
+        // Serialize identity check + persistence + replacement so simultaneous
+        // announcements cannot race to replace a peer's first accepted identity.
         val isNewPeer = synchronized(peers) {
-            val now = System.currentTimeMillis()
             val existingPeer = peers[peerID]
+            val trustedRecord = trustStore?.get(peerID)
 
-            // Once verified, both cryptographic keys stay pinned to this peer ID.
-            // Rotation requires a separate authenticated protocol.
-            if (existingPeer?.isVerifiedNickname == true) {
-                val noiseKeyChanged = existingPeer.noisePublicKey?.contentEquals(noisePublicKey) == false
-                val signingKeyChanged = existingPeer.signingPublicKey?.contentEquals(signingPublicKey) == false
-                if (noiseKeyChanged || signingKeyChanged) {
-                    Log.w(TAG, "Rejecting cryptographic identity change for verified peer: $peerID")
-                    return false
-                }
+            // If encrypted trust storage exists but could not be authenticated,
+            // do not silently downgrade to volatile-only trust.
+            if (trustStore != null && trustStore.all() == null) {
+                Log.e(TAG, "Peer trust store is unavailable; refusing verified identity update")
+                return false
+            }
+
+            val pinnedNoiseKey = existingPeer?.takeIf { it.isVerifiedNickname }?.noisePublicKey
+                ?: trustedRecord?.noisePublicKey
+            val pinnedSigningKey = existingPeer?.takeIf { it.isVerifiedNickname }?.signingPublicKey
+                ?: trustedRecord?.signingPublicKey
+            if (pinnedNoiseKey != null && !pinnedNoiseKey.contentEquals(noisePublicKey) ||
+                pinnedSigningKey != null && !pinnedSigningKey.contentEquals(signingPublicKey)
+            ) {
+                Log.w(TAG, "Rejecting cryptographic identity change for verified peer: $peerID")
+                return false
+            }
+
+            if (isVerified && trustStore != null &&
+                !trustStore.remember(PeerTrustRecord(peerID, nickname, noisePublicKey, signingPublicKey))
+            ) {
+                Log.e(TAG, "Could not persist verified peer identity; refusing trust update")
+                return false
             }
 
             val peerInfo = PeerInfo(
@@ -133,13 +151,13 @@ class PeerManager {
                 nickname = nickname,
                 isConnected = true,
                 isDirectConnection = existingPeer?.isDirectConnection ?: false,
-                noisePublicKey = noisePublicKey,
-                signingPublicKey = signingPublicKey,
+                noisePublicKey = noisePublicKey.copyOf(),
+                signingPublicKey = signingPublicKey.copyOf(),
                 isVerifiedNickname = isVerified,
-                lastSeen = now
+                lastSeen = System.currentTimeMillis()
             )
             peers[peerID] = peerInfo
-            existingPeer == null
+            existingPeer == null && trustedRecord == null
         }
         
         // Update derived state only
@@ -164,22 +182,29 @@ class PeerManager {
      * Get peer info with dynamic direct connection status
      */
     fun getPeerInfo(peerID: String): PeerInfo? {
-        return peers[peerID]?.let { info ->
-            // Dynamically check direct connection status from ConnectionManager
-            val isDirect = isPeerDirectlyConnected?.invoke(peerID) ?: false
-            if (info.isDirectConnection != isDirect) {
-                info.copy(isDirectConnection = isDirect)
-            } else {
-                info
-            }
-        }
+        val info = peers[peerID] ?: trustStore?.get(peerID)?.let { trusted ->
+            PeerInfo(
+                id = trusted.peerID,
+                nickname = trusted.nickname,
+                isConnected = false,
+                isDirectConnection = false,
+                noisePublicKey = trusted.noisePublicKey.copyOf(),
+                signingPublicKey = trusted.signingPublicKey.copyOf(),
+                isVerifiedNickname = true,
+                lastSeen = 0L
+            )
+        } ?: return null
+
+        // Dynamically check direct connection status from ConnectionManager.
+        val isDirect = isPeerDirectlyConnected?.invoke(peerID) ?: false
+        return if (info.isDirectConnection != isDirect) info.copy(isDirectConnection = isDirect) else info
     }
 
     /**
      * Check if peer is verified
      */
     fun isPeerVerified(peerID: String): Boolean {
-        return peers[peerID]?.isVerifiedNickname == true
+        return peers[peerID]?.isVerifiedNickname == true || trustStore?.get(peerID) != null
     }
 
     /**
@@ -366,9 +391,14 @@ class PeerManager {
         announcedPeers.clear()
         announcedToPeers.clear()
         
-        // Also clear fingerprint mappings
+        // Explicit clear-all also clears the persistent peer trust database.
+        if (trustStore?.clear() == false) {
+            Log.e(TAG, "Could not clear persistent peer trust records")
+        }
+
+        // Also clear fingerprint mappings.
         fingerprintManager.clearAllFingerprints()
-        
+
         notifyPeerListUpdate()
     }
     
