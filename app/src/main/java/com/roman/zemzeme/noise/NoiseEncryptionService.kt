@@ -192,12 +192,10 @@ class NoiseEncryptionService(private val context: Context) {
      * Returns response message if needed, null if handshake complete or failed
      */
     fun processHandshakeMessage(data: ByteArray, peerID: String): ByteArray? {
-        return try {
-            sessionManager.processHandshakeMessage(peerID, data)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to process handshake from $peerID: ${e.message}")
-            null
-        }
+        // Keep protocol failures observable by the caller. Returning null for both
+        // "handshake step completed without a response" and "handshake failed"
+        // makes it impossible for the replay guard to distinguish the two.
+        return sessionManager.processHandshakeMessage(peerID, data)
     }
     
     /**
