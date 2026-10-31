@@ -690,28 +690,30 @@ class NoiseSession(
     @Synchronized
     fun destroy() {
         try {
-            // Destroy Noise objects
-            sendCipher?.destroy()
-            receiveCipher?.destroy()
+            // CipherState is not thread-safe. Coordinate destruction with in-flight
+            // encrypt/decrypt operations so keys are never destroyed mid-operation.
+            synchronized(cipherLock) {
+                sendCipher?.destroy()
+                receiveCipher?.destroy()
+
+                // Clear sensitive data only after transport operations have drained.
+                remoteStaticPublicKey?.fill(0)
+                handshakeHash?.fill(0)
+
+                sendCipher = null
+                receiveCipher = null
+                remoteStaticPublicKey = null
+                handshakeHash = null
+            }
+
             handshakeState?.destroy()
-            
-            // Clear sensitive data
-            remoteStaticPublicKey?.fill(0)
-            handshakeHash?.fill(0)
-            
-            // Null out references
-            sendCipher = null
-            receiveCipher = null
             handshakeState = null
-            remoteStaticPublicKey = null
-            handshakeHash = null
-            
+
             if (state !is NoiseSessionState.Failed) {
                 state = NoiseSessionState.Failed(Exception("Session destroyed"))
             }
-            
+
             Log.d(TAG, "Session destroyed for $peerID")
-            
         } catch (e: Exception) {
             Log.w(TAG, "Error during session cleanup: ${e.message}")
         }
