@@ -41,6 +41,7 @@ jobs:
           rsync -a upstream-src/ ./ --exclude='.git/' --exclude='.github/' --exclude='README.md' --exclude='LICENSE' --exclude='docs/'
           mkdir -p licenses
           cp upstream-src/LICENSE licenses/ZEMZEME-UPSTREAM-MIT-LICENSE
+          chmod +x gradlew
           cat > UPSTREAM_BASELINE.md <<'EOF'
           # Imported upstream baseline
 
