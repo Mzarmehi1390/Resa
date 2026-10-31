@@ -6,17 +6,13 @@ import java.nio.ByteOrder
 /**
  * ZemzemeFilePacket: TLV-encoded file transfer payload for BLE mesh.
  * TLVs:
- *  - 0x01: filename (UTF-8)
- *  - 0x02: file size (8 bytes, UInt64)
- *  - 0x03: mime type (UTF-8)
- *  - 0x04: content (bytes) — may appear multiple times for large files
+ *  - 0x01: filename (UTF-8, 2-byte big-endian length)
+ *  - 0x02: file size (4-byte non-negative integer, preceded by a 2-byte length)
+ *  - 0x03: MIME type (UTF-8, 2-byte big-endian length)
+ *  - 0x04: content (4-byte big-endian length; multiple content TLVs are accepted)
  *
- * Length field for TLV is 2 bytes (UInt16, big-endian) for all TLVs.
- * For large files, CONTENT is chunked into multiple TLVs of up to 65535 bytes each.
- *
- * Note: The outer ZemzemePacket uses version 2 (4-byte payload length), so this
- * TLV payload can exceed 64 KiB even though each TLV value is limited to 65535 bytes.
- * Transport-level fragmentation then splits the final packet for BLE MTU.
+ * The current BLE mesh reassembly limit bounds the complete file content to 480 KiB.
+ * The file size field must exactly match the combined content length.
  */
 data class ZemzemeFilePacket(
     val fileName: String,
