@@ -257,4 +257,47 @@ class PeerManagerTest {
 
         assertEquals(expectedLine2, actualLine2)
     }
+
+    @Test
+    fun verified_peer_keys_are_pinned_and_key_rotation_is_rejected() {
+        val peerID = "0123456789abcdef"
+        val noiseKey = ByteArray(32) { it.toByte() }
+        val signingKey = ByteArray(32) { (it + 1).toByte() }
+        val replacementSigningKey = ByteArray(32) { (it + 2).toByte() }
+
+        assertEquals(true, peerManager.updatePeerInfo(
+            peerID, "alice", noiseKey, signingKey, true
+        ))
+
+        // A nickname refresh using the same identity remains allowed.
+        assertEquals(false, peerManager.updatePeerInfo(
+            peerID, "alice-new", noiseKey.copyOf(), signingKey.copyOf(), true
+        ))
+        assertEquals("alice-new", peerManager.getPeerInfo(peerID)?.nickname)
+
+        // A different signing key must not replace the verified identity.
+        assertEquals(false, peerManager.updatePeerInfo(
+            peerID, "attacker", noiseKey.copyOf(), replacementSigningKey, true
+        ))
+        assertEquals("alice-new", peerManager.getPeerInfo(peerID)?.nickname)
+        assertEquals(true, peerManager.getPeerInfo(peerID)?.signingPublicKey?.contentEquals(signingKey))
+    }
+
+    @Test
+    fun verified_peer_noise_key_is_also_pinned() {
+        val peerID = "fedcba9876543210"
+        val noiseKey = ByteArray(32) { it.toByte() }
+        val signingKey = ByteArray(32) { (it + 1).toByte() }
+        val replacementNoiseKey = ByteArray(32) { (it + 3).toByte() }
+
+        assertEquals(true, peerManager.updatePeerInfo(
+            peerID, "bob", noiseKey, signingKey, true
+        ))
+        assertEquals(false, peerManager.updatePeerInfo(
+            peerID, "bob-replaced", replacementNoiseKey, signingKey, true
+        ))
+        assertEquals("bob", peerManager.getPeerInfo(peerID)?.nickname)
+        assertEquals(true, peerManager.getPeerInfo(peerID)?.noisePublicKey?.contentEquals(noiseKey))
+    }
+
 }
