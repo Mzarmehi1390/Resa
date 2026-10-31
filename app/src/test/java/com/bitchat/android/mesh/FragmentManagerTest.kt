@@ -188,4 +188,69 @@ class FragmentManagerTest {
         }
         return result
     }
+    @Test
+    fun `fragments from different senders cannot be combined`() {
+        val payload = ByteArray(1800)
+        Random().nextBytes(payload)
+        val original = ZemzemePacket(
+            version = 1u,
+            type = MessageType.MESSAGE.value,
+            senderID = hexStringToByteArray(senderID),
+            recipientID = hexStringToByteArray(recipientID),
+            timestamp = System.currentTimeMillis().toULong(),
+            payload = payload,
+            ttl = 7u
+        )
+        val fragments = fragmentManager.createFragments(original)
+        assertTrue("Test packet must create at least two fragments", fragments.size >= 2)
+
+        val firstSender = fragments.first()
+        val secondSenderFragment = fragments[1].copy(
+            senderID = hexStringToByteArray("AABBCCDDEEFF0011")
+        )
+
+        assertEquals(null, fragmentManager.handleFragment(firstSender))
+        // Same fragment ID and index sequence, but a different packet sender.
+        // This must not complete the first sender's reassembly set.
+        assertEquals(null, fragmentManager.handleFragment(secondSenderFragment))
+
+        var result: ZemzemePacket? = null
+        for (fragment in fragments.drop(1)) {
+            result = fragmentManager.handleFragment(fragment) ?: result
+        }
+
+        assertNotNull("Original sender's fragments should reassemble independently", result)
+        assertTrue(original.payload.contentEquals(result!!.payload))
+    }
+
+    @Test
+    fun `fragment payload rejects excessive fragment counts and data sizes`() {
+        val id = ByteArray(FragmentPayload.FRAGMENT_ID_SIZE) { it.toByte() }
+        val tooMany = FragmentPayload(
+            fragmentID = id,
+            index = 0,
+            total = FragmentPayload.MAX_FRAGMENT_COUNT + 1,
+            originalType = MessageType.MESSAGE.value,
+            data = byteArrayOf(1)
+        )
+        val tooLarge = FragmentPayload(
+            fragmentID = id,
+            index = 0,
+            total = 1,
+            originalType = MessageType.MESSAGE.value,
+            data = ByteArray(FragmentPayload.MAX_FRAGMENT_DATA_SIZE + 1) { 1 }
+        )
+        val nested = FragmentPayload(
+            fragmentID = id,
+            index = 0,
+            total = 1,
+            originalType = MessageType.FRAGMENT.value,
+            data = byteArrayOf(1)
+        )
+
+        assertTrue(!tooMany.isValid())
+        assertTrue(!tooLarge.isValid())
+        assertTrue(!nested.isValid())
+    }
+
 }
