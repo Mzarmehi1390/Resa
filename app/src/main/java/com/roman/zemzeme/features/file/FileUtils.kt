@@ -195,70 +195,71 @@ object FileUtils {
         context: Context,
         file: com.roman.zemzeme.model.ZemzemeFilePacket
     ): String {
+        val valid = com.roman.zemzeme.model.FilePacketValidation.isValid(
+            nameBytes = file.fileName.toByteArray(Charsets.UTF_8),
+            fileSize = file.fileSize,
+            mimeBytes = file.mimeType.toByteArray(Charsets.UTF_8),
+            contentSize = file.content.size
+        )
+        require(valid) { "Invalid or oversized incoming file packet" }
+
         val lowerMime = file.mimeType.lowercase()
         val isImage = lowerMime.startsWith("image/")
-        // FIX: Use cacheDir instead of filesDir to prevent storage exhaustion attacks (Issue #592)
-        // Files in cacheDir are eligible for automatic system cleanup when space is low
-        val baseDir = context.cacheDir
-        val subdir = if (isImage) "images/incoming" else "files/incoming"
-        val dir = java.io.File(baseDir, subdir).apply { mkdirs() }
-
-        fun extFromMime(m: String): String = when (m.lowercase()) {
-            "image/jpeg", "image/jpg" -> ".jpg"
-            "image/png" -> ".png"
-            "image/webp" -> ".webp"
-            "application/pdf" -> ".pdf"
-            "text/plain" -> ".txt"
-            else -> if (isImage) ".jpg" else ".bin"
+        val baseDir = File(context.cacheDir, if (isImage) "images/incoming" else "files/incoming")
+        if (!baseDir.exists() && !baseDir.mkdirs()) {
+            throw java.io.IOException("Unable to create incoming file directory")
         }
+        require(baseDir.isDirectory) { "Incoming file destination is not a directory" }
 
-        // Prefer transmitted original name; ensure uniqueness to avoid overwrites
-        val baseName = (file.fileName.takeIf { it.isNotBlank() }
-            ?: (if (isImage) "img" else "file"))
+        val safeBaseName = file.fileName
+            .replace('\\\\', '_')
+            .replace('/', '_')
             .replace(Regex("[^A-Za-z0-9._-]"), "_")
-        val ext = extFromMime(lowerMime)
-        var safeName = if (baseName.contains('.')) baseName else baseName + ext
-        var idx = 1
-        while (java.io.File(dir, safeName).exists() && idx < 1000) {
-            val dot = safeName.lastIndexOf('.')
-            safeName = if (dot > 0) {
-                val b = safeName.substring(0, dot)
-                val e = safeName.substring(dot)
-                "$b ($idx)$e"
-            } else {
-                "$safeName ($idx)"
+            .trim('.', '_', ' ')
+            .take(120)
+            .ifBlank { if (isImage) "image" else "file" }
+
+        val safeName = if (safeBaseName.contains('.')) safeBaseName else {
+            val extension = when (lowerMime) {
+                "image/jpeg", "image/jpg" -> ".jpg"
+                "image/png" -> ".png"
+                "image/webp" -> ".webp"
+                "application/pdf" -> ".pdf"
+                "text/plain" -> ".txt"
+                else -> if (isImage) ".img" else ".bin"
             }
-            idx++
+            safeBaseName + extension
         }
 
-        return try {
-            val out = java.io.File(dir, safeName)
-            out.outputStream().use { it.write(file.content) }
-            out.absolutePath
-        } catch (_: Exception) {
-            // Fallback to cache dir with uniqueness
-            try {
-                var fallback = safeName
-                var idx2 = 1
-                while (java.io.File(context.cacheDir, fallback).exists() && idx2 < 1000) {
-                    val dot = fallback.lastIndexOf('.')
-                    fallback = if (dot > 0) {
-                        val b = fallback.substring(0, dot)
-                        val e = fallback.substring(dot)
-                        "$b ($idx2)$e"
-                    } else {
-                        "$fallback ($idx2)"
-                    }
-                    idx2++
-                }
-                val out = java.io.File(context.cacheDir, fallback)
-                out.outputStream().use { it.write(file.content) }
-                out.absolutePath
-            } catch (_: Exception) {
-                val tmp = java.io.File.createTempFile(if (isImage) "img_" else "file_", if (isImage) ".jpg" else ".bin")
-                tmp.writeBytes(file.content)
-                tmp.absolutePath
+        val destinationDir = baseDir.canonicalFile
+        var destination = File(destinationDir, safeName)
+        var index = 1
+        while (destination.exists()) {
+            val dot = safeName.lastIndexOf('.')
+            val base = if (dot > 0) safeName.substring(0, dot) else safeName
+            val extension = if (dot > 0) safeName.substring(dot) else ""
+            destination = File(destinationDir, "$base ($index)$extension")
+            index++
+            if (index > 1000) throw java.io.IOException("Unable to allocate unique incoming filename")
+        }
+        require(destination.canonicalFile.parentFile == destinationDir) {
+            "Invalid incoming file destination"
+        }
+
+        val temporary = File.createTempFile(".incoming-", ".part", destinationDir)
+        try {
+            java.io.FileOutputStream(temporary).use { output ->
+                output.write(file.content)
+                output.flush()
+                output.fd.sync()
             }
+            if (!temporary.renameTo(destination)) {
+                throw java.io.IOException("Unable to finalize incoming file")
+            }
+            return destination.absolutePath
+        } catch (e: Exception) {
+            temporary.delete()
+            throw e
         }
     }
 
