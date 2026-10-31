@@ -100,7 +100,7 @@ data class ZemzemeFilePacket(
 
                     if (length < 0 || length > data.size - off) return null
                     if (type == TLVType.CONTENT) {
-                        if (length == 0 || length > FilePacketValidation.MAX_CONTENT_BYTES - contentSize) return null
+                        if (length > FilePacketValidation.MAX_CONTENT_BYTES - contentSize) return null
                     }
 
                     when (type) {
@@ -128,6 +128,7 @@ data class ZemzemeFilePacket(
 
                 val rawName = nameBytes ?: return null
                 val rawMime = mimeBytes ?: return null
+                if (contentParts.isEmpty()) return null
                 val declaredSize = size ?: return null
                 if (!FilePacketValidation.isValid(rawName, declaredSize, rawMime, contentSize)) return null
 
