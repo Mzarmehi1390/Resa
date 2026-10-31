@@ -168,12 +168,7 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
      * Sign packet payload
      */
     fun signPacket(payload: ByteArray): ByteArray? {
-        return try {
-            encryptionService.sign(payload)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to sign packet: ${e.message}")
-            null
-        }
+        return encryptionService.signData(payload)
     }
     
     /**
