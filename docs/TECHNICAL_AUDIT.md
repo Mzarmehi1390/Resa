@@ -1,0 +1,182 @@
+# Resa — Technical Audit & Roadmap
+
+**Audit type:** Static repository inspection  
+**Audit date:** 2026-10-31  
+**Upstream branch:** `main`  
+**Audited upstream commit:** `1fc0e237f719514c7eb0920b503a4db103786479`  
+**Target repository at start:** Empty; no branches or files existed.
+
+> This is a preliminary engineering audit, not a security certification or a successful build report. Findings below are based on source files and Git metadata inspected so far. Runtime behavior, device compatibility, protocol interoperability, and build success still require execution and tests.
+
+## 1. Repository state
+
+### Upstream: `whisperbit-labs/zemzeme-android`
+
+- Public Git repository, default branch `main`.
+- Repository metadata reports Kotlin as its primary language.
+- Recursive Git tree contains 1,843 paths (including directories).
+- Main Android source tree contains 248 Kotlin/Java source files.
+- Android resources contain 1,392 files.
+- One main Gradle application module: `:app`.
+- A prebuilt `app/libs/golib.aar` is present (21,148,949 bytes).
+- License file identifies the project as MIT; preserve copyright and license notices for upstream and inherited components.
+
+### Target: `Mzarmehi1390/Resa`
+
+- Was empty at audit start.
+- Initial Resa README has now been added in commit `462e5506d1ab7de30e6a580c5c48ecc4e40f6010`.
+- No upstream application source has yet been copied into this repository.
+
+## 2. Confirmed technical baseline
+
+| Area | Observed upstream configuration |
+|---|---|
+| Language | Kotlin |
+| UI | Jetpack Compose + Material 3 |
+| Android Gradle Plugin | 8.10.1 |
+| Kotlin | 2.2.0 |
+| Gradle wrapper | 8.13 |
+| compileSdk | 35 |
+| minSdk | 26 |
+| targetSdk | 35 |
+| Build JDK in upstream CI | 17 |
+| Application namespace / ID | `com.roman.zemzeme` |
+| Version | 1.0.2 (versionCode 3) |
+| App module | `:app` |
+
+The current application is not a multi-module Clean Architecture project. Its source is grouped largely by feature/responsibility packages under `com.roman.zemzeme`, with a large `MainActivity`, `ChatViewModel`, and Compose UI layer. Avoid introducing a large architecture migration before the existing dependency graph and lifecycle behavior are mapped.
+
+## 3. Capabilities found in source
+
+The following implementation areas are present in the source tree:
+
+- BLE mesh: Bluetooth connection/GATT managers, peer management, packet processing, relay and store-forward components.
+- Noise transport: Noise XX session classes, session manager, encryption service, key exchange and replay-window logic.
+- Identity: static Noise keys, Ed25519 signing keys, peer fingerprints, QR verification and identity persistence.
+- P2P: libp2p bridge through the bundled Go AAR, P2P transport, topic repositories and chunk assembly.
+- Nostr: relay/client/subscription components, identity, event signing, direct-message handling and NIP-44-related crypto.
+- Chat UI: home and chat screens, message components, image/file/audio UI, QR verification, settings sheets and connection indicators.
+- Supporting features: geohash/location channels, notifications, favorites, onboarding, app lock, background mesh service and update handling.
+
+Presence in source does not by itself prove a feature works end-to-end. Each transport and message type needs integration tests and device validation.
+
+## 4. Priority findings
+
+### P0 — Security behavior must be corrected or proven safe
+
+1. **Legacy signature API is not a cryptographic signature check.**
+   - `EncryptionService.sign(data)` returns an empty byte array.
+   - `EncryptionService.verify(signature, data, peerID)` returns only whether a Noise session exists; it does not verify the supplied signature against the supplied data.
+   - `SecurityManager.verifySignature` delegates to this method, and `MessageHandler` has a call path to that API when a packet carries a signature.
+   - A separate `verifyPacketSignature` path does perform Ed25519 verification for selected packet types. These paths must be unified so no caller mistakes session existence for signature validity.
+   - Required tests: forged signature, empty signature, altered payload, unknown signing key, valid signature, and established-session-with-invalid-signature.
+
+2. **Cleartext traffic is globally permitted.**
+   - `AndroidManifest.xml` sets `android:usesCleartextTraffic="true"`.
+   - Audit all HTTP clients, endpoints, local-network exceptions and third-party SDKs. Remove the global allowance unless a documented, narrowly scoped requirement is proven.
+
+3. **Cryptographic protocol documentation conflicts with implementation.**
+   - README describes `Noise_NK`; `NoiseSession.kt` configures `Noise_XX_25519_ChaChaPoly_SHA256`.
+   - Confirm protocol intent, peer compatibility and identity-authentication semantics before changing protocol strings or key formats.
+   - Do not silently migrate keys or protocol versions.
+
+4. **Secrets and diagnostic logging need a full pass.**
+   - Audit every logger and debug export for message content, private keys, PIN material, tokens, file paths and sensitive peer metadata.
+   - Ensure release builds do not expose verbose diagnostics and that sensitive byte arrays are cleared where practical.
+
+### P1 — Product identity and architecture
+
+1. App identity is still upstream: namespace/application ID `com.roman.zemzeme`, app label `Zemzeme`, old resource names and upstream package paths.
+2. Manifest contains a large dynamic launcher-alias section (100 aliases). Review whether this feature is needed in Resa; remove only after mapping references and user-facing behavior.
+3. MainActivity owns substantial startup, onboarding, lifecycle and screen-routing orchestration. Map responsibilities before extracting code.
+4. `UnifiedMessageRouter.tryBleSend` currently returns a failure result with a comment that BLE sending is handled by the mesh service. Verify actual production call sites before claiming this router performs complete BLE fallback.
+5. Nostr crypto is custom application code; require official Nostr/NIP test vectors and cross-client interoperability tests.
+
+### P1 — Build, dependency and release engineering
+
+1. `app/build.gradle.kts` reads release signing properties from local `local.properties`.
+2. Existing upstream Android CI builds Debug and Release APKs, but the workflow does not inject signing secrets. A CI Release APK therefore must not be assumed to be signed.
+3. Existing workflow runs unit tests and lint, then uploads APK artifacts. It does not currently build an AAB.
+4. The upstream tree includes a 21 MB native Go AAR. Verify ABI coverage, native symbol packaging, 16 KB page-size compatibility where applicable, licensing and reproducibility.
+5. Repository size and resource count are significant; review the 100 icon aliases and resource duplication before optimizing. Do not delete assets solely to reduce APK size.
+
+### P2 — Test coverage
+
+- The source tree contains 12 test Kotlin files including a test Log shim; 11 are named test suites.
+- No `app/src/androidTest` files were found in the inspected tree.
+- Existing tests cover selected crypto, mesh, packet relay, file transfer, command processing, view model, notification and mesh graph behavior.
+- No broad Compose UI/instrumentation suite was found.
+- Add missing transport, Nostr interoperability, onboarding/navigation, storage migration, permission, lifecycle and release regression tests.
+
+## 5. Upstream CI observations
+
+The checked-in `.github/workflows/android-build.yml`:
+- Runs on pushes and pull requests to `main` and `develop`, plus manual dispatch.
+- Uses JDK 17.
+- Runs `testDebugUnitTest` and `lintDebug`.
+- Builds `assembleDebug` and `assembleRelease`.
+- Uploads test/lint reports and APK artifacts.
+
+The most recent workflow-run records visible during this audit were CodeQL and scheduled relay-data runs; they do not establish a successful Android build for the audited commit. The audited commit's combined status endpoint reported `pending` with zero status entries at inspection time. No build or test is marked successful by this audit.
+
+## 6. Implementation roadmap
+
+### Phase 1 — Complete source audit
+- Map startup, lifecycle, screen state, message routing and persistence.
+- Trace every transport send/receive path and all protocol packet types.
+- Trace key generation, persistence, QR verification and trust establishment.
+- Inventory all permissions, exported components, deep links and network endpoints.
+- Review file/media handling, background service and update flow.
+
+### Phase 2 — Safe source integration
+- Import the upstream baseline into Resa without modifying the upstream repository.
+- Preserve upstream MIT notices and third-party licenses.
+- Establish a clean working branch and record the exact source commit.
+- Confirm a baseline Debug build and existing tests before branding or UI refactoring.
+
+### Phase 3 — Resa identity and design system
+- Define package/application ID migration policy before changing it.
+- Apply app label, icon, theme, strings, deep links and notification identity consistently.
+- Create reusable Compose tokens/components for light/dark themes and RTL.
+- Keep transport, storage and cryptographic behavior unchanged during UI work.
+
+### Phase 4 — UI redesign
+- Redesign Home, conversations, message composer, media flows, profile, settings, group/channel management and verification UI.
+- Preserve existing functionality and add loading/empty/error states.
+- Validate small/large screens, font scaling, accessibility and Persian text.
+
+### Phase 5 — Feature and reliability work
+- Close gaps found in the transport and messaging audit.
+- Implement or repair real behavior before adding UI controls.
+- Add offline/reconnect, duplicate/replay, file-transfer and state-restoration tests.
+
+### Phase 6 — Security and privacy
+- Unify signature verification and remove insecure compatibility behavior.
+- Scope network security policy and remove unnecessary permissions.
+- Validate Noise/Nostr implementations against official vectors and independent peers.
+- Review app lock, secure storage, identity recovery and logging.
+
+### Phase 7 — Performance, CI and release
+- Measure startup, scrolling, recomposition, memory, battery and native-library footprint.
+- Add UI/instrumentation tests and CI artifacts.
+- Add secret-backed release signing and AAB generation if Play distribution is selected.
+- Produce a release checklist, privacy disclosures, license notices and reproducible build notes.
+
+### Phase 8 — Final audit
+- Verify all user-visible actions work.
+- Run unit, UI, integration, regression and security tests.
+- Verify Debug and signed Release builds.
+- Confirm GitHub Actions and document any remaining limitations.
+
+## 7. Immediate blockers and execution constraints
+
+- The source repository is readable through the connected GitHub integration, but the current execution container cannot resolve `github.com` for Git clone. The upstream repository is also read-only to this connection.
+- The Resa repository is writable, but there is no repository-import/fork operation exposed through the available GitHub actions. Reconstructing a 1,843-path tree, including binary assets and native libraries, by individual text-file API writes would be unsafe and incomplete.
+- Consequently, the upstream application source has not been imported, no Android build has been run, and no runtime test has been executed in this environment.
+- Do not represent the project as buildable or claim completed app development until a complete source import and baseline build are verified.
+
+## 8. Current phase
+
+**Phase 1 — Repository Audit (in progress).**
+
+The next engineering gate is to finish tracing the transport/security/persistence paths and establish a complete, reproducible source import into Resa. No destructive changes have been made to the upstream project.
