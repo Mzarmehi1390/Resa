@@ -26,6 +26,9 @@ class FragmentManager {
         private const val MAX_FRAGMENT_SIZE = com.roman.zemzeme.util.AppConstants.Fragmentation.MAX_FRAGMENT_SIZE        // Matches iOS: maxFragmentSize = 469 
         private const val FRAGMENT_TIMEOUT = com.roman.zemzeme.util.AppConstants.Fragmentation.FRAGMENT_TIMEOUT_MS     // Matches iOS: 30 seconds cleanup
         private const val CLEANUP_INTERVAL = com.roman.zemzeme.util.AppConstants.Fragmentation.CLEANUP_INTERVAL_MS     // 10 seconds cleanup check
+        private const val MAX_ACTIVE_FRAGMENT_SETS = 64
+        private const val MAX_BUFFERED_FRAGMENT_BYTES = 2 * 1024 * 1024
+        private const val MAX_REASSEMBLED_PACKET_BYTES = 512 * 1024
     }
     
     // Fragment storage - iOS equivalent: incomingFragments: [String: [Int: Data]]
