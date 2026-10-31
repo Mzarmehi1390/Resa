@@ -21,7 +21,7 @@ internal object FilePacketValidation {
 
     fun sanitizeIncomingFileName(value: String, fallback: String, extension: String): String {
         val safeBase = value
-            .replace('\\\\', '_')
+            .replace('\\', '_')
             .replace('/', '_')
             .replace(Regex("[^A-Za-z0-9._-]"), "_")
             .trim('.', '_', ' ')
