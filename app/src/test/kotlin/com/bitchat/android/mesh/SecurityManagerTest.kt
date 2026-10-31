@@ -270,6 +270,48 @@ class SecurityManagerTest {
         assertTrue("Fresh duplicate ANNOUNCE should be accepted", securityManager.validatePacket(packet3, unknownPeerID))
     }
 
+    @Test
+    fun `invalid signature does not poison replay cache`() {
+        setupKnownPeer(otherPeerID, otherSigningKey)
+
+        val packet = ZemzemePacket(
+            type = MessageType.MESSAGE.value,
+            ttl = 10u,
+            senderID = otherPeerID,
+            payload = dummyPayload
+        )
+        packet.signature = invalidSignature
+
+        assertFalse("Invalid packet should be rejected", securityManager.validatePacket(packet, otherPeerID))
+
+        packet.signature = validSignature
+        assertTrue(
+            "A later correctly signed copy must still be accepted",
+            securityManager.validatePacket(packet, otherPeerID)
+        )
+    }
+
+    @Test
+    fun `missing signature does not poison replay cache`() {
+        setupKnownPeer(otherPeerID, otherSigningKey)
+
+        val packet = ZemzemePacket(
+            type = MessageType.MESSAGE.value,
+            ttl = 10u,
+            senderID = otherPeerID,
+            payload = dummyPayload
+        )
+        packet.signature = null
+
+        assertFalse("Unsigned packet should be rejected", securityManager.validatePacket(packet, otherPeerID))
+
+        packet.signature = validSignature
+        assertTrue(
+            "A later signed copy must still be accepted",
+            securityManager.validatePacket(packet, otherPeerID)
+        )
+    }
+
     private fun setupKnownPeer(peerID: String, signingKey: ByteArray) {
         val info = PeerInfo(
             id = peerID,
