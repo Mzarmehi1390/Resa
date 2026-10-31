@@ -880,14 +880,29 @@ class ChatViewModel(
                             meshService.myPeerID,
                             onEncryptedPayload = { encryptedData ->
                                 // This would need proper mesh service integration
-                                meshService.sendMessage(content, mentions, currentChannelValue)
+                                meshService.sendMessage(
+                            content, mentions, currentChannelValue,
+                            messageId = message.id,
+                            messageTimestamp = message.timestamp,
+                            senderNickname = message.sender
+                        )
                             },
                             onFallback = {
-                                meshService.sendMessage(content, mentions, currentChannelValue)
+                                meshService.sendMessage(
+                            content, mentions, currentChannelValue,
+                            messageId = message.id,
+                            messageTimestamp = message.timestamp,
+                            senderNickname = message.sender
+                        )
                             }
                         )
                     } else {
-                        meshService.sendMessage(content, mentions, currentChannelValue)
+                        meshService.sendMessage(
+                            content, mentions, currentChannelValue,
+                            messageId = message.id,
+                            messageTimestamp = message.timestamp,
+                            senderNickname = message.sender
+                        )
                     }
                 } else {
                     messageManager.addMessage(message)
@@ -901,7 +916,12 @@ class ChatViewModel(
                         protocol = "BLE_MESH",
                         content = content
                     )
-                    meshService.sendMessage(content, mentions, null)
+                    meshService.sendMessage(
+                        content, mentions, null,
+                        messageId = message.id,
+                        messageTimestamp = message.timestamp,
+                        senderNickname = message.sender
+                    )
                 }
             }
         }
