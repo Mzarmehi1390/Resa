@@ -28,8 +28,7 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
     
     // Security tracking
     private val processedMessages = Collections.synchronizedSet(mutableSetOf<String>())
-    private val processedKeyExchanges = Collections.synchronizedSet(mutableSetOf<String>())
-    private val inFlightKeyExchanges = Collections.synchronizedSet(mutableSetOf<String>())
+    private val handshakeReplayGuard = HandshakeReplayGuard()
     private val messageTimestamps = Collections.synchronizedMap(mutableMapOf<String, Long>())
     
     // Delegate for callbacks
@@ -113,13 +112,7 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
 
         // Reserve the exchange atomically. A failed attempt must release the
         // reservation so a legitimate retry can be processed.
-        val reserved = synchronized(processedKeyExchanges) {
-            if (exchangeKey in processedKeyExchanges || exchangeKey in inFlightKeyExchanges) {
-                false
-            } else {
-                inFlightKeyExchanges.add(exchangeKey)
-            }
-        }
+        val reserved = handshakeReplayGuard.tryBegin(exchangeKey)
         if (!reserved) {
             Log.d(TAG, "Ignoring duplicate or concurrently processed handshake from $peerID")
             return false
@@ -138,10 +131,7 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
 
             // Processing succeeded (null is a valid final XX step with no response).
             // Commit the replay marker before invoking external callbacks.
-            synchronized(processedKeyExchanges) {
-                inFlightKeyExchanges.remove(exchangeKey)
-                processedKeyExchanges.add(exchangeKey)
-            }
+            handshakeReplayGuard.markProcessed(exchangeKey)
             handshakeProcessed = true
 
             if (response != null) {
@@ -156,9 +146,7 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
             return true
         } catch (e: Exception) {
             if (!handshakeProcessed) {
-                synchronized(processedKeyExchanges) {
-                    inFlightKeyExchanges.remove(exchangeKey)
-                }
+                handshakeReplayGuard.abort(exchangeKey)
             }
             Log.e(TAG, "Failed to process Noise handshake from $peerID: ${e.message}")
             return false
@@ -323,16 +311,18 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
         return buildString {
             appendLine("=== Security Manager Debug Info ===")
             appendLine("Processed Messages: ${processedMessages.size}")
-            appendLine("Processed Key Exchanges: ${processedKeyExchanges.size}")
+            appendLine("Processed Key Exchanges: ${handshakeReplayGuard.processedCount()}")
             appendLine("Message Timestamps: ${messageTimestamps.size}")
             
-            if (processedKeyExchanges.isNotEmpty()) {
+            val exchangeHistory = handshakeReplayGuard.processedSnapshot(10)
+            if (exchangeHistory.isNotEmpty()) {
                 appendLine("Key Exchange History:")
-                processedKeyExchanges.take(10).forEach { exchange ->
+                exchangeHistory.forEach { exchange ->
                     appendLine("  - $exchange")
                 }
-                if (processedKeyExchanges.size > 10) {
-                    appendLine("  ... and ${processedKeyExchanges.size - 10} more")
+                val remaining = handshakeReplayGuard.processedCount() - exchangeHistory.size
+                if (remaining > 0) {
+                    appendLine("  ... and $remaining more")
                 }
             }
         }
@@ -378,12 +368,8 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
             removedCount += excess
         }
         
-        // Limit the size of processed key exchanges set
-        if (processedKeyExchanges.size > MAX_PROCESSED_KEY_EXCHANGES) {
-            val excess = processedKeyExchanges.size - MAX_PROCESSED_KEY_EXCHANGES
-            val toRemove = processedKeyExchanges.take(excess)
-            processedKeyExchanges.removeAll(toRemove.toSet())
-        }
+        // Bound completed handshake replay markers without disturbing in-flight work.
+        handshakeReplayGuard.trimTo(MAX_PROCESSED_KEY_EXCHANGES)
         
         if (removedCount > 0) {
             Log.d(TAG, "Cleaned up $removedCount old processed messages")
@@ -404,7 +390,7 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
      */
     fun clearAllData() {
         processedMessages.clear()
-        processedKeyExchanges.clear()
+        handshakeReplayGuard.clear()
         messageTimestamps.clear()
     }
     
