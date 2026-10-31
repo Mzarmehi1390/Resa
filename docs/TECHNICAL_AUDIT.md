@@ -14,7 +14,7 @@
 
 - Public Git repository, default branch `main`.
 - Repository metadata reports Kotlin as its primary language.
-- Recursive Git tree contains 1,843 paths (including directories).
+- The uploaded source ZIP contains 1,844 archive entries including its root directory, matching the previously inspected upstream tree of 1,843 paths (including directories).
 - Main Android source tree contains 248 Kotlin/Java source files.
 - Android resources contain 1,392 files.
 - One main Gradle application module: `:app`.
@@ -64,12 +64,12 @@ Presence in source does not by itself prove a feature works end-to-end. Each tra
 
 ### P0 — Security behavior must be corrected or proven safe
 
-1. **Legacy signature API is not a cryptographic signature check.**
-   - `EncryptionService.sign(data)` returns an empty byte array.
-   - `EncryptionService.verify(signature, data, peerID)` returns only whether a Noise session exists; it does not verify the supplied signature against the supplied data.
-   - `SecurityManager.verifySignature` delegates to this method, and `MessageHandler` has a call path to that API when a packet carries a signature.
-   - A separate `verifyPacketSignature` path does perform Ed25519 verification for selected packet types. These paths must be unified so no caller mistakes session existence for signature validity.
-   - Required tests: forged signature, empty signature, altered payload, unknown signing key, valid signature, and established-session-with-invalid-signature.
+1. **Legacy signature API is semantically unsafe and inconsistent, but the main BLE ingress has a separate mandatory Ed25519 check.**
+   - `EncryptionService.sign(data)` returns an empty byte array; `EncryptionService.verify(signature, data, peerID)` returns only whether a Noise session exists.
+   - `SecurityManager.verifySignature` delegates to that compatibility method, and `MessageHandler` can call it for a second check when a packet carries a signature.
+   - However, the inspected `PacketProcessor` invokes `validatePacketSecurity` before routing packets, and `SecurityManager.validatePacket` independently requires Ed25519 verification for ANNOUNCE, MESSAGE and FILE_TRANSFER. This prevents describing the legacy check alone as a demonstrated bypass of the primary BLE ingress path.
+   - The compatibility API remains a high-priority correctness hazard for alternate callers/future paths and should be removed or changed to fail closed. `SecurityManager.signPacket` currently delegates to the empty-signature method.
+   - Required tests: forged signature, empty signature, altered canonical payload, unknown signing key, valid signature, and established-session-with-invalid-signature; also prove every receive route invokes the mandatory verifier.
 
 2. **Cleartext traffic is globally permitted.**
    - `AndroidManifest.xml` sets `android:usesCleartextTraffic="true"`.
@@ -170,9 +170,9 @@ The most recent workflow-run records visible during this audit were CodeQL and s
 
 ## 7. Immediate blockers and execution constraints
 
-- The source repository is readable through the connected GitHub integration, but the current execution container cannot resolve `github.com` for Git clone. The upstream repository is also read-only to this connection.
-- The Resa repository is writable, but there is no repository-import/fork operation exposed through the available GitHub actions. Reconstructing a 1,843-path tree, including binary assets and native libraries, by individual text-file API writes would be unsafe and incomplete.
-- Consequently, the upstream application source has not been imported, no Android build has been run, and no runtime test has been executed in this environment.
+- The user has now supplied the complete `zemzeme-android-main.zip` archive (36.1 MB compressed; 51.8 MB uncompressed). It was safely extracted to the local working directory and its archive path entries match the inspected upstream tree count.
+- A local baseline test attempt (`./gradlew :app:testDebugUnitTest --no-daemon`) stopped before Gradle configuration because the environment cannot resolve `services.gradle.org` (`UnknownHostException`). The Gradle 8.13 distribution is not cached. No Android SDK was confirmed in this container.
+- The Resa repository is writable through GitHub actions, but no bulk archive-import operation is exposed. The full 51.8 MB source tree, including binary resources and the 21 MB Go AAR, has not yet been committed to Resa. Do not confuse local extraction with a GitHub source import.
 - Do not represent the project as buildable or claim completed app development until a complete source import and baseline build are verified.
 
 
@@ -180,8 +180,19 @@ The most recent workflow-run records visible during this audit were CodeQL and s
 ### Additional navigation observation
 - `androidx.navigation:navigation-compose` is declared in the version catalog and app dependencies, but no `NavHost`, `NavController` or `rememberNavController` usage was found in the inspected application source. The inspected `MainActivity` instead switches between HomeScreen and ChatScreen through ViewModel state. Confirm whether the dependency is unused and map all back-stack/sheet behavior before introducing a new navigation graph.
 
+
+
+### Additional source-archive findings (2026-10-31)
+
+1. **Channel password verification is a test stub.** `ChannelManager.verifyChannelPassword` unconditionally returns `true`, despite the nearby PBKDF2/AES-GCM channel-key code. The same file's `sendEncryptedChannelMessage` is an immediate no-op marked “REIMPLEMENT – REMOVED FOR NOW”. Treat password-protected channel messaging as non-functional / not enforcing password authentication until this is repaired and covered by tests. Do not market encrypted channels as working based only on the presence of crypto helpers.
+2. **Noise handshake initiation has an explicit TODO.** `NoiseEncryptionService.encrypt` returns null and invokes `onHandshakeRequired` when no session exists; the log explicitly says handshake initiation is not implemented there. Trace all callback owners and transport paths to verify that a session can actually be established in every intended case.
+3. **Manifest exposure inventory:** XML parsing found 2 activities (one exported), 100 exported activity aliases, 1 non-exported service, 3 non-exported receivers and 1 non-exported provider. All 100 launcher aliases expose the `zemzeme://verify` deep-link intent filter. Review whether every alias needs that filter and exported status, and ensure the receiving activity validates all incoming URI data.
+4. **Cleartext setting:** `usesCleartextTraffic=true` is a global application setting. A simple source search found no hard-coded `http://` or `ws://` service endpoint in the main application Java/Kotlin source; that is not a complete proof that dependencies or dynamically supplied URLs never use cleartext. Inventory actual network stacks and runtime endpoints before replacing this with a restrictive Network Security Config.
+5. **Debug message content:** `DebugLogger` truncates content to 50 characters and is gated by `BuildConfig.DEBUG`, so this specific logger does not emit in Release. Debug builds can still place message previews and peer identifiers in Logcat; test-device privacy and log collection policies should account for that.
+6. **Build verification blocked before project evaluation:** The local Gradle wrapper attempted to fetch Gradle 8.13 and failed DNS resolution for `services.gradle.org`. This is an environment/network blocker, not a Gradle compilation result. No test suite or APK build has completed.
+
 ## 8. Current phase
 
-**Phase 1 — Repository Audit (in progress).**
+**Phase 1 — Repository Audit (in progress; source archive now available locally).**
 
-The next engineering gate is to finish tracing the transport/security/persistence paths and establish a complete, reproducible source import into Resa. No destructive changes have been made to the upstream project.
+The complete upstream archive is extracted locally. The next gate is to complete source-level review and establish a reproducible source import into Resa, then run a baseline build in an environment with Gradle/Android SDK dependencies available. No destructive changes have been made to the upstream project.
