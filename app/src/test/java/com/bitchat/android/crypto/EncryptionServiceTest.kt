@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.roman.zemzeme.noise.NoiseEncryptionService
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,4 +54,30 @@ class EncryptionServiceTest {
         assertNotEquals("Fingerprint should change after panic", 
             initialFingerprint, afterFingerprint)
     }
+    @Test
+    fun `legacy sign method produces a real Ed25519 signature`() {
+        val payload = "resa-signature-regression".toByteArray()
+        val signature = encryptionService.sign(payload)
+        val publicKey = encryptionService.getSigningPublicKey()
+
+        assertNotNull(publicKey)
+        assertTrue("Signature must not be empty", signature.isNotEmpty())
+        assertTrue(
+            "Signature must verify against the local Ed25519 identity",
+            encryptionService.verifyEd25519Signature(signature, payload, publicKey!!)
+        )
+        assertFalse(
+            "Modified data must not verify",
+            encryptionService.verifyEd25519Signature(signature, payload + byteArrayOf(1), publicKey)
+        )
+    }
+
+    @Test
+    fun `legacy verify method fails closed without pinned peer signing key`() {
+        val payload = "resa-signature-regression".toByteArray()
+        val signature = encryptionService.signData(payload)!!
+
+        assertFalse(encryptionService.verify(signature, payload, "peer-with-no-key"))
+    }
+
 }
