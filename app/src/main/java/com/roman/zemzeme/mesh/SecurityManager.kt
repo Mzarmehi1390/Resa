@@ -230,11 +230,14 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
      */
     private fun verifyPacketSignature(packet: ZemzemePacket, peerID: String): Boolean {
         try {
-            // only verify ANNOUNCE, MESSAGE, and FILE_TRANSFER
+            // Handshake messages must be signed too: Noise authenticates key
+            // possession, while this signature binds the handshake packet to
+            // the already-verified mesh signing identity.
             if (MessageType.fromValue(packet.type) !in setOf(
                     MessageType.ANNOUNCE,
                     MessageType.MESSAGE,
-                    MessageType.FILE_TRANSFER
+                    MessageType.FILE_TRANSFER,
+                    MessageType.NOISE_HANDSHAKE
                 )) {
                 return true
             }
