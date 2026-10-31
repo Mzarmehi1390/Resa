@@ -259,7 +259,15 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
             Log.w(TAG, "Failed to decode announce from $peerID as iOS-compatible TLV format")
             return false
         }
-        
+
+        // Peer IDs are the first 8 bytes of SHA-256(Noise static public key).
+        // Verify this binding before trusting a self-announced signing key;
+        // otherwise an attacker could claim another peer's sender ID.
+        if (!PeerIdentityBinding.matchesPeerId(peerID, announcement.noisePublicKey)) {
+            Log.w(TAG, "Rejecting announce whose Noise key does not match peer ID ${peerID.take(8)}")
+            return false
+        }
+
         // Verify packet signature using the announced signing public key
         var verified = false
         if (packet.signature != null) {
