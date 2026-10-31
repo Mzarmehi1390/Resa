@@ -234,25 +234,11 @@ object FileUtils {
         }
         require(baseDir.isDirectory) { "Incoming file destination is not a directory" }
 
-        val safeBaseName = file.fileName
-            .replace('\\', '_')
-            .replace('/', '_')
-            .replace(Regex("[^A-Za-z0-9._-]"), "_")
-            .trim('.', '_', ' ')
-            .take(120)
-            .ifBlank { if (isImage) "image" else "file" }
-
-        val safeName = if (safeBaseName.contains('.')) safeBaseName else {
-            val extension = when (lowerMime) {
-                "image/jpeg", "image/jpg" -> ".jpg"
-                "image/png" -> ".png"
-                "image/webp" -> ".webp"
-                "application/pdf" -> ".pdf"
-                "text/plain" -> ".txt"
-                else -> if (isImage) ".img" else ".bin"
-            }
-            safeBaseName + extension
-        }
+        val safeName = com.roman.zemzeme.model.FilePacketValidation.sanitizeIncomingFileName(
+            value = file.fileName,
+            fallback = if (isImage) "image" else "file",
+            extension = extFromMime(lowerMime)
+        )
 
         val destinationDir = baseDir.canonicalFile
         var destination = File(destinationDir, safeName)
