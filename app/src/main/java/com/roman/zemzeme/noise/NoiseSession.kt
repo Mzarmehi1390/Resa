@@ -151,6 +151,7 @@ class NoiseSession(
     private var receiveCipher: CipherState? = null
     
     // Session state
+    @Volatile
     private var state: NoiseSessionState = NoiseSessionState.Uninitialized
     private val creationTime = System.currentTimeMillis()
 
@@ -589,6 +590,7 @@ class NoiseSession(
                 val (newHighestReceivedNonce, newReplayWindow) = markNonceAsSeen(extractedNonce, highestReceivedNonce, replayWindow)
                 highestReceivedNonce = newHighestReceivedNonce
                 replayWindow = newReplayWindow
+                messagesReceived++
 
                 // Log high nonce values that might indicate issues
                 if (extractedNonce > HIGH_NONCE_WARNING_THRESHOLD) {
