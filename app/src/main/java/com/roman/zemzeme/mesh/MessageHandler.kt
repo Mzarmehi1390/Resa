@@ -502,9 +502,11 @@ class MessageHandler(private val myPeerID: String, private val appContext: andro
      */
     private suspend fun handlePrivateMessage(packet: ZemzemePacket, peerID: String) {
         try {
-            // Verify signature if present
-            if (packet.signature != null && delegate?.verifySignature(packet, peerID) == false) {
-                Log.w(TAG, "Invalid signature for private message from $peerID")
+            // Private MESSAGE and FILE_TRANSFER packets must always carry a valid
+            // Ed25519 signature. Do not rely solely on the upstream PacketProcessor:
+            // this handler may also be invoked by other internal call paths.
+            if (packet.signature == null || delegate?.verifySignature(packet, peerID) != true) {
+                Log.w(TAG, "Rejecting unsigned or invalidly signed private packet from $peerID")
                 return
             }
 
