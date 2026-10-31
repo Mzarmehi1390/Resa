@@ -78,10 +78,16 @@ jobs:
         continue-on-error: true
 
       - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+        run: yes | /usr/local/lib/android/sdk/cmdline-tools/16.0/bin/sdkmanager --licenses
 
       - name: Install Android platform
-        run: sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+        run: /usr/local/lib/android/sdk/cmdline-tools/16.0/bin/sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
 
       - name: Run baseline unit tests and lint
         run: ./gradlew :app:testDebugUnitTest :app:lintDebug --no-daemon
