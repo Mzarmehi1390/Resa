@@ -246,3 +246,12 @@ The unconditional `return true` test stub in `ChannelManager.verifyChannelPasswo
 ### Current CI run for the channel correction
 
 The dedicated Android CI run for the current channel-verification changes is queued/running at the time of this update: [41219606306](https://github.com/Mzarmehi1390/Resa/actions/runs/41219606306). The earlier successful baseline run does not substitute for this new run. Do not mark the new code as test-passing until this run completes successfully.
+
+
+### Versioned channel envelope groundwork — 2026-10-31
+
+- Added `ChannelMessageEnvelope` in the protocol package. Version 1 uses a strict binary frame with a fixed magic value, version byte, bounded channel/message identifiers, explicit ciphertext length and opaque ciphertext bytes.
+- Decoder rejects unknown versions, invalid or oversized lengths, truncated frames, trailing bytes, invalid UTF-8 channel identifiers and malformed message identifiers. The payload must be large enough to contain a 12-byte AES-GCM nonce and 16-byte authentication tag.
+- Added unit tests for round-trip encoding, malformed framing, unsupported versions, invalid identifiers and undersized ciphertext.
+- **Scope limitation:** this is framing/validation only. It does not encrypt data, authenticate senders, distribute keys, prevent replay, persist messages or connect to BLE/P2P. No transport call sites have been changed. Do not treat the presence of this envelope as end-to-end channel encryption.
+- The dedicated CI run triggered by these commits must pass before this change is considered verified.
