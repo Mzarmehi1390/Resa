@@ -49,38 +49,40 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
             Log.d(TAG, "Skipping validation for our own packet")
             return false
         }
-        
-        // Replay attack protection (same 5-minute window as iOS)
-        val currentTime = System.currentTimeMillis()
+
         val messageType = MessageType.fromValue(packet.type)
-
-        // Duplicate detection
         val messageID = generateMessageID(packet, peerID)
-        
-        if (processedMessages.contains(messageID)) {
-            // Check for ANNOUNCE exception: allow if it looks like a direct neighbor (max TTL)
-            // This ensures we catch the "first announce" on a new connection for binding,
-            // while still dropping looped/relayed duplicates.
-            val isFreshAnnounce = messageType == MessageType.ANNOUNCE &&
-                    packet.ttl >= com.roman.zemzeme.util.AppConstants.MESSAGE_TTL_HOPS
+        val isFreshAnnounce = messageType == MessageType.ANNOUNCE &&
+                packet.ttl >= com.roman.zemzeme.util.AppConstants.MESSAGE_TTL_HOPS
 
-            if (!isFreshAnnounce) {
-                Log.d(TAG, "Dropping duplicate packet: $messageID")
-                return false
-            }
-            Log.d(TAG, "Allowing duplicate ANNOUNCE from direct neighbor: $messageID")
+        // Check duplicates before doing expensive signature verification. Do not
+        // reserve the ID yet: an unauthenticated packet must never poison the
+        // replay cache and block a later correctly signed copy.
+        val wasAlreadyProcessed = synchronized(processedMessages) {
+            processedMessages.contains(messageID)
+        }
+        if (wasAlreadyProcessed && !isFreshAnnounce) {
+            Log.d(TAG, "Dropping duplicate packet: $messageID")
+            return false
         }
 
-        // Add to processed messages
-        processedMessages.add(messageID)
-        messageTimestamps[messageID] = currentTime
-        
-        // Enforce mandatory signature verification
+        // Signature verification must succeed before this packet is recorded.
         if (!verifyPacketSignature(packet, peerID)) {
             Log.w(TAG, "Dropping packet from $peerID due to signature verification failure")
             return false
         }
-        
+
+        // Make the final duplicate check and insertion atomic. This prevents two
+        // concurrent receive callbacks from both accepting the same packet.
+        synchronized(processedMessages) {
+            if (processedMessages.contains(messageID) && !isFreshAnnounce) {
+                Log.d(TAG, "Dropping concurrently received duplicate packet: $messageID")
+                return false
+            }
+            processedMessages.add(messageID)
+            messageTimestamps[messageID] = System.currentTimeMillis()
+        }
+
         Log.d(TAG, "Packet validation passed for $peerID, messageID: $messageID")
         return true
     }
