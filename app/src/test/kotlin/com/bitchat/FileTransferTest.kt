@@ -25,7 +25,7 @@ class FileTransferTest {
         val originalPacket = ZemzemeFilePacket(
             fileName = "test.png",
             mimeType = "image/png",
-            fileSize = 1024000,
+            fileSize = contentArray.size.toLong(),
             content = contentArray
         )
 
@@ -50,7 +50,7 @@ class FileTransferTest {
         val packet = ZemzemeFilePacket(
             fileName = "myimage.jpg",
             mimeType = "image/jpeg",
-            fileSize = 2048,
+            fileSize = 256,
             content = ByteArray(256) { 0xFF.toByte() }
         )
 
@@ -59,18 +59,18 @@ class FileTransferTest {
         assertNotNull(encoded)
 
         // Then: Should contain filename TLV
-        // FILE_NAME type (0x01) + length (11) + "myimage.jpg" (UTF-8 with null terminator might add 1 byte)
+        // FILE_NAME type (0x01) + 2-byte big-endian length + UTF-8 filename
         val expectedType = 0x01.toByte()
         val expectedFilename = "myimage.jpg".toByteArray(Charsets.UTF_8)
-        val expectedLength = expectedFilename.size // Should be 10 for UTF-8 "myimage.jpg"
+        val expectedLength = expectedFilename.size
 
 
 
         assertEquals(expectedType, encoded!![0])
-        // Calculate the actual length from little-endian encoded data
-        val actualLength = (encoded[2].toInt() and 0xFF) or ((encoded[1].toInt() and 0xFF) shl 8)
-        // The encoding seems to be including a null terminator or extended bytes
-        assertEquals(11, actualLength) // The encoding produces 11 bytes for "myimage.jpg"
+        // Metadata lengths use a 2-byte big-endian integer.
+        val actualLength = ((encoded[1].toInt() and 0xFF) shl 8) or
+            (encoded[2].toInt() and 0xFF)
+        assertEquals(expectedLength, actualLength)
 
         val actualFilename = encoded!!.sliceArray(3 until 3 + expectedLength)
         for (i in expectedFilename.indices) {
@@ -81,12 +81,12 @@ class FileTransferTest {
     @Test
     fun `encode file size should use big endian byte order for file size`() {
         // Given: File with specific size
-        val fileSize = 0x12345678L
+        val fileSize = 0x1234L
         val packet = ZemzemeFilePacket(
             fileName = "test.bin",
             mimeType = "application/octet-stream",
             fileSize = fileSize,
-            content = ByteArray(10)
+            content = ByteArray(fileSize.toInt())
         )
 
         // When: Encode
@@ -96,22 +96,26 @@ class FileTransferTest {
         // Then: File size should be in big endian order
         // Find FILE_SIZE TLV (type 0x02)
         var offset = 0
+        var foundFileSize = false
         while (offset < encoded!!.size - 1) {
             if (encoded!![offset] == 0x02.toByte()) {
                 // This is FILE_SIZE TLV
                 offset += 1  // Skip type byte
-                val length = (encoded!![offset].toInt() and 0xFF) or ((encoded[offset + 1].toInt() and 0xFF) shl 8)
+                val length = ((encoded[offset].toInt() and 0xFF) shl 8) or
+                    (encoded[offset + 1].toInt() and 0xFF)
                 offset += 2 // Skip length bytes
                 if (length == 4) { // FILE_SIZE always has 4 bytes
                     val decodedFileSize = ByteBuffer.wrap(encoded!!.sliceArray(offset until offset + 4))
                         .order(ByteOrder.BIG_ENDIAN)
                         .int.toLong()
                     assertEquals(fileSize, decodedFileSize)
+                    foundFileSize = true
                     break
                 }
             }
             offset += 1
         }
+        assertEquals("FILE_SIZE TLV should be present", true, foundFileSize)
     }
 
     @Test
