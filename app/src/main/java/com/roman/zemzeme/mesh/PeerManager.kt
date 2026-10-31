@@ -114,7 +114,19 @@ class PeerManager {
         val now = System.currentTimeMillis()
         val existingPeer = peers[peerID]
         val isNewPeer = existingPeer == null
-        
+
+        // Once an identity has been verified, its cryptographic keys are pinned
+        // for this peer ID. Key rotation needs a separate authenticated protocol;
+        // silently accepting a new self-announced key would enable identity replacement.
+        if (existingPeer?.isVerifiedNickname == true) {
+            val noiseKeyChanged = existingPeer.noisePublicKey?.contentEquals(noisePublicKey) == false
+            val signingKeyChanged = existingPeer.signingPublicKey?.contentEquals(signingPublicKey) == false
+            if (noiseKeyChanged || signingKeyChanged) {
+                Log.w(TAG, "Rejecting cryptographic identity change for verified peer: $peerID")
+                return false
+            }
+        }
+
         // Update or create peer info
         val peerInfo = PeerInfo(
             id = peerID,
