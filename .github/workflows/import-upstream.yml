@@ -59,10 +59,12 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          if [[ -n "$(git status --porcelain)" ]]; then
-            git add -A
+          git add -A
+          if ! git diff --cached --quiet; then
             git commit -m 'build: import audited Zemzeme Android baseline'
             git push origin "HEAD:${GITHUB_REF_NAME}"
+          else
+            echo 'Upstream baseline is already imported; no source changes to commit.'
           fi
 
       - name: Set up JDK 17
