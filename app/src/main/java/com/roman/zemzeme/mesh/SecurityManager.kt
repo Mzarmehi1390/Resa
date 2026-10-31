@@ -206,17 +206,12 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
      * Generate message ID for duplicate detection
      */
     private fun generateMessageID(packet: ZemzemePacket, peerID: String): String {
-        return when (MessageType.fromValue(packet.type)) {
-            MessageType.FRAGMENT -> {
-                // For fragments, include the payload hash to distinguish different fragments
-                "${packet.timestamp}-$peerID-${packet.type}-${packet.payload.contentHashCode()}"
-            }
-            else -> {
-                // For other messages, use a truncated payload hash
-                val payloadHash = packet.payload.sliceArray(0 until minOf(64, packet.payload.size)).contentHashCode()
-                "${packet.timestamp}-$peerID-$payloadHash"
-            }
-        }
+        // Use a cryptographic digest of the complete payload. ByteArray.contentHashCode()
+        // is only 32-bit and the old non-fragment path ignored everything after byte 64,
+        // allowing distinct packets to collide in the replay cache.
+        val payloadDigest = MessageDigest.getInstance("SHA-256").digest(packet.payload)
+            .joinToString("") { "%02x".format(it) }
+        return "${packet.timestamp}-$peerID-${packet.type}-$payloadDigest"
     }
     
     /**
