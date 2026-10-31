@@ -35,6 +35,7 @@ object FileUtils {
 
             val file = File(incomingDir, fileName)
 
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
             inputStream.use { input ->
                 FileOutputStream(file).use { output ->
                     input.copyTo(output)
@@ -57,13 +58,6 @@ object FileUtils {
     fun copyFileForSending(context: Context, uri: Uri, originalName: String? = null): String? {
         Log.d(TAG, "🔄 Starting file copy from URI: $uri")
         return try {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            if (inputStream == null) {
-                Log.e(TAG, "❌ Failed to open input stream for URI: $uri")
-                return null
-            }
-            Log.d(TAG, "📂 Opened input stream successfully")
-
             // Determine original filename and extension if available
             val displayName = originalName ?: run {
                 try {
@@ -110,7 +104,11 @@ object FileUtils {
             if (target.canonicalFile.parentFile != outgoingDir.canonicalFile) {
                 throw java.io.IOException("Invalid outgoing file destination")
             }
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val inputStream = context.contentResolver.openInputStream(uri) ?: run {
+                Log.e(TAG, "❌ Failed to open input stream for URI: $uri")
+                return null
+            }
+            Log.d(TAG, "📂 Opened input stream successfully")
             val temporary = try {
                 File.createTempFile(".outgoing-", ".part", outgoingDir)
             } catch (e: Exception) {
@@ -276,6 +274,26 @@ object FileUtils {
         } catch (e: Exception) {
             temporary.delete()
             throw e
+        }
+    }
+
+    /**
+     * Resolve a safe file extension for an incoming MIME type.
+     */
+    private fun extFromMime(mime: String): String {
+        val normalizedMime = mime.substringBefore(';').trim().lowercase()
+        val extension = android.webkit.MimeTypeMap.getSingleton()
+            .getExtensionFromMimeType(normalizedMime)
+            ?.lowercase()
+            ?.takeIf { it.matches(Regex("[a-z0-9]{1,16}")) }
+
+        return extension ?: when (normalizedMime) {
+            "image/jpeg" -> "jpg"
+            "image/svg+xml" -> "svg"
+            "text/plain" -> "txt"
+            "application/pdf" -> "pdf"
+            "application/zip" -> "zip"
+            else -> "bin"
         }
     }
 
