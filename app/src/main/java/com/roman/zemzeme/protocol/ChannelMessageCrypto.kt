@@ -105,7 +105,10 @@ object ChannelMessageCrypto {
         // Android Keystore keys may be non-exportable; let Cipher validate
         // those keys rather than requiring raw key bytes to be extractable.
         val encoded = key.encoded ?: return
-        require(encoded.size in MIN_AES_KEY_SIZE_BYTES..MAX_AES_KEY_SIZE_BYTES) {
+        require(encoded.size == MIN_AES_KEY_SIZE_BYTES ||
+            encoded.size == 24 ||
+            encoded.size == MAX_AES_KEY_SIZE_BYTES
+        ) {
             "AES key must be 128, 192, or 256 bits"
         }
     }
