@@ -8,6 +8,7 @@ import com.roman.zemzeme.model.RoutedPacket
 import com.roman.zemzeme.util.toHexString
 import kotlinx.coroutines.*
 import java.util.*
+import java.security.MessageDigest
 import kotlin.collections.mutableSetOf
 
 /**
@@ -28,6 +29,7 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
     // Security tracking
     private val processedMessages = Collections.synchronizedSet(mutableSetOf<String>())
     private val processedKeyExchanges = Collections.synchronizedSet(mutableSetOf<String>())
+    private val inFlightKeyExchanges = Collections.synchronizedSet(mutableSetOf<String>())
     private val messageTimestamps = Collections.synchronizedMap(mutableMapOf<String, Long>())
     
     // Delegate for callbacks
@@ -95,61 +97,69 @@ class SecurityManager(private val encryptionService: EncryptionService, private 
         val packet = routed.packet
         val peerID = routed.peerID ?: "unknown"
 
-        // Skip handshakes not addressed to us
+        // Reject irrelevant or malformed packets before touching an active session.
         if (packet.recipientID?.toHexString() != myPeerID) {
             Log.d(TAG, "Skipping handshake not addressed to us: $peerID")
             return false
         }
-            
-        // Skip our own handshake messages
-        if (peerID == myPeerID) return false
+        if (peerID == myPeerID || packet.payload.isEmpty()) {
+            return false
+        }
 
-        // If we already have an established session but the peer is initiating a new handshake,
-        // drop the existing session so we can re-establish cleanly.
-        var forcedRehandshake = false
-        if (encryptionService.hasEstablishedSession(peerID)) {
-            Log.d(TAG, "Received new Noise handshake from $peerID with an existing session. Dropping old session to re-handshake.")
-            try {
-                encryptionService.removePeer(peerID)
-                forcedRehandshake = true
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to remove existing Noise session for $peerID: ${e.message}")
+        // Hash the complete payload. A short contentHashCode prefix can collide,
+        // causing unrelated handshake messages to be treated as duplicates.
+        val payloadDigest = MessageDigest.getInstance("SHA-256").digest(packet.payload)
+        val exchangeKey = "$peerID-${payloadDigest.joinToString("") { "%02x".format(it) }}"
+
+        // Reserve the exchange atomically. A failed attempt must release the
+        // reservation so a legitimate retry can be processed.
+        val reserved = synchronized(processedKeyExchanges) {
+            if (exchangeKey in processedKeyExchanges || exchangeKey in inFlightKeyExchanges) {
+                false
+            } else {
+                inFlightKeyExchanges.add(exchangeKey)
             }
         }
-        
-        if (packet.payload.isEmpty()) {
-            Log.w(TAG, "Noise handshake packet has empty payload")
+        if (!reserved) {
+            Log.d(TAG, "Ignoring duplicate or concurrently processed handshake from $peerID")
             return false
         }
-        
-        // Prevent duplicate handshake processing
-        val exchangeKey = "$peerID-${packet.payload.sliceArray(0 until minOf(16, packet.payload.size)).contentHashCode()}"
-        
-        if (!forcedRehandshake && processedKeyExchanges.contains(exchangeKey)) {
-            Log.d(TAG, "Already processed handshake: $exchangeKey")
-            return false
-        }
-        Log.d(TAG, "Processing Noise handshake from $peerID (${packet.payload.size} bytes)")
-        processedKeyExchanges.add(exchangeKey)
-        
+
+        var handshakeProcessed = false
         try {
-            // Process the Noise handshake through the updated EncryptionService
+            // Only a new, non-duplicate authenticated exchange may replace an
+            // established session. Replayed payloads are rejected above first.
+            if (encryptionService.hasEstablishedSession(peerID)) {
+                Log.d(TAG, "Replacing established Noise session for fresh handshake from $peerID")
+                encryptionService.removePeer(peerID)
+            }
+
             val response = encryptionService.processHandshakeMessage(packet.payload, peerID)
-            
+
+            // Processing succeeded (null is a valid final XX step with no response).
+            // Commit the replay marker before invoking external callbacks.
+            synchronized(processedKeyExchanges) {
+                inFlightKeyExchanges.remove(exchangeKey)
+                processedKeyExchanges.add(exchangeKey)
+            }
+            handshakeProcessed = true
+
             if (response != null) {
                 Log.d(TAG, "Successfully processed Noise handshake from $peerID, sending response")
-                // Send handshake response through delegate
                 delegate?.sendHandshakeResponse(peerID, response)
             }
-            // Check if session is now established (handshake complete)
+
             if (encryptionService.hasEstablishedSession(peerID)) {
-                Log.d(TAG, "✅ Noise handshake completed with $peerID")
+                Log.d(TAG, "Noise handshake completed with $peerID")
                 delegate?.onKeyExchangeCompleted(peerID, packet.payload)
             }
             return true
-
-            
         } catch (e: Exception) {
+            if (!handshakeProcessed) {
+                synchronized(processedKeyExchanges) {
+                    inFlightKeyExchanges.remove(exchangeKey)
+                }
+            }
             Log.e(TAG, "Failed to process Noise handshake from $peerID: ${e.message}")
             return false
         }
