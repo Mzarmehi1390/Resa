@@ -585,6 +585,7 @@
     <string name="p2p_settings_header">تنظیمات</string>
     <string name="p2p_enable">فعال‌سازی P2P</string>
     <string name="p2p_enable_desc">اتصال مستقیم با سایر همتایان زمزمه</string>
+    <string name="p2p_paused_while_tor_enabled">تا زمانی که Tor فعال است، P2P متوقف می‌ماند و پس از خاموش‌شدن Tor دوباره راه‌اندازی می‌شود.</string>
     <string name="p2p_use_default_nodes">استفاده از گره‌های پیش‌فرض</string>
     <string name="p2p_default_nodes_desc">اتصال به گره‌های عمومی IPFS</string>
     <string name="p2p_custom_nodes_header">گره‌های بوت‌استرپ سفارشی</string>
