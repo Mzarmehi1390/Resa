@@ -124,6 +124,22 @@ internal class GattClientWriteDispatcher<K : Any>(
         return admission
     }
 
+    /**
+     * Enqueue and wait for the matching local Android GATT callback.
+     * Returns null when bounded admission is rejected; Sent is local callback
+     * success only and must not be treated as remote application acknowledgement.
+     */
+    suspend fun enqueueAndAwait(key: K, payload: ByteArray): Outcome? {
+        val entry = synchronized(lock) {
+            if (closed) return null
+            val admission = state.enqueue(key, payload, generation)
+            val accepted = admission as? GattClientWriteQueueState.Admission.Accepted ?: return null
+            Entry(CompletableDeferred(), null).also { entries[accepted.requestId] = it }
+        }
+        wakeups.trySend(Unit)
+        return entry.result.await()
+    }
+
     /** Forward BluetoothGattCallback.onCharacteristicWrite for this GATT session. */
     fun onWriteCallback(key: K, status: Int, successStatus: Int, callbackGeneration: Long) {
         var callback: ((Outcome) -> Unit)? = null
