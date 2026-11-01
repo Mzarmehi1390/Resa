@@ -103,7 +103,7 @@ internal class GattClientWriteDispatcher<K : Any>(
     ): GattClientWriteQueueState.Admission {
         val admission = synchronized(lock) {
             if (closed) return GattClientWriteQueueState.Admission.Closed
-            val result = state.enqueue(key, payload, stateGeneration())
+            val result = state.enqueue(key, payload, generation)
             if (result is GattClientWriteQueueState.Admission.Accepted) {
                 entries[result.requestId] = Entry(CompletableDeferred(), onComplete)
             }
@@ -171,7 +171,7 @@ internal class GattClientWriteDispatcher<K : Any>(
     private suspend fun timeoutActiveWrite(requestId: Long, activeEntry: Entry): Outcome {
         var didTimeout = false
         val failures = synchronized(lock) {
-            if (activeEntry.result.isCompleted) {
+            if (closed || activeEntry.result.isCompleted) {
                 emptyList()
             } else {
                 closed = true
@@ -222,6 +222,4 @@ internal class GattClientWriteDispatcher<K : Any>(
     private fun Outcome?.reasonIsTimeout(): Boolean =
         this is Outcome.Failed && reason == GattClientWriteQueueState.FailureReason.TIMEOUT
 
-    // The dispatcher owns one immutable generation; this accessor keeps every
-    // state transition explicitly tied to that generation.
 }
