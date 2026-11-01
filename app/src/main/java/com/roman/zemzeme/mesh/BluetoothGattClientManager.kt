@@ -14,6 +14,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.Job
 import com.roman.zemzeme.ui.debug.DebugSettingsManager
 import com.roman.zemzeme.ui.debug.DebugScanResult
@@ -69,6 +71,8 @@ class BluetoothGattClientManager(
     
     // State management
     private var isActive = false
+    private val connectionGenerationCounter = AtomicLong(0L)
+    private val activeConnectionGenerations = ConcurrentHashMap<String, Long>()
     
     /**
      * Start client manager
@@ -121,6 +125,8 @@ class BluetoothGattClientManager(
      * Stop client manager
      */
     fun stop() {
+        // Invalidate callbacks immediately, before asynchronous disconnect/cleanup work.
+        activeConnectionGenerations.clear()
         if (!isActive) {
             // Idempotent stop
             stopScanning()
@@ -405,10 +411,22 @@ class BluetoothGattClientManager(
         if (!permissionManager.hasBluetoothPermissions()) return
 
         val deviceAddress = device.address
-        Log.i(TAG, "Connecting to zemzeme device: $deviceAddress (peerID: $peerID)")
+        val connectionGeneration = connectionGenerationCounter.incrementAndGet()
+        activeConnectionGenerations[deviceAddress] = connectionGeneration
+        Log.i(TAG, "Connecting to zemzeme device: $deviceAddress (peerID: $peerID, generation: $connectionGeneration)")
         
         val gattCallback = object : BluetoothGattCallback() {
+            private fun isCurrentAttempt(): Boolean =
+                GattClientCallbackValidation.isCurrentGeneration(
+                    connectionGeneration,
+                    activeConnectionGenerations[deviceAddress]
+                )
+
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+                if (!isCurrentAttempt()) {
+                    Log.w(TAG, "Client: Ignoring callback from superseded connection attempt for $deviceAddress")
+                    return
+                }
                 Log.d(TAG, "Client: Connection state change - Device: $deviceAddress, Status: $status, NewState: $newState")
                 val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
                 if (GattClientCallbackValidation.isStaleConnection(gatt, trackedGatt)) {
@@ -431,9 +449,11 @@ class BluetoothGattClientManager(
                         }
                     } else {
                         Log.d(TAG, "Client: Cleanly disconnected from $deviceAddress")
-                        connectionTracker.cleanupDeviceConnection(deviceAddress)
+                        connectionTracker.cleanupDeviceConnection(deviceAddress, gatt)
                     }
 
+                    // Only the current attempt may retire its generation or notify higher layers.
+                    activeConnectionGenerations.remove(deviceAddress, connectionGeneration)
                     // Notify higher layers about device disconnection to update direct flags
                     delegate?.onDeviceDisconnected(gatt.device)
 
@@ -449,6 +469,7 @@ class BluetoothGattClientManager(
             }
             
             override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
+                if (!isCurrentAttempt()) return
                 val deviceAddress = gatt.device.address
                 Log.i(TAG, "Client: MTU changed for $deviceAddress to $mtu with status $status")
                 val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
@@ -480,6 +501,7 @@ class BluetoothGattClientManager(
             }
 
             override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+                if (!isCurrentAttempt()) return
                 val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
                 if (!GattClientCallbackValidation.isCurrentConnection(gatt, trackedGatt)) {
                     Log.w(TAG, "Client: Ignoring non-current service-discovery callback for $deviceAddress")
@@ -537,6 +559,7 @@ class BluetoothGattClientManager(
                 descriptor: BluetoothGattDescriptor,
                 status: Int
             ) {
+                if (!isCurrentAttempt()) return
                 val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
                 if (!GattClientCallbackValidation.isCurrentConnection(gatt, trackedGatt)) {
                     Log.w(TAG, "Client: Ignoring stale descriptor callback for $deviceAddress")
@@ -564,6 +587,7 @@ class BluetoothGattClientManager(
             }
 
             override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+                if (!isCurrentAttempt()) return
                 val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
                 if (!GattClientCallbackValidation.isCurrentConnection(gatt, trackedGatt)) {
                     Log.w(TAG, "Client: Ignoring non-current notification callback for $deviceAddress")
@@ -584,6 +608,7 @@ class BluetoothGattClientManager(
             }
             
             override fun onReadRemoteRssi(gatt: BluetoothGatt, rssi: Int, status: Int) {
+                if (!isCurrentAttempt()) return
                 val deviceAddress = gatt.device.address
                 val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
                 if (!GattClientCallbackValidation.isCurrentConnection(gatt, trackedGatt)) {
@@ -608,6 +633,7 @@ class BluetoothGattClientManager(
             Log.d(TAG, "Client: Attempting GATT connection to $deviceAddress with autoConnect=false")
             val gatt = device.connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
             if (gatt == null) {
+                activeConnectionGenerations.remove(deviceAddress, connectionGeneration)
                 Log.e(TAG, "connectGatt returned null for $deviceAddress")
                 // keep the pending connection so we can avoid too many reconnections attempts, TODO: needs testing
                 // connectionTracker.removePendingConnection(deviceAddress)
@@ -615,6 +641,7 @@ class BluetoothGattClientManager(
                 Log.d(TAG, "Client: GATT connection initiated successfully for $deviceAddress")
             }
         } catch (e: Exception) {
+            activeConnectionGenerations.remove(deviceAddress, connectionGeneration)
             Log.e(TAG, "Client: Exception connecting to $deviceAddress: ${e.message}")
             // keep the pending connection so we can avoid too many reconnections attempts, TODO: needs testing
             // connectionTracker.removePendingConnection(deviceAddress)
