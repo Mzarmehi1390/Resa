@@ -53,7 +53,7 @@ class ChannelManager(
         // Check if already joined
         if (state.getJoinedChannelsValue().contains(channelTag)) {
             if (ChannelAccessPolicy.requiresPasswordVerification(
-                    state.getPasswordProtectedChannelsValue().contains(channelTag),
+                    isChannelPasswordProtected(channelTag),
                     channelKeys.containsKey(channelTag)
                 )) {
                 // Need password verification
@@ -71,7 +71,7 @@ class ChannelManager(
         
         // If password protected and no key yet
         if (ChannelAccessPolicy.requiresPasswordVerification(
-                state.getPasswordProtectedChannelsValue().contains(channelTag),
+                isChannelPasswordProtected(channelTag),
                 channelKeys.containsKey(channelTag)
             )) {
             // Creator status is local metadata, not proof of possession of the channel key.
@@ -92,7 +92,7 @@ class ChannelManager(
         state.setJoinedChannels(updatedChannels)
         
         // Set as creator if new channel
-        if (!dataManager.channelCreators.containsKey(channelTag) && !state.getPasswordProtectedChannelsValue().contains(channelTag)) {
+        if (!dataManager.channelCreators.containsKey(channelTag) && !isChannelPasswordProtected(channelTag)) {
             dataManager.addChannelCreator(channelTag, myPeerID)
         }
         
@@ -247,7 +247,10 @@ class ChannelManager(
     // MARK: - Channel Information
     
     fun isChannelPasswordProtected(channel: String): Boolean {
-        return state.getPasswordProtectedChannelsValue().contains(channel)
+        // The encrypted commitment is also authoritative: if the legacy marker
+        // was not durably written, an orphan commitment must still fail closed.
+        return state.getPasswordProtectedChannelsValue().contains(channel) ||
+            channelKeyCommitments.containsKey(channel)
     }
     
     fun hasChannelKey(channel: String): Boolean {
