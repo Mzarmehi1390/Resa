@@ -156,6 +156,12 @@ class BluetoothGattServerManager(
             GattServerNotificationDispatcher.Outcome.Sent -> true
             is GattServerNotificationDispatcher.Outcome.Failed -> {
                 Log.w(TAG, "GATT notification to ${device.address} failed: ${outcome.reason}, status=${outcome.status}")
+                if (
+                    outcome.reason == GattCallbackLaneState.FailureReason.TIMEOUT ||
+                    outcome.reason == GattCallbackLaneState.FailureReason.DISCONNECTED
+                ) {
+                    scheduleServerRecovery(expectedServer)
+                }
                 false
             }
         }
