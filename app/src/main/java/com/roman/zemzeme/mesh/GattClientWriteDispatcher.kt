@@ -1,6 +1,7 @@
 package com.roman.zemzeme.mesh
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -69,6 +70,8 @@ internal class GattClientWriteDispatcher<K : Any>(
                 val entry = synchronized(lock) { entries[request.id] } ?: continue
                 val accepted = try {
                     adapter.submit(request.key, request.payload)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
                 } catch (_: Exception) {
                     false
                 }
