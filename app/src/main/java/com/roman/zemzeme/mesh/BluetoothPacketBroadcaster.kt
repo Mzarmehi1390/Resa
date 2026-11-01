@@ -44,8 +44,8 @@ class BluetoothPacketBroadcaster(
     private val connectionTracker: BluetoothConnectionTracker,
     private val fragmentManager: FragmentManager?,
     private val myPeerID: String,
-    private val serverNotificationSender: suspend (BluetoothDevice, ByteArray) -> Boolean,
-    private val serverNotificationEnqueuer: (BluetoothDevice, ByteArray) -> Boolean
+    private val serverNotificationSender: suspend (BluetoothDevice, ByteArray, BluetoothGattServer) -> Boolean,
+    private val serverNotificationEnqueuer: (BluetoothDevice, ByteArray, BluetoothGattServer) -> Boolean
 ) {
     
     companion object {
@@ -506,7 +506,7 @@ class BluetoothPacketBroadcaster(
     ): Boolean {
         return try {
             if (gattServer == null || characteristic == null) return false
-            serverNotificationSender(device, data)
+            serverNotificationSender(device, data, gattServer)
         } catch (e: Exception) {
             Log.w(TAG, "Error sending to server connection ${device.address}: ${e.message}")
             connectionScope.launch {
@@ -526,7 +526,7 @@ class BluetoothPacketBroadcaster(
     ): Boolean {
         if (gattServer == null || characteristic == null) return false
         return try {
-            serverNotificationEnqueuer(device, data)
+            serverNotificationEnqueuer(device, data, gattServer)
         } catch (e: Exception) {
             Log.w(TAG, "Error queueing server notification for ${device.address}: ${e.message}")
             false
