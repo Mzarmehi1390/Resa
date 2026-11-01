@@ -420,21 +420,42 @@ class MediaSendingManager(
     fun handleTransferProgressEvent(evt: com.roman.zemzeme.mesh.TransferProgressEvent) {
         val msgId = synchronized(transferMessageMap) { transferMessageMap[evt.transferId] }
         if (msgId != null) {
-            if (evt.completed) {
-                messageManager.updateMessageDeliveryStatus(
-                    msgId,
-                    com.roman.zemzeme.model.DeliveryStatus.Delivered(to = "mesh", at = java.util.Date())
-                )
-                synchronized(transferMessageMap) {
-                    val msgIdRemoved = transferMessageMap.remove(evt.transferId)
-                    if (msgIdRemoved != null) messageTransferMap.remove(msgIdRemoved)
+            when {
+                evt.failureReason != null -> {
+                    messageManager.updateMessageDeliveryStatus(
+                        msgId,
+                        DeliveryStatus.Failed(evt.failureReason)
+                    )
+                    removeTransferTracking(evt.transferId)
                 }
-            } else {
-                messageManager.updateMessageDeliveryStatus(
-                    msgId,
-                    com.roman.zemzeme.model.DeliveryStatus.PartiallyDelivered(evt.sent, evt.total)
-                )
+                evt.cancelled -> {
+                    messageManager.updateMessageDeliveryStatus(
+                        msgId,
+                        DeliveryStatus.Failed("Transfer cancelled")
+                    )
+                    removeTransferTracking(evt.transferId)
+                }
+                evt.completed -> {
+                    messageManager.updateMessageDeliveryStatus(
+                        msgId,
+                        DeliveryStatus.Delivered(to = "mesh", at = java.util.Date())
+                    )
+                    removeTransferTracking(evt.transferId)
+                }
+                else -> {
+                    messageManager.updateMessageDeliveryStatus(
+                        msgId,
+                        DeliveryStatus.PartiallyDelivered(evt.sent, evt.total)
+                    )
+                }
             }
+        }
+    }
+
+    private fun removeTransferTracking(transferId: String) {
+        synchronized(transferMessageMap) {
+            val msgIdRemoved = transferMessageMap.remove(transferId)
+            if (msgIdRemoved != null) messageTransferMap.remove(msgIdRemoved)
         }
     }
 
