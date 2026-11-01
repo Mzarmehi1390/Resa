@@ -51,7 +51,7 @@ class BluetoothPacketBroadcaster(
         BluetoothGattServer,
         (Boolean) -> Unit
     ) -> Boolean,
-    private val clientWriteEnqueuer: (String, ByteArray) -> Boolean,
+    private val clientWriteEnqueuer: (String, ByteArray, (Boolean) -> Unit) -> Boolean,
     private val clientWriteAwaiter: suspend (String, ByteArray) -> GattClientWriteDispatcher.Outcome?
 ) {
     
@@ -300,12 +300,14 @@ class BluetoothPacketBroadcaster(
         val clientTarget = connectionTracker.getConnectedDevices().values
             .firstOrNull { connectionTracker.addressPeerMap[it.device.address] == targetPeerID }
         if (clientTarget != null) {
-            if (writeToDeviceConn(clientTarget, data)) {
-                logPacketRelay(typeName, senderPeerID, senderNick, incomingPeer, incomingAddr, targetPeerID, clientTarget.device.address, packet.ttl, packet.version, routeInfo)
-                if (transferId != null) {
+            val onComplete: (Boolean) -> Unit = { completed ->
+                if (completed && transferId != null) {
                     TransferProgressManager.progress(transferId, 1, 1)
                     TransferProgressManager.complete(transferId, 1)
                 }
+            }
+            if (writeToDeviceConn(clientTarget, data, onComplete)) {
+                logPacketRelay(typeName, senderPeerID, senderNick, incomingPeer, incomingAddr, targetPeerID, clientTarget.device.address, packet.ttl, packet.version, routeInfo)
                 return true
             }
         }
@@ -578,16 +580,16 @@ class BluetoothPacketBroadcaster(
      */
     private fun writeToDeviceConn(
         deviceConn: BluetoothConnectionTracker.DeviceConnection,
-        data: ByteArray
+        data: ByteArray,
+        onComplete: (Boolean) -> Unit = {}
     ): Boolean {
         return try {
             if (deviceConn.characteristic == null || deviceConn.gatt == null) {
                 false
             } else {
-                // Admission means the bounded per-GATT lane accepted the payload.
-                // Android callback completion is handled by BluetoothGattClientManager;
-                // it is not proof of remote application delivery.
-                clientWriteEnqueuer(deviceConn.device.address, data.copyOf())
+                // Admission is local queue acceptance; completion reports Android's
+                // matching GATT callback, not remote application delivery.
+                clientWriteEnqueuer(deviceConn.device.address, data.copyOf(), onComplete)
             }
         } catch (e: Exception) {
             Log.w(TAG, "Error sending to client connection ${deviceConn.device.address}: ${e.message}")
@@ -598,7 +600,7 @@ class BluetoothPacketBroadcaster(
             false
         }
     }
-    
+
     private suspend fun writeToDeviceConnAwait(
         deviceConn: BluetoothConnectionTracker.DeviceConnection,
         data: ByteArray
