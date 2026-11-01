@@ -447,3 +447,23 @@ This is fail-closed state gating, not proof of device-level isolation. Runtime A
 5. Unit tests cover concurrent actor creation for one peer and continued actor operation after a handler exception.
 
 The independent outbound broadcaster queue is unchanged and still requires its own protocol-aware redesign.
+
+
+### BLE outbound broadcaster audit — 2026-11-01
+
+A focused review of `BluetoothPacketBroadcaster` and the GATT send callbacks confirms that the outbound path has additional serialization and delivery-accounting gaps. This is a static-source audit; no BLE device behavior is claimed.
+
+1. **The actor is not the single serialization boundary.** `broadcastSinglePacket` submits work through the actor, but the public `sendPacketToPeer` and `sendToPeer` methods perform GATT notification/write operations directly. They can therefore overlap actor-driven broadcasts and mutate the same characteristic without sharing its ordering boundary.
+2. **The actor queue and its producer staging are both unbounded.** The actor uses `Channel.UNLIMITED`, while each `broadcastSinglePacket` call launches a new coroutine before sending to the actor. A slow consumer can therefore accumulate queued requests and producer coroutines. Replacing only the channel capacity would move the unbounded staging into suspended producer coroutines.
+3. **The actor failure fallback breaks ordering.** If actor submission throws, the public method calls `broadcastSinglePacketInternal` directly from the producer coroutine. That bypasses the actor and can overlap other broadcasts.
+4. **GATT success values are transport-admission signals, not application delivery acknowledgements.** Server-side `notifyCharacteristicChanged` returns a Boolean for whether the local stack accepted the notification request. Client-side writes use `WRITE_TYPE_NO_RESPONSE`; the returned Boolean does not confirm remote packet processing. Neither path supplies a per-packet application ACK.
+5. **Transfer progress can get ahead of transport work.** `broadcastSinglePacket` returns `Unit` after launching asynchronous actor submission. Its callers update fragment/single-packet progress immediately after that call, not after a confirmed send or peer acknowledgement. The displayed progress therefore cannot be treated as remote delivery progress.
+6. **Shutdown has no explicit drain/rejection result for callers.** Closing/cancelling the actor scope can terminate pending submissions, but the current public API does not tell the originating caller which requests were admitted, dropped during shutdown, or actually attempted.
+
+**Required design before implementation:** define separate request-admission, local-GATT-accepted, and remote-application-acknowledged states. Route every BLE outbound path through one serialized dispatcher per shared GATT characteristic/connection; remove direct-send bypasses and direct-processing fallback. Bound admission only after the caller can observe rejection and the protocol has a retry/ACK contract for messages, handshakes and ordered fragments. Tie transfer progress to the intended stage rather than to coroutine launch. Add deterministic tests for concurrent direct/broadcast submissions, per-connection ordering, fragment ordering, actor shutdown with pending work, duplicate transfer IDs, admission rejection/retry and callback-driven completion. Validate notification pacing and write pressure on physical Android devices before selecting queue limits.
+
+### CI follow-up — PacketProcessor concurrency test — 2026-11-01
+
+- Workflow run `41312406427` checked out `f402a0ddb2c7dac085034e7e5ec0dfe5339d7298`. The application sources compiled, but `compileDebugUnitTestKotlin` failed because the new test passed a hexadecimal peer-ID `String` to `ZemzemePacket.senderID`, which requires a `ByteArray`.
+- The test helper now decodes each hexadecimal byte into a byte array in commit `b7a80dc25050a0d27f2c0353b929988067e30e67`.
+- A new CI result for that correction is not yet available. Do not treat the test suite or Debug APK as verified until the new workflow completes.
