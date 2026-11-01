@@ -38,18 +38,6 @@ class BluetoothConnectionManager(
     // Component managers
     private val permissionManager = BluetoothPermissionManager(context)
     private val connectionTracker = BluetoothConnectionTracker(connectionScope, powerManager)
-    private val packetBroadcaster = BluetoothPacketBroadcaster(
-        connectionScope,
-        connectionTracker,
-        fragmentManager,
-        myPeerID,
-        serverNotificationSender = { device, payload ->
-            serverManager.sendNotification(device, payload)
-        },
-        serverNotificationEnqueuer = { device, payload ->
-            serverManager.enqueueNotification(device, payload)
-        }
-    )
     
     // Delegate for component managers to call back to main manager
     private val componentDelegate = object : BluetoothConnectionManagerDelegate {
@@ -88,6 +76,19 @@ class BluetoothConnectionManager(
     )
     private val clientManager = BluetoothGattClientManager(
         context, connectionScope, connectionTracker, permissionManager, powerManager, componentDelegate
+    )
+
+    private val packetBroadcaster = BluetoothPacketBroadcaster(
+        connectionScope,
+        connectionTracker,
+        fragmentManager,
+        myPeerID,
+        serverNotificationSender = { device, payload ->
+            serverManager.sendNotification(device, payload)
+        },
+        serverNotificationEnqueuer = { device, payload ->
+            serverManager.enqueueNotification(device, payload)
+        }
     )
     
     // Service state
