@@ -90,7 +90,7 @@ class PacketProcessorConcurrencyTest {
         val packet = ZemzemePacket(
             type = MessageType.MESSAGE.value,
             ttl = 10u,
-            senderID = peerID,
+            senderID = peerID.chunked(2).map { it.toInt(16).toByte() }.toByteArray(),
             timestamp = (1_800_000_000_000L + sequence).toULong(),
             payload = byteArrayOf(sequence.toByte())
         )
