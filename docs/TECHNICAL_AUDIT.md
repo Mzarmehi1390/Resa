@@ -515,3 +515,16 @@ A follow-up trace across `BluetoothConnectionManager`, `BluetoothGattServerManag
 **Safe next implementation boundary:** introduce an injectable server-notification adapter/dispatcher at the connection-manager boundary, and route the server callback's completion/disconnect/shutdown events to that same instance. First test it independently with a fake adapter, including old-server late callbacks after replacement. Only then replace the direct `notifyDevice` submission with an awaited dispatcher result and adapt public send/progress semantics. Do not alter client `WRITE_TYPE_NO_RESPONSE`, packet wire format, queue capacity or fragment pacing in this step.
 
 **Verification status:** no runtime behavior has changed in this review; no Android unit test, emulator test, throughput test or physical-device test is claimed.
+
+
+### BLE callback lane server-generation isolation — 2026-11-01
+
+The platform-independent GATT callback lane now requires an explicit server-generation token for operation admission, notification callbacks and disconnect callbacks.
+
+1. Every active operation records the generation of the GATT server callback instance that admitted it.
+2. Callback and disconnect events from an older generation are ignored, even when the peer address matches the active operation on the replacement server. This closes the same-peer late-callback ambiguity across server recreation at the state-machine boundary.
+3. Operation IDs remain monotonic across server replacement. This prevents a delayed timeout/rejection handler holding an old operation ID from completing a later operation.
+4. `resetForNewServer()` now requires the previous lane to be CLOSED and increments the generation. It cannot silently clear an active or READY lane.
+5. Tests cover an old callback arriving while the same peer has an operation on the replacement generation, and reject resetting a lane before it has been closed.
+
+**Integration limitation:** the generation token is not yet captured by `BluetoothGattServerManager` callbacks or passed by the live notification submission path. This commit hardens the isolated state machine only; it does not yet serialize characteristic mutation, await `onNotificationSent`, or change runtime BLE behavior. Android unit tests and physical-device tests remain unverified.
