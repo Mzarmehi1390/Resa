@@ -26,6 +26,14 @@ class GattClientCallbackValidationTest {
     }
 
     @Test
+    fun acceptsCallbacksOnlyFromTheActiveConnectionGeneration() {
+        assertTrue(GattClientCallbackValidation.isCurrentGeneration(7L, 7L))
+        assertFalse(GattClientCallbackValidation.isCurrentGeneration(6L, 7L))
+        assertFalse(GattClientCallbackValidation.isCurrentGeneration(7L, 8L))
+        assertFalse(GattClientCallbackValidation.isCurrentGeneration(7L, null))
+    }
+
+    @Test
     fun acceptsOnlyTheExpectedCccdOnTheExpectedCharacteristic() {
         assertTrue(
             GattClientCallbackValidation.isExpectedCccdDescriptor(
