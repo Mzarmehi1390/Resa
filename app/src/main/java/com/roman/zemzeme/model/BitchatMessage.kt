@@ -77,15 +77,54 @@ data class ZemzemeMessage(
      */
     fun toBinaryPayload(): ByteArray? {
         try {
-            val buffer = ByteBuffer.allocate(4096).apply { order(ByteOrder.BIG_ENDIAN) }
+            // Keep the existing wire-format ceiling, but calculate the exact size
+            // and reject values that cannot be represented without truncation.
+            val idBytes = id.toByteArray(Charsets.UTF_8)
+            val senderBytes = sender.toByteArray(Charsets.UTF_8)
+            val contentBytes = if (isEncrypted) {
+                encryptedContent ?: return null
+            } else {
+                content.toByteArray(Charsets.UTF_8)
+            }
 
-            // Message format:
-            // - Flags: 1 byte (bit flags for optional fields)
-            // - Timestamp: 8 bytes (milliseconds since epoch, big-endian)
-            // - ID length: 1 byte + ID data
-            // - Sender length: 1 byte + sender data
-            // - Content length: 2 bytes + content data (or encrypted content)
-            // Optional fields based on flags...
+            fun encodeOptional(value: String?): ByteArray? {
+                if (value == null) return null
+                val bytes = value.toByteArray(Charsets.UTF_8)
+                return bytes.takeIf { it.size <= MAX_OPTIONAL_FIELD_BYTES }
+            }
+
+            if (idBytes.size > MAX_OPTIONAL_FIELD_BYTES ||
+                senderBytes.size > MAX_OPTIONAL_FIELD_BYTES ||
+                contentBytes.size > MAX_CONTENT_FIELD_BYTES
+            ) return null
+
+            val originalSenderBytes = encodeOptional(originalSender)
+                ?: if (originalSender == null) null else return null
+            val recipientNicknameBytes = encodeOptional(recipientNickname)
+                ?: if (recipientNickname == null) null else return null
+            val senderPeerIDBytes = encodeOptional(senderPeerID)
+                ?: if (senderPeerID == null) null else return null
+            val channelBytes = encodeOptional(channel)
+                ?: if (channel == null) null else return null
+            val mentionBytes = mentions?.map { mention ->
+                encodeOptional(mention) ?: return null
+            }
+            if (mentionBytes != null && mentionBytes.size > MAX_OPTIONAL_FIELD_BYTES) return null
+
+            var payloadSize = 1 + 8 + 1 + idBytes.size + 1 + senderBytes.size +
+                2 + contentBytes.size
+            fun addOptionalSize(bytes: ByteArray?) {
+                if (bytes != null) payloadSize += 1 + bytes.size
+            }
+            addOptionalSize(originalSenderBytes)
+            addOptionalSize(recipientNicknameBytes)
+            addOptionalSize(senderPeerIDBytes)
+            if (mentionBytes != null) {
+                payloadSize += 1 + mentionBytes.sumOf { 1 + it.size }
+            }
+            addOptionalSize(channelBytes)
+
+            if (payloadSize > MAX_BINARY_PAYLOAD_BYTES) return null
 
             var flags: UByte = 0u
             if (isRelay) flags = flags or 0x01u
@@ -93,82 +132,50 @@ data class ZemzemeMessage(
             if (originalSender != null) flags = flags or 0x04u
             if (recipientNickname != null) flags = flags or 0x08u
             if (senderPeerID != null) flags = flags or 0x10u
-            if (mentions != null && mentions.isNotEmpty()) flags = flags or 0x20u
+            if (!mentionBytes.isNullOrEmpty()) flags = flags or 0x20u
             if (channel != null) flags = flags or 0x40u
             if (isEncrypted) flags = flags or 0x80u
 
+            val buffer = ByteBuffer.allocate(payloadSize).apply { order(ByteOrder.BIG_ENDIAN) }
             buffer.put(flags.toByte())
+            buffer.putLong(timestamp.time)
 
-            // Timestamp (in milliseconds, 8 bytes big-endian)
-            val timestampMillis = timestamp.time
-            buffer.putLong(timestampMillis)
+            buffer.put(idBytes.size.toByte())
+            buffer.put(idBytes)
+            buffer.put(senderBytes.size.toByte())
+            buffer.put(senderBytes)
+            buffer.putShort(contentBytes.size.toShort())
+            buffer.put(contentBytes)
 
-            // ID
-            val idBytes = id.toByteArray(Charsets.UTF_8)
-            buffer.put(minOf(idBytes.size, 255).toByte())
-            buffer.put(idBytes.take(255).toByteArray())
-
-            // Sender
-            val senderBytes = sender.toByteArray(Charsets.UTF_8)
-            buffer.put(minOf(senderBytes.size, 255).toByte())
-            buffer.put(senderBytes.take(255).toByteArray())
-
-            // Content or encrypted content
-            if (isEncrypted && encryptedContent != null) {
-                val length = minOf(encryptedContent.size, 65535)
-                buffer.putShort(length.toShort())
-                buffer.put(encryptedContent.take(length).toByteArray())
-            } else {
-                val contentBytes = content.toByteArray(Charsets.UTF_8)
-                val length = minOf(contentBytes.size, 65535)
-                buffer.putShort(length.toShort())
-                buffer.put(contentBytes.take(length).toByteArray())
-            }
-
-            // Optional fields
-            originalSender?.let { origSender ->
-                val origBytes = origSender.toByteArray(Charsets.UTF_8)
-                buffer.put(minOf(origBytes.size, 255).toByte())
-                buffer.put(origBytes.take(255).toByteArray())
-            }
-
-            recipientNickname?.let { recipient ->
-                val recipBytes = recipient.toByteArray(Charsets.UTF_8)
-                buffer.put(minOf(recipBytes.size, 255).toByte())
-                buffer.put(recipBytes.take(255).toByteArray())
-            }
-
-            senderPeerID?.let { peerID ->
-                val peerBytes = peerID.toByteArray(Charsets.UTF_8)
-                buffer.put(minOf(peerBytes.size, 255).toByte())
-                buffer.put(peerBytes.take(255).toByteArray())
-            }
-
-            // Mentions array
-            mentions?.let { mentionList ->
-                buffer.put(minOf(mentionList.size, 255).toByte())
-                mentionList.take(255).forEach { mention ->
-                    val mentionBytes = mention.toByteArray(Charsets.UTF_8)
-                    buffer.put(minOf(mentionBytes.size, 255).toByte())
-                    buffer.put(mentionBytes.take(255).toByteArray())
+            fun putOptional(bytes: ByteArray?) {
+                if (bytes != null) {
+                    buffer.put(bytes.size.toByte())
+                    buffer.put(bytes)
                 }
             }
+            putOptional(originalSenderBytes)
+            putOptional(recipientNicknameBytes)
+            putOptional(senderPeerIDBytes)
 
-            // Channel hashtag
-            channel?.let { channelName ->
-                val channelBytes = channelName.toByteArray(Charsets.UTF_8)
-                buffer.put(minOf(channelBytes.size, 255).toByte())
-                buffer.put(channelBytes.take(255).toByteArray())
+            if (!mentionBytes.isNullOrEmpty()) {
+                buffer.put(mentionBytes.size.toByte())
+                mentionBytes.forEach { mention ->
+                    buffer.put(mention.size.toByte())
+                    buffer.put(mention)
+                }
             }
+            putOptional(channelBytes)
 
-            val result = ByteArray(buffer.position())
-            buffer.rewind()
-            buffer.get(result)
-            return result
-
+            return buffer.array()
         } catch (e: Exception) {
             return null
         }
+    }
+
+    private companion object {
+        const val MAX_BINARY_PAYLOAD_BYTES = 4096
+        const val MAX_OPTIONAL_FIELD_BYTES = 255
+        const val MAX_CONTENT_FIELD_BYTES = 65535
     }
 
     companion object {
