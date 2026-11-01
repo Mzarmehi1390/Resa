@@ -1107,7 +1107,10 @@ class BluetoothMeshService(private val context: Context) {
     /**
      * Send a file over mesh as a broadcast MESSAGE (public mesh timeline/channels).
      */
-    fun sendFileBroadcast(file: com.roman.zemzeme.model.ZemzemeFilePacket) {
+    fun sendFileBroadcast(
+        file: com.roman.zemzeme.model.ZemzemeFilePacket,
+        transferId: String = java.util.UUID.randomUUID().toString().uppercase()
+    ) {
         try {
             Log.d(TAG, "📤 sendFileBroadcast: name=${file.fileName}, size=${file.fileSize}")
             val payload = file.encode()
@@ -1128,8 +1131,7 @@ class BluetoothMeshService(private val context: Context) {
                 ttl = MAX_TTL
             )
             val signed = signPacketBeforeBroadcast(packet)
-            // Use a stable transferId based on the file TLV payload for progress tracking
-            val transferId = sha256Hex(payload)
+            // Keep each send instance distinct, even when the same file is sent concurrently.
             connectionManager.broadcastPacket(RoutedPacket(signed, transferId = transferId))
             try { gossipSyncManager.onPublicPacketSeen(signed) } catch (_: Exception) { }
         }
@@ -1142,7 +1144,11 @@ class BluetoothMeshService(private val context: Context) {
     /**
      * Send a file as an encrypted private message using Noise protocol
      */
-    fun sendFilePrivate(recipientPeerID: String, file: com.roman.zemzeme.model.ZemzemeFilePacket) {
+    fun sendFilePrivate(
+        recipientPeerID: String,
+        file: com.roman.zemzeme.model.ZemzemeFilePacket,
+        transferId: String = java.util.UUID.randomUUID().toString().uppercase()
+    ) {
         try {
             Log.d(TAG, "📤 sendFilePrivate (ENCRYPTED): to=$recipientPeerID, name=${file.fileName}, size=${file.fileSize}")
             
@@ -1182,8 +1188,7 @@ class BluetoothMeshService(private val context: Context) {
                         
                         // Sign and send the encrypted packet
                         val signed = signPacketBeforeBroadcast(packet)
-                        // Use a stable transferId based on the unencrypted file TLV payload for progress tracking
-                        val transferId = sha256Hex(filePayload)
+                        // Use the caller's unique transfer instance ID for progress and cancellation.
                         connectionManager.broadcastPacket(RoutedPacket(signed, transferId = transferId))
                         Log.d(TAG, "✅ Sent encrypted file to $recipientPeerID")
                         
