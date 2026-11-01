@@ -3,6 +3,7 @@ package com.roman.zemzeme.mesh
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -166,6 +167,7 @@ internal class GattServerNotificationDispatcher<K : Any>(
         requests.close()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun process(request: Request<K>) {
         val callbackResult = CompletableDeferred<Outcome>()
         val started = synchronized(lock) {
@@ -216,12 +218,18 @@ internal class GattServerNotificationDispatcher<K : Any>(
         val callbackOutcome = withTimeoutOrNull(callbackTimeoutMillis) {
             callbackResult.await()
         } ?: synchronized(lock) {
-            val event = lane.onTimeout(started.operationId)
-            active?.takeIf { it.operationId == started.operationId }?.let { active = null }
-            if (event is GattCallbackLaneState.Event.Failed) {
-                Outcome.Failed(event.reason, event.status)
+            // A callback can win the lock just as the timeout fires. Prefer its
+            // already-recorded terminal outcome over misclassifying it as timeout.
+            if (callbackResult.isCompleted) {
+                callbackResult.getCompleted()
             } else {
-                Outcome.Failed(GattCallbackLaneState.FailureReason.TIMEOUT)
+                val event = lane.onTimeout(started.operationId)
+                active?.takeIf { it.operationId == started.operationId }?.let { active = null }
+                if (event is GattCallbackLaneState.Event.Failed) {
+                    Outcome.Failed(event.reason, event.status)
+                } else {
+                    Outcome.Failed(GattCallbackLaneState.FailureReason.TIMEOUT)
+                }
             }
         }
         completeRequest(request, callbackOutcome)
