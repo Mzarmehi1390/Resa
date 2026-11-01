@@ -576,3 +576,21 @@ A static trace of all BluetoothPacketBroadcaster.writeToDeviceConn call sites id
 - Added unit tests for single-flight admission, ordered release after matching callback, stale-generation isolation, wrong-key callbacks, callback failure, synchronous rejection, disconnect and shutdown.
 - **Integration limitation:** this state model is not yet wired into BluetoothGattClientManager or BluetoothPacketBroadcaster. It does not create a queue, submit Android writes, prove WRITE_TYPE_NO_RESPONSE callback behavior, or change transfer-progress semantics. Runtime behavior remains unchanged.
 - Next: verify callback behavior across the supported Android API range, then add a bounded per-GATT queue/adapter with explicit backpressure and route all broadcaster call sites through it. Keep legacy Boolean results documented as local admission until callers are migrated to an awaited completion API.
+
+### BLE client WRITE_TYPE_NO_RESPONSE callback semantics review — 2026-11-01
+
+The platform documentation review narrows the earlier open question, but does not establish end-to-end delivery:
+
+- Android's `BluetoothGatt.writeCharacteristic` reference states that `BluetoothGattCallback.onCharacteristicWrite` is invoked when the write operation completes. The callback reference describes it as reporting the result of the write operation. The documentation does not define that callback as an application-level acknowledgement from the peer.
+- Nordic Semiconductor's Android BLE guide describes the callback for both Write Request and Write Command (`WRITE_TYPE_NO_RESPONSE`). For Write Command, it is associated with local outgoing-buffer flow control; callback timing can vary with Android stack buffering. This is consistent with treating it as a local serialization/pacing signal, not remote application receipt.
+- The current Resa client path still has no `onCharacteristicWrite` override, and its broadcaster mutates a shared characteristic then invokes the deprecated one-argument `writeCharacteristic(characteristic)` API. The current Boolean therefore remains immediate local submission acceptance only.
+- The old broadcaster comment claimed `WRITE_TYPE_NO_RESPONSE` allowed multiple in-flight writes without waiting for callbacks. That claim was not justified by the Android API contract and has been replaced with wording that distinguishes ATT response behavior, local callback flow control, and peer delivery.
+- A future per-GATT lane may use the callback to serialize/pacing subsequent local writes, but it must not expose callback success as remote delivery confirmation. An application-level receipt would require a protocol ACK with authenticated peer/message correlation.
+- API 33 introduced the memory-safe overload `writeCharacteristic(characteristic, value, writeType)`; the legacy mutable-characteristic overload is deprecated. Migration should be considered as part of the coordinated lane integration, with a guarded legacy path for API 26–32.
+
+References:
+- [Android BluetoothGatt API](https://developer.android.com/reference/android/bluetooth/BluetoothGatt#writeCharacteristic(android.bluetooth.BluetoothGatt,byte[],int))
+- [Android BluetoothGattCallback API](https://developer.android.com/reference/android/bluetooth/BluetoothGattCallback#onCharacteristicWrite(android.bluetooth.BluetoothGatt,android.bluetooth.BluetoothGattCharacteristic,int))
+- [Nordic Semiconductor — BLE on Android, section on GATT write callbacks](https://devzone.nordicsemi.com/cfs-file/__key/support-attachments/beef5d1b77644c448dabff31668f3a47-619c0d8c9b7e4fefb966e9ce5b482155/BLE_5F00_on_5F00_Android_5F00_v1.0.1.pdf)
+
+**Verification status:** documentation/source-comment correction only. No client write runtime behavior has been changed. Device/vendor callback timing, queue sizing, overload behavior, and application-level acknowledgement remain to be implemented and tested.
