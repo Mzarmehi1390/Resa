@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder
 import kotlinx.parcelize.Parcelize
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.charset.CodingErrorAction
+import java.nio.charset.StandardCharsets
 import java.util.*
 
 @Parcelize
@@ -176,12 +178,25 @@ data class ZemzemeMessage(
         private const val MAX_BINARY_PAYLOAD_BYTES = 4096
         private const val MAX_OPTIONAL_FIELD_BYTES = 255
         private const val MAX_CONTENT_FIELD_BYTES = 65535
+
+        private fun decodeUtf8(bytes: ByteArray): String? {
+            return try {
+                StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(ByteBuffer.wrap(bytes))
+                    .toString()
+            } catch (_: java.nio.charset.CharacterCodingException) {
+                null
+            }
+        }
+
         /**
          * Parse message from binary payload - exactly same logic as iOS version
          */
         fun fromBinaryPayload(data: ByteArray): ZemzemeMessage? {
             try {
-                if (data.size < 13) return null
+                if (data.size < 13 || data.size > MAX_BINARY_PAYLOAD_BYTES) return null
 
                 val buffer = ByteBuffer.wrap(data).apply { order(ByteOrder.BIG_ENDIAN) }
 
@@ -205,14 +220,14 @@ data class ZemzemeMessage(
                 if (buffer.remaining() < idLength) return null
                 val idBytes = ByteArray(idLength)
                 buffer.get(idBytes)
-                val id = String(idBytes, Charsets.UTF_8)
+                val id = decodeUtf8(idBytes) ?: return null
 
                 // Sender
                 val senderLength = buffer.get().toInt() and 0xFF
                 if (buffer.remaining() < senderLength) return null
                 val senderBytes = ByteArray(senderLength)
                 buffer.get(senderBytes)
-                val sender = String(senderBytes, Charsets.UTF_8)
+                val sender = decodeUtf8(senderBytes) ?: return null
 
                 // Content
                 val contentLength = buffer.getShort().toInt() and 0xFFFF
@@ -229,7 +244,7 @@ data class ZemzemeMessage(
                 } else {
                     val contentBytes = ByteArray(contentLength)
                     buffer.get(contentBytes)
-                    content = String(contentBytes, Charsets.UTF_8)
+                    content = decodeUtf8(contentBytes) ?: return null
                     encryptedContent = null
                 }
 
@@ -243,7 +258,7 @@ data class ZemzemeMessage(
                     }
                     val bytes = ByteArray(length)
                     buffer.get(bytes)
-                    return String(bytes, Charsets.UTF_8)
+                    return decodeUtf8(bytes) ?: throw IllegalArgumentException("Invalid UTF-8 in $fieldName")
                 }
 
                 val originalSender = if (hasOriginalSender) {
