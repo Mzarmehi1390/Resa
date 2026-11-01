@@ -17,6 +17,9 @@ import java.util.*
 internal object ChannelAccessPolicy {
     fun requiresPasswordVerification(passwordProtected: Boolean, hasSessionKey: Boolean): Boolean =
         passwordProtected && !hasSessionKey
+
+    fun blocksPlaintextSend(passwordProtected: Boolean, hasSessionKey: Boolean): Boolean =
+        passwordProtected || hasSessionKey
 }
 
 /**
@@ -242,6 +245,17 @@ class ChannelManager(
     
     fun hasChannelKey(channel: String): Boolean {
         return channelKeys.containsKey(channel)
+    }
+
+    /**
+     * Plaintext is never allowed when a channel is protected or key material exists.
+     * This is shared by text and media paths until encrypted transport is complete.
+     */
+    fun canSendPlaintextToChannel(channel: String): Boolean {
+        return !ChannelAccessPolicy.blocksPlaintextSend(
+            isChannelPasswordProtected(channel),
+            hasChannelKey(channel)
+        )
     }
     
     fun getChannelPassword(channel: String): String? {
