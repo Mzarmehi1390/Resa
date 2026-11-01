@@ -117,8 +117,13 @@ class GattCallbackLaneStateTest {
         val oldGeneration = lane.currentServerGeneration()
         val oldOperation = lane.begin("peer-a", oldGeneration) as GattCallbackLaneState.Event.Started
 
-        assertTrue(lane.close() is GattCallbackLaneState.Event.Closed ||
-            lane.status() == GattCallbackLaneState.LaneStatus.CLOSED)
+        assertEquals(
+            GattCallbackLaneState.Event.Failed(
+                oldOperation.operationId,
+                GattCallbackLaneState.FailureReason.SHUTDOWN
+            ),
+            lane.close()
+        )
         val newGeneration = lane.resetForNewServer()
         assertTrue(newGeneration > oldGeneration)
         val newOperation = lane.begin("peer-a", newGeneration) as GattCallbackLaneState.Event.Started
