@@ -83,11 +83,11 @@ class BluetoothConnectionManager(
         connectionTracker,
         fragmentManager,
         myPeerID,
-        serverNotificationSender = { device, payload ->
-            serverManager.sendNotification(device, payload)
+        serverNotificationSender = { device, payload, server ->
+            serverManager.sendNotification(device, payload, server)
         },
-        serverNotificationEnqueuer = { device, payload ->
-            serverManager.enqueueNotification(device, payload)
+        serverNotificationEnqueuer = { device, payload, server ->
+            serverManager.enqueueNotification(device, payload, server)
         }
     )
     
