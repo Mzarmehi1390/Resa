@@ -14,6 +14,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Manages GATT server operations, advertising, and server-side connections
@@ -39,8 +41,11 @@ class BluetoothGattServerManager(
     private val bleAdvertiser: BluetoothLeAdvertiser? = bluetoothAdapter?.bluetoothLeAdvertiser
     
     // GATT server for peripheral mode
+    @Volatile
     private var gattServer: BluetoothGattServer? = null
+    @Volatile
     private var characteristic: BluetoothGattCharacteristic? = null
+    private val lifecycleGeneration = AtomicLong(0L)
     private var advertiseCallback: AdvertiseCallback? = null
     @Volatile
     private var notificationDispatcher: GattServerNotificationDispatcher<BluetoothDevice>? = null
@@ -91,11 +96,14 @@ class BluetoothGattServerManager(
         }
         
         isActive = true
-        
+        val startGeneration = lifecycleGeneration.incrementAndGet()
+
         connectionScope.launch {
-            setupGattServer()
-            delay(300) // Brief delay to ensure GATT server is ready
-            startAdvertising()
+            setupGattServer(startGeneration)
+            if (isCurrentServerGeneration(startGeneration)) {
+                delay(300) // Brief delay to ensure GATT server is ready
+                if (isCurrentServerGeneration(startGeneration)) startAdvertising()
+            }
         }
         
         return true
@@ -105,6 +113,7 @@ class BluetoothGattServerManager(
      * Stop GATT server
      */
     fun stop() {
+        lifecycleGeneration.incrementAndGet()
         isActive = false
         stopAdvertising()
 
@@ -162,17 +171,22 @@ class BluetoothGattServerManager(
      * Setup GATT server with proper sequencing
      */
     @Suppress("DEPRECATION")
-    private fun setupGattServer() {
+    private fun isCurrentServerGeneration(generation: Long): Boolean {
+        return isActive && lifecycleGeneration.get() == generation
+    }
+
+    private fun setupGattServer(setupGeneration: Long) {
         if (!permissionManager.hasBluetoothPermissions()) return
-        
-        var callbackServer: BluetoothGattServer? = null
-        var callbackCharacteristic: BluetoothGattCharacteristic? = null
+        if (!isCurrentServerGeneration(setupGeneration)) return
+
+        val callbackServer = AtomicReference<BluetoothGattServer?>()
+        val callbackCharacteristic = AtomicReference<BluetoothGattCharacteristic?>()
         val dispatcher = GattServerNotificationDispatcher(
             connectionScope,
             object : GattServerNotificationDispatcher.Adapter<BluetoothDevice> {
                 override fun submit(key: BluetoothDevice, payload: ByteArray): Boolean {
-                    val server = callbackServer ?: return false
-                    val char = callbackCharacteristic ?: return false
+                    val server = callbackServer.get() ?: return false
+                    val char = callbackCharacteristic.get() ?: return false
                     char.value = payload.copyOf()
                     return server.notifyCharacteristicChanged(key, char, false)
                 }
@@ -193,9 +207,9 @@ class BluetoothGattServerManager(
                 if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                     dispatcher.onPeerDisconnected(device, callbackGeneration)
                 }
-                // Guard against callbacks after service shutdown
-                if (!isActive) {
-                    Log.d(TAG, "Server: Ignoring connection state change after shutdown")
+                // Reject callbacks belonging to a stopped or replaced server instance.
+                if (!isCurrentServerGeneration(setupGeneration)) {
+                    Log.d(TAG, "Server: Ignoring stale connection state change")
                     return
                 }
                 
@@ -230,9 +244,8 @@ class BluetoothGattServerManager(
             }
             
             override fun onServiceAdded(status: Int, service: BluetoothGattService) {
-                // Guard against callbacks after service shutdown
-                if (!isActive) {
-                    Log.d(TAG, "Server: Ignoring service added callback after shutdown")
+                if (!isCurrentServerGeneration(setupGeneration)) {
+                    Log.d(TAG, "Server: Ignoring stale service added callback")
                     return
                 }
                 
@@ -252,9 +265,8 @@ class BluetoothGattServerManager(
                 offset: Int,
                 value: ByteArray
             ) {
-                // Guard against callbacks after service shutdown
-                if (!isActive) {
-                    Log.d(TAG, "Server: Ignoring characteristic write after shutdown")
+                if (!isCurrentServerGeneration(setupGeneration)) {
+                    Log.d(TAG, "Server: Ignoring stale characteristic write")
                     return
                 }
                 
@@ -285,9 +297,8 @@ class BluetoothGattServerManager(
                 offset: Int,
                 value: ByteArray
             ) {
-                // Guard against callbacks after service shutdown
-                if (!isActive) {
-                    Log.d(TAG, "Server: Ignoring descriptor write after shutdown")
+                if (!isCurrentServerGeneration(setupGeneration)) {
+                    Log.d(TAG, "Server: Ignoring stale descriptor write")
                     return
                 }
                 
@@ -326,8 +337,9 @@ class BluetoothGattServerManager(
         // Small delay to ensure cleanup is complete
         Thread.sleep(100)
         
-        if (!isActive) {
-            Log.d(TAG, "Service inactive, skipping GATT server creation")
+        if (!isCurrentServerGeneration(setupGeneration)) {
+            dispatcher.shutdown()
+            Log.d(TAG, "Server generation changed, skipping GATT server creation")
             return
         }
         
@@ -339,7 +351,13 @@ class BluetoothGattServerManager(
             Log.e(TAG, "Failed to open GATT server")
             return
         }
-        callbackServer = openedServer
+        if (!isCurrentServerGeneration(setupGeneration)) {
+            openedServer.close()
+            dispatcher.shutdown()
+            Log.d(TAG, "Server stopped while opening GATT server; discarded stale instance")
+            return
+        }
+        callbackServer.set(openedServer)
         gattServer = openedServer
         notificationDispatcher = dispatcher
 
@@ -359,7 +377,7 @@ class BluetoothGattServerManager(
             BluetoothGattDescriptor.PERMISSION_READ or BluetoothGattDescriptor.PERMISSION_WRITE
         )
         createdCharacteristic.addDescriptor(descriptor)
-        callbackCharacteristic = createdCharacteristic
+        callbackCharacteristic.set(createdCharacteristic)
         characteristic = createdCharacteristic
 
         val service = BluetoothGattService(AppConstants.Mesh.Gatt.SERVICE_UUID, BluetoothGattService.SERVICE_TYPE_PRIMARY)
