@@ -81,7 +81,7 @@ internal object ChannelKeyCommitmentStoreCodec {
  * AES-GCM encrypted preferences backed by a non-exportable Android Keystore key.
  * Authentication or storage failures permanently fail closed for this instance.
  */
-internal class ChannelKeyCommitmentStore(context: Context) {
+class ChannelKeyCommitmentStore(context: Context) {
     companion object {
         private const val TAG = "ChannelKeyCommitStore"
         private const val PREFS = "resa_channel_commitments_v1"
