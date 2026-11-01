@@ -437,3 +437,13 @@ A follow-up hardening change closes a lifecycle gap found during review:
 3. Unit coverage now checks that P2P startup is rejected for Tor STARTING, BOOTSTRAPPING, RUNNING, STOPPING, and ERROR states, as well as when the saved preference is ON.
 
 This is fail-closed state gating, not proof of device-level isolation. Runtime Arti stop-failure injection and physical-device verification remain outstanding.
+
+### PacketProcessor ingress serialization hardening — 2026-11-01
+
+1. Actor registry lookup/creation and shutdown are serialized under one lock, preventing concurrent GATT callbacks from creating multiple actors for one peer or racing actor creation against shutdown.
+2. The synchronous receive entry point now uses trySend directly instead of launching one coroutine per packet. This removes unbounded staging of suspended producer coroutines while preserving per-peer FIFO enqueue order.
+3. Handler exceptions are isolated per packet. A failed packet is logged and discarded; later packets continue through the same actor. The direct-processing fallback is removed because it could bypass per-peer serialization.
+4. Per-peer channels remain unlimited intentionally. BLE currently lacks reliable application-level acceptance ACK and retry semantics, so bounded overflow could silently lose handshakes, encrypted packets or file fragments. This change does not claim bounded queue memory.
+5. Unit tests cover concurrent actor creation for one peer and continued actor operation after a handler exception.
+
+The independent outbound broadcaster queue is unchanged and still requires its own protocol-aware redesign.

@@ -40,7 +40,8 @@ class PacketProcessor(private val myPeerID: String) {
     // Per-peer actors to serialize packet processing
     // Each peer gets its own actor that processes packets sequentially
     // This prevents race conditions in session management
-    private val peerActors = mutableMapOf<String, CompletableDeferred<Unit>>()
+    private val actorsLock = Any()
+    private var isShutdown = false
     
     @OptIn(ObsoleteCoroutinesApi::class)
     private fun getOrCreateActorForPeer(peerID: String) = processorScope.actor<RoutedPacket>(
@@ -49,16 +50,23 @@ class PacketProcessor(private val myPeerID: String) {
         Log.i(TAG, "🎭 Created packet actor for peer: ${formatPeerForLog(peerID)}")
         try {
             for (packet in channel) {
-                Log.i(TAG, "📦 Processing packet type ${packet.packet.type} from ${formatPeerForLog(peerID)} (serialized)")
-                handleReceivedPacket(packet)
-                Log.i(TAG, "Completed packet type ${packet.packet.type} from ${formatPeerForLog(peerID)}")
+                try {
+                    Log.i(TAG, "📦 Processing packet type ${packet.packet.type} from ${formatPeerForLog(peerID)} (serialized)")
+                    handleReceivedPacket(packet)
+                    Log.i(TAG, "Completed packet type ${packet.packet.type} from ${formatPeerForLog(peerID)}")
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    // Isolate handler failures; never bypass per-peer ordering.
+                    Log.e(TAG, "Packet processing failed for peer $peerID", error)
+                }
             }
         } finally {
             Log.i(TAG, "🎭 Packet actor for ${formatPeerForLog(peerID)} terminated")
         }
     }
     
-    // Cache actors to reuse them
+    // Access this actor registry only while holding actorsLock.
     private val actors = mutableMapOf<String, kotlinx.coroutines.channels.SendChannel<RoutedPacket>>()
     
     init {
@@ -78,19 +86,21 @@ class PacketProcessor(private val myPeerID: String) {
             Log.w(TAG, "Received packet with no peer ID, skipping")
             return
         }
-        
-        // Get or create actor for this peer
-        val actor = actors.getOrPut(peerID) { getOrCreateActorForPeer(peerID) }
-        
-        // Send packet to peer's dedicated actor for serialized processing
-        processorScope.launch {
-            try {
-                actor.send(routed)
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to send packet to actor for ${formatPeerForLog(peerID)}: ${e.message}")
-                // Fallback to direct processing if actor fails
-                handleReceivedPacket(routed)
+
+        // BLE callbacks may arrive concurrently. Serialize actor creation with shutdown.
+        val actor = synchronized(actorsLock) {
+            if (isShutdown) {
+                Log.w(TAG, "Ignoring packet for $peerID after processor shutdown")
+                return
             }
+            actors.getOrPut(peerID) { getOrCreateActorForPeer(peerID) }
+        }
+
+        // Keep this channel unlimited until BLE has reliable application ACK/retry
+        // semantics. trySend avoids one producer coroutine per incoming packet.
+        val result = actor.trySend(routed)
+        if (result.isFailure) {
+            Log.w(TAG, "Packet for $peerID was not admitted: ${result.exceptionOrNull()?.message}")
         }
     }
     
@@ -259,17 +269,15 @@ class PacketProcessor(private val myPeerID: String) {
      * Get debug information
      */
     fun getDebugInfo(): String {
+        val peerIDs = synchronized(actorsLock) { actors.keys.toList() }
         return buildString {
             appendLine("=== Packet Processor Debug Info ===")
             appendLine("Processor Scope Active: ${processorScope.isActive}")
-            appendLine("Active Peer Actors: ${actors.size}")
+            appendLine("Active Peer Actors: ${peerIDs.size}")
             appendLine("My Peer ID: $myPeerID")
-            
-            if (actors.isNotEmpty()) {
+            if (peerIDs.isNotEmpty()) {
                 appendLine("Peer Actors:")
-                actors.keys.forEach { peerID ->
-                    appendLine("  - $peerID")
-                }
+                peerIDs.forEach { peerID -> appendLine("  - $peerID") }
             }
         }
     }
@@ -278,20 +286,15 @@ class PacketProcessor(private val myPeerID: String) {
      * Shutdown the processor and all peer actors
      */
     fun shutdown() {
-        Log.i(TAG, "Shutting down PacketProcessor and ${actors.size} peer actors")
-        
-        // Close all peer actors gracefully
-        actors.values.forEach { actor ->
-            actor.close()
+        val peerActors = synchronized(actorsLock) {
+            if (isShutdown) return
+            isShutdown = true
+            actors.values.toList().also { actors.clear() }
         }
-        actors.clear()
-        
-        // Shutdown the relay manager
+        Log.i(TAG, "Shutting down PacketProcessor and ${peerActors.size} peer actors")
+        peerActors.forEach { actor -> actor.close() }
         packetRelayManager.shutdown()
-        
-        // Cancel the main scope
         processorScope.cancel()
-        
         Log.i(TAG, "PacketProcessor shutdown complete")
     }
 }
