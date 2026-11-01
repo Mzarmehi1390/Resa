@@ -1,6 +1,9 @@
 package com.roman.zemzeme.mesh
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
@@ -163,4 +166,37 @@ class GattClientWriteDispatcherTest {
             outcome.await()
         )
     }
+
+    @Test
+    fun cancellingParentScopeFailsActiveAndQueuedRequests() = runBlocking {
+        val parentJob = Job()
+        val dispatcherScope = CoroutineScope(coroutineContext + parentJob)
+        val submitted = CompletableDeferred<Unit>()
+        val firstOutcome = CompletableDeferred<GattClientWriteDispatcher.Outcome>()
+        val secondOutcome = CompletableDeferred<GattClientWriteDispatcher.Outcome>()
+        val dispatcher = GattClientWriteDispatcher(
+            scope = dispatcherScope,
+            connectionGeneration = 26L,
+            adapter = object : GattClientWriteDispatcher.Adapter<String> {
+                override fun submit(key: String, payload: ByteArray): Boolean {
+                    submitted.complete(Unit)
+                    return true
+                }
+            },
+            callbackTimeoutMillis = 5_000L
+        )
+
+        dispatcher.enqueue("characteristic", byteArrayOf(1)) { firstOutcome.complete(it) }
+        dispatcher.enqueue("characteristic", byteArrayOf(2)) { secondOutcome.complete(it) }
+        submitted.await()
+        parentJob.cancel()
+
+        val expected = GattClientWriteDispatcher.Outcome.Failed(
+            GattClientWriteQueueState.FailureReason.SHUTDOWN
+        )
+        assertEquals(expected, withTimeout(1_000L) { firstOutcome.await() })
+        assertEquals(expected, withTimeout(1_000L) { secondOutcome.await() })
+        assertEquals(0, dispatcher.outstandingCount())
+    }
+
 }
