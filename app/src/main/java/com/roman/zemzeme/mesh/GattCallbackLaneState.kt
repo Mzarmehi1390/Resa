@@ -31,6 +31,7 @@ internal class GattCallbackLaneState<K : Any> {
 
     enum class FailureReason {
         CALLBACK_FAILURE,
+        SUBMISSION_REJECTED,
         TIMEOUT,
         DISCONNECTED,
         SHUTDOWN
@@ -84,6 +85,20 @@ internal class GattCallbackLaneState<K : Any> {
                 callbackStatus
             )
         }
+    }
+
+    /**
+     * Call when notifyCharacteristicChanged rejects the operation synchronously.
+     * No callback should be awaited for a request the platform did not accept.
+     */
+    @Synchronized
+    fun onSubmissionRejected(operationId: Long): Event {
+        val current = active ?: return Event.Ignored
+        if (current.operationId != operationId) return Event.Ignored
+
+        active = null
+        status = LaneStatus.READY
+        return Event.Failed(operationId, FailureReason.SUBMISSION_REJECTED)
     }
 
     /**
