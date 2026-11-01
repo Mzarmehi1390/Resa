@@ -44,6 +44,7 @@ class GattServerNotificationDispatcherTest {
         val second = async { dispatcher.send("peer-b", byteArrayOf(2)) }
         delay(20)
         assertEquals(1, adapter.submissions.size)
+        assertFalse(first.isCompleted)
 
         val generation = dispatcher.currentServerGeneration()
         dispatcher.onNotificationSent("peer-a", 0, 0, generation)
@@ -153,6 +154,25 @@ class GattServerNotificationDispatcherTest {
         )
         assertEquals(expected, first.await())
         assertEquals(expected, second.await())
+        scope.cancel()
+    }
+
+    @Test
+    fun cancellingCallerDoesNotCancelAdmittedNotification() = runBlocking {
+        val adapter = FakeAdapter()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter)
+        val caller = async { dispatcher.send("peer-a", byteArrayOf(3)) }
+        awaitSubmissions(adapter, 1)
+        caller.cancel()
+        delay(20)
+
+        dispatcher.onNotificationSent("peer-a", 0, 0, dispatcher.currentServerGeneration())
+        val next = async { dispatcher.send("peer-b", byteArrayOf(4)) }
+        awaitSubmissions(adapter, 2)
+        dispatcher.onNotificationSent("peer-b", 0, 0, dispatcher.currentServerGeneration())
+        assertEquals(GattServerNotificationDispatcher.Outcome.Sent, next.await())
+        dispatcher.shutdown()
         scope.cancel()
     }
 
