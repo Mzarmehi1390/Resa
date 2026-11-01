@@ -113,6 +113,19 @@ class VerificationHandler(
             return
         }
         if (pending.sent) return
+
+        // A peer ID can be reused or rebound after a disconnect. Never send a
+        // pending challenge to a connection whose Noise identity differs from
+        // the identity encoded in the scanned QR.
+        val currentNoiseKey = meshService.getPeerInfo(peerID)?.noisePublicKey
+            ?.hexEncodedString()
+            ?.lowercase()
+            ?: return
+        if (!currentNoiseKey.equals(pending.noiseKeyHex, ignoreCase = true)) {
+            pendingQRVerifications.remove(peerID, pending)
+            return
+        }
+
         meshService.sendVerifyChallenge(peerID, pending.noiseKeyHex, pending.nonceA)
         pendingQRVerifications.replace(peerID, pending, pending.copy(sent = true))
     }
@@ -155,6 +168,18 @@ class VerificationHandler(
                 return@launch
             }
             if (!pending.sent) return@launch
+
+            // Bind the response to the currently connected Noise identity as
+            // well as to the scanned QR and nonce. This prevents a stale
+            // pending request from being completed by a rebound peer ID.
+            val currentNoiseKey = meshService.getPeerInfo(peerID)?.noisePublicKey
+                ?.hexEncodedString()
+                ?.lowercase()
+                ?: return@launch
+            if (!currentNoiseKey.equals(pending.noiseKeyHex, ignoreCase = true)) {
+                pendingQRVerifications.remove(peerID, pending)
+                return@launch
+            }
             if (!resp.noiseKeyHex.equals(pending.noiseKeyHex, ignoreCase = true)) return@launch
             if (!resp.nonceA.contentEquals(pending.nonceA)) return@launch
 
