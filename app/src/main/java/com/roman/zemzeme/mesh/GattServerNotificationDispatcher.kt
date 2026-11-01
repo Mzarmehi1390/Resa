@@ -40,17 +40,19 @@ internal class GattServerNotificationDispatcher<K : Any>(
     private data class Request<K : Any>(
         val key: K,
         val payload: ByteArray,
-        val result: CompletableDeferred<Outcome>
+        val result: CompletableDeferred<Outcome>,
+        val onComplete: ((Outcome) -> Unit)? = null
     )
 
-    private data class Active(
+    private data class Active<K : Any>(
         val operationId: Long,
-        val callbackResult: CompletableDeferred<Outcome>
+        val callbackResult: CompletableDeferred<Outcome>,
+        val request: Request<K>
     )
 
     private val lock = Any()
     private val requests = Channel<Request<K>>(Channel.UNLIMITED)
-    private var active: Active? = null
+    private var active: Active<K>? = null
     private var closed = false
 
     private val worker = scope.launch {
@@ -62,7 +64,8 @@ internal class GattServerNotificationDispatcher<K : Any>(
             closeFromWorker()
             while (true) {
                 val pending = requests.tryReceive().getOrNull() ?: break
-                pending.result.complete(
+                completeRequest(
+                    pending,
                     Outcome.Failed(GattCallbackLaneState.FailureReason.SHUTDOWN)
                 )
             }
@@ -73,11 +76,15 @@ internal class GattServerNotificationDispatcher<K : Any>(
      * Non-suspending admission for legacy synchronous routing APIs.
      * True means queued locally, not delivered to the remote peer.
      */
-    fun enqueue(key: K, payload: ByteArray): Boolean {
+    fun enqueue(
+        key: K,
+        payload: ByteArray,
+        onComplete: ((Outcome) -> Unit)? = null
+    ): Boolean {
         synchronized(lock) {
             if (closed) return false
             val result = CompletableDeferred<Outcome>()
-            return requests.trySend(Request(key, payload.copyOf(), result)).isSuccess
+            return requests.trySend(Request(key, payload.copyOf(), result, onComplete)).isSuccess
         }
     }
 
@@ -149,9 +156,11 @@ internal class GattServerNotificationDispatcher<K : Any>(
             if (closed) return
             closed = true
             lane.close()
-            active?.callbackResult?.complete(
-                Outcome.Failed(GattCallbackLaneState.FailureReason.SHUTDOWN)
-            )
+            active?.let {
+                val outcome = Outcome.Failed(GattCallbackLaneState.FailureReason.SHUTDOWN)
+                it.callbackResult.complete(outcome)
+                completeRequest(it.request, outcome)
+            }
             active = null
         }
         requests.close()
@@ -160,16 +169,25 @@ internal class GattServerNotificationDispatcher<K : Any>(
     private suspend fun process(request: Request<K>) {
         val callbackResult = CompletableDeferred<Outcome>()
         val started = synchronized(lock) {
-            if (closed) return request.result.completeShutdown()
+            if (closed) return completeRequest(
+                request,
+                Outcome.Failed(GattCallbackLaneState.FailureReason.SHUTDOWN)
+            )
             when (val event = lane.begin(request.key, lane.currentServerGeneration())) {
                 is GattCallbackLaneState.Event.Started -> {
-                    active = Active(event.operationId, callbackResult)
+                    active = Active(event.operationId, callbackResult, request)
                     event
                 }
                 GattCallbackLaneState.Event.Closed ->
-                    return request.result.completeFailure(GattCallbackLaneState.FailureReason.SHUTDOWN)
+                    return completeRequest(
+                        request,
+                        Outcome.Failed(GattCallbackLaneState.FailureReason.SHUTDOWN)
+                    )
                 else ->
-                    return request.result.completeFailure(GattCallbackLaneState.FailureReason.SUBMISSION_REJECTED)
+                    return completeRequest(
+                        request,
+                        Outcome.Failed(GattCallbackLaneState.FailureReason.SUBMISSION_REJECTED)
+                    )
             }
         } as GattCallbackLaneState.Event.Started
 
@@ -188,7 +206,8 @@ internal class GattServerNotificationDispatcher<K : Any>(
                     active = null
                 }
             }
-            request.result.complete(
+            completeRequest(
+                request,
                 Outcome.Failed(GattCallbackLaneState.FailureReason.SUBMISSION_REJECTED)
             )
             return
@@ -205,7 +224,7 @@ internal class GattServerNotificationDispatcher<K : Any>(
                 Outcome.Failed(GattCallbackLaneState.FailureReason.TIMEOUT)
             }
         }
-        request.result.complete(callbackOutcome)
+        completeRequest(request, callbackOutcome)
     }
 
     private fun closeFromWorker() {
@@ -213,21 +232,19 @@ internal class GattServerNotificationDispatcher<K : Any>(
             if (closed) return
             closed = true
             lane.close()
-            active?.callbackResult?.complete(
-                Outcome.Failed(GattCallbackLaneState.FailureReason.SHUTDOWN)
-            )
+            active?.let {
+                val outcome = Outcome.Failed(GattCallbackLaneState.FailureReason.SHUTDOWN)
+                it.callbackResult.complete(outcome)
+                completeRequest(it.request, outcome)
+            }
             active = null
         }
         requests.close()
     }
 
-    private fun CompletableDeferred<Outcome>.completeShutdown() {
-        complete(Outcome.Failed(GattCallbackLaneState.FailureReason.SHUTDOWN))
-    }
-
-    private fun CompletableDeferred<Outcome>.completeFailure(
-        reason: GattCallbackLaneState.FailureReason
-    ) {
-        complete(Outcome.Failed(reason))
+    private fun completeRequest(request: Request<K>, outcome: Outcome) {
+        if (request.result.complete(outcome)) {
+            runCatching { request.onComplete?.invoke(outcome) }
+        }
     }
 }
