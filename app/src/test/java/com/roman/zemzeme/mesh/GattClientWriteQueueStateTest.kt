@@ -146,4 +146,33 @@ class GattClientWriteQueueStateTest {
         assertEquals(GattClientWriteQueueState.Completion.Ignored, queue.onWriteCallback("gatt-a", 0, 0, 11L))
         assertEquals(1L, first.id)
     }
+    @Test
+    fun timeoutFailsActiveAndQueuedRequestsAndClosesQueue() {
+        val queue = GattClientWriteQueueState<String>(12L, maxOutstandingWrites = 3)
+        queue.enqueue("gatt-a", byteArrayOf(1), 12L)
+        queue.enqueue("gatt-a", byteArrayOf(2), 12L)
+        queue.takeNext(12L)
+
+        val failed = queue.onTimeout(12L)
+        assertEquals(2, failed.size)
+        assertTrue(failed.all {
+            it is GattClientWriteQueueState.Completion.Failed &&
+                it.reason == GattClientWriteQueueState.FailureReason.TIMEOUT
+        })
+        assertTrue(queue.isClosed())
+        assertEquals(GattClientWriteQueueState.Admission.Closed, queue.enqueue("gatt-a", byteArrayOf(3), 12L))
+        assertTrue(queue.onTimeout(12L).isEmpty())
+    }
+
+    @Test
+    fun staleTimeoutDoesNotCloseQueue() {
+        val queue = GattClientWriteQueueState<String>(13L, maxOutstandingWrites = 2)
+        queue.enqueue("gatt-a", byteArrayOf(1), 13L)
+        queue.takeNext(13L)
+
+        assertTrue(queue.onTimeout(12L).isEmpty())
+        assertFalse(queue.isClosed())
+        assertEquals(1, queue.outstandingCount())
+    }
+
 }
