@@ -209,7 +209,30 @@ class ArtiTorManager private constructor() {
                     }
 
                     TorMode.ON -> {
-                        Log.i(TAG, "applyMode: ON -> starting arti")
+                        Log.i(TAG, "applyMode: ON -> verifying P2P is stopped before starting arti")
+                        val p2pStopResult = com.roman.zemzeme.p2p.P2PTransport
+                            .getInstance(application)
+                            .stop()
+                        val p2pStatus = com.roman.zemzeme.p2p.P2PTransport
+                            .getInstance(application)
+                            .p2pRepository.nodeStatus.value
+                        if (p2pStopResult.isFailure || p2pStatus != com.roman.zemzeme.p2p.P2PNodeStatus.STOPPED) {
+                            val failure = p2pStopResult.exceptionOrNull()
+                                ?: IllegalStateException("P2P node did not reach STOPPED state")
+                            lifecycleState = LifecycleState.STOPPED
+                            socksAddr = null
+                            _statusFlow.value = _statusFlow.value.copy(
+                                mode = TorMode.ON,
+                                running = false,
+                                bootstrapPercent = 0,
+                                state = TorState.ERROR,
+                                lastLogLine = "Tor blocked: P2P could not be stopped"
+                            )
+                            Log.e(TAG, "Refusing to start Tor because P2P did not stop cleanly", failure)
+                            return@withLock
+                        }
+
+                        Log.i(TAG, "P2P is stopped; proceeding with Arti startup")
                         if (currentSocksPort < DEFAULT_SOCKS_PORT) {
                             currentSocksPort = DEFAULT_SOCKS_PORT
                         }
