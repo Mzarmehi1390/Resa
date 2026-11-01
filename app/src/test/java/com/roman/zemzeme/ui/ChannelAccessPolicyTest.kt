@@ -7,6 +7,22 @@ import org.junit.Test
 class ChannelAccessPolicyTest {
 
     @Test
+    fun orphanedCommitmentStillMarksChannelAsProtected() {
+        assertTrue(ChannelAccessPolicy.isPasswordProtected(
+            markerPresent = false,
+            commitmentPresent = true
+        ))
+    }
+
+    @Test
+    fun missingMarkerAndCommitmentMeansChannelIsOpen() {
+        assertFalse(ChannelAccessPolicy.isPasswordProtected(
+            markerPresent = false,
+            commitmentPresent = false
+        ))
+    }
+
+    @Test
     fun protectedChannelRequiresVerificationWhenSessionKeyIsMissing() {
         assertTrue(ChannelAccessPolicy.requiresPasswordVerification(
             passwordProtected = true,
