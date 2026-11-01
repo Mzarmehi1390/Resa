@@ -177,6 +177,29 @@ class GattServerNotificationDispatcherTest {
     }
 
     @Test
+    fun enqueueAdmitsWithoutClaimingRemoteDelivery() = runBlocking {
+        val adapter = FakeAdapter()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter)
+
+        assertTrue(dispatcher.enqueue("peer-a", byteArrayOf(5)))
+        awaitSubmissions(adapter, 1)
+        dispatcher.shutdown()
+        scope.cancel()
+    }
+
+    @Test
+    fun enqueueRejectsAfterShutdown() = runBlocking {
+        val adapter = FakeAdapter()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter)
+        dispatcher.shutdown()
+
+        assertFalse(dispatcher.enqueue("peer-a", byteArrayOf(5)))
+        scope.cancel()
+    }
+
+    @Test
     fun payloadIsCopiedBeforeItIsQueued() = runBlocking {
         val adapter = FakeAdapter()
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
