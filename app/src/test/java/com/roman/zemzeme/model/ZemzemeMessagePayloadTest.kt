@@ -99,4 +99,53 @@ class ZemzemeMessagePayloadTest {
         assertEquals(null, ZemzemeMessage.fromBinaryPayload(encoded.copyOf(encoded.size - 1)))
     }
 
+    @Test
+    fun encoderRejectsFieldsThatWouldPreviouslyBeTruncated() {
+        val oversizedId = ZemzemeMessage(
+            id = "x".repeat(256),
+            sender = "peer-a",
+            content = "hello",
+            timestamp = Date(1_700_000_000_000L)
+        )
+        assertEquals(null, oversizedId.toBinaryPayload())
+
+        val oversizedUtf8Sender = ZemzemeMessage(
+            sender = "م".repeat(128),
+            content = "hello",
+            timestamp = Date(1_700_000_000_000L)
+        )
+        assertEquals(null, oversizedUtf8Sender.toBinaryPayload())
+
+        val tooManyMentions = ZemzemeMessage(
+            sender = "peer-a",
+            content = "hello",
+            timestamp = Date(1_700_000_000_000L),
+            mentions = (0..255).map { "peer-$it" }
+        )
+        assertEquals(null, tooManyMentions.toBinaryPayload())
+    }
+
+    @Test
+    fun encoderRejectsPayloadLargerThanWireLimit() {
+        val oversized = ZemzemeMessage(
+            sender = "peer-a",
+            content = "x".repeat(4090),
+            timestamp = Date(1_700_000_000_000L),
+            channel = "#general"
+        )
+        assertEquals(null, oversized.toBinaryPayload())
+    }
+
+    @Test
+    fun encoderRejectsEncryptedMessageWithoutCiphertext() {
+        val invalid = ZemzemeMessage(
+            sender = "peer-a",
+            content = "",
+            timestamp = Date(1_700_000_000_000L),
+            isEncrypted = true,
+            encryptedContent = null
+        )
+        assertEquals(null, invalid.toBinaryPayload())
+    }
+
 }
