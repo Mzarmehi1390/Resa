@@ -521,7 +521,22 @@ class BluetoothGattClientManager(
                 descriptor: BluetoothGattDescriptor,
                 status: Int
             ) {
-                if (descriptor.uuid != AppConstants.Mesh.Gatt.DESCRIPTOR_UUID) return
+                val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
+                if (!GattClientCallbackValidation.isCurrentConnection(gatt, trackedGatt)) {
+                    Log.w(TAG, "Client: Ignoring stale descriptor callback for $deviceAddress")
+                    return
+                }
+
+                val isExpectedDescriptor = GattClientCallbackValidation.isExpectedCccdDescriptor(
+                    descriptor.uuid,
+                    descriptor.characteristic.uuid,
+                    AppConstants.Mesh.Gatt.DESCRIPTOR_UUID,
+                    AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID
+                )
+                if (!isExpectedDescriptor) {
+                    Log.w(TAG, "Client: Ignoring unexpected descriptor callback for $deviceAddress")
+                    return
+                }
 
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     Log.i(TAG, "Client: CCCD subscription confirmed for $deviceAddress")
