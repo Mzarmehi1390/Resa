@@ -17,6 +17,20 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
+internal fun validateGattCharacteristicWrite(
+    actualUuid: UUID,
+    expectedUuid: UUID,
+    preparedWrite: Boolean,
+    offset: Int
+): Int {
+    return when {
+        actualUuid != expectedUuid -> BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED
+        preparedWrite -> BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED
+        offset != 0 -> BluetoothGatt.GATT_INVALID_OFFSET
+        else -> BluetoothGatt.GATT_SUCCESS
+    }
+}
+
 /**
  * Manages GATT server operations, advertising, and server-side connections
  */
@@ -350,26 +364,46 @@ class BluetoothGattServerManager(
                 offset: Int,
                 value: ByteArray
             ) {
+                val requestServer = callbackServer.get()
                 if (!isCurrentServerGeneration(setupGeneration)) {
-                    Log.d(TAG, "Server: Ignoring stale characteristic write")
+                    Log.d(TAG, "Server: Rejecting stale characteristic write")
+                    if (responseNeeded) {
+                        requestServer?.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null)
+                    }
                     return
                 }
-                
-                if (characteristic.uuid == AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID) {
-                    Log.i(TAG, "Server: Received packet from ${device.address}, size: ${value.size} bytes")
-                    val packet = ZemzemePacket.fromBinaryData(value)
-                    if (packet != null) {
-                        val peerID = packet.senderID.take(8).toByteArray().joinToString("") { "%02x".format(it) }
-                        Log.d(TAG, "Server: Parsed packet type ${packet.type} from $peerID")
-                        delegate?.onPacketReceived(packet, peerID, device)
-                    } else {
-                        Log.w(TAG, "Server: Failed to parse packet from ${device.address}, size: ${value.size} bytes")
-                        Log.w(TAG, "Server: Packet data: ${value.joinToString(" ") { "%02x".format(it) }}")
-                    }
-                    
+
+                val validationStatus = validateGattCharacteristicWrite(
+                    characteristic.uuid,
+                    AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID,
+                    preparedWrite,
+                    offset
+                )
+                if (validationStatus != BluetoothGatt.GATT_SUCCESS) {
+                    Log.w(
+                        TAG,
+                        "Server: Rejecting unsupported characteristic write from ${device.address} " +
+                            "(preparedWrite=$preparedWrite, offset=$offset, uuid=${characteristic.uuid})"
+                    )
                     if (responseNeeded) {
-                        gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
+                        requestServer?.sendResponse(device, requestId, validationStatus, 0, null)
                     }
+                    return
+                }
+
+                Log.i(TAG, "Server: Received packet from ${device.address}, size: ${value.size} bytes")
+                val packet = ZemzemePacket.fromBinaryData(value)
+                if (packet != null) {
+                    val peerID = packet.senderID.take(8).toByteArray().joinToString("") { "%02x".format(it) }
+                    Log.d(TAG, "Server: Parsed packet type ${packet.type} from $peerID")
+                    delegate?.onPacketReceived(packet, peerID, device)
+                } else {
+                    Log.w(TAG, "Server: Failed to parse packet from ${device.address}, size: ${value.size} bytes")
+                    Log.w(TAG, "Server: Packet data: ${value.joinToString(" ") { "%02x".format(it) }}")
+                }
+
+                if (responseNeeded) {
+                    requestServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
                 }
             }
             
