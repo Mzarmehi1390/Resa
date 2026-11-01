@@ -6,6 +6,9 @@ internal object GattClientCallbackValidation {
     fun isCurrentConnection(callbackGatt: Any, trackedGatt: Any?): Boolean =
         callbackGatt === trackedGatt
 
+    fun isStaleConnection(callbackGatt: Any, trackedGatt: Any?): Boolean =
+        trackedGatt != null && callbackGatt !== trackedGatt
+
     fun isExpectedCccdDescriptor(
         descriptorUuid: UUID,
         characteristicUuid: UUID,
