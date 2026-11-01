@@ -231,9 +231,9 @@ class MessageManager(private val state: ChatState) {
         is DeliveryStatus.Sending -> 1
         is DeliveryStatus.Sent -> 2
         is DeliveryStatus.PartiallyDelivered -> 3
-        is DeliveryStatus.Delivered -> 4
-        is DeliveryStatus.Read -> 5
-        is DeliveryStatus.Failed -> 0 // treat as lowest for UI check marks ordering
+        is DeliveryStatus.Failed -> 4
+        is DeliveryStatus.Delivered -> 5
+        is DeliveryStatus.Read -> 6
     }
 
     private fun chooseStatus(old: DeliveryStatus?, new: DeliveryStatus): DeliveryStatus? {
