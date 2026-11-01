@@ -5,6 +5,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
@@ -223,6 +224,55 @@ class GattClientWriteDispatcherTest {
             withTimeout(1_000L) { outcome.await() }
         )
         assertEquals(0, dispatcher.outstandingCount())
+    }
+
+    @Test
+    fun enqueueAndAwaitReturnsOnlyAfterMatchingCallback() = runBlocking {
+        val submitted = CompletableDeferred<Unit>()
+        val dispatcher = GattClientWriteDispatcher(
+            scope = this,
+            connectionGeneration = 28L,
+            adapter = object : GattClientWriteDispatcher.Adapter<String> {
+                override fun submit(key: String, payload: ByteArray): Boolean {
+                    submitted.complete(Unit)
+                    return true
+                }
+            },
+            callbackTimeoutMillis = 1_000L
+        )
+
+        val result = async { dispatcher.enqueueAndAwait("characteristic", byteArrayOf(7)) }
+        submitted.await()
+        assertFalse(result.isCompleted)
+        dispatcher.onWriteCallback("characteristic", 0, 0, 28L)
+        assertEquals(GattClientWriteDispatcher.Outcome.Sent, result.await())
+        dispatcher.shutdown()
+    }
+
+    @Test
+    fun enqueueAndAwaitReturnsNullWhenQueueAdmissionIsRejected() = runBlocking {
+        val submitted = CompletableDeferred<Unit>()
+        val dispatcher = GattClientWriteDispatcher(
+            scope = this,
+            connectionGeneration = 29L,
+            adapter = object : GattClientWriteDispatcher.Adapter<String> {
+                override fun submit(key: String, payload: ByteArray): Boolean {
+                    submitted.complete(Unit)
+                    return true
+                }
+            },
+            maxOutstandingWrites = 1,
+            callbackTimeoutMillis = 1_000L
+        )
+
+        val active = async { dispatcher.enqueueAndAwait("characteristic", byteArrayOf(1)) }
+        submitted.await()
+        assertEquals(null, dispatcher.enqueueAndAwait("characteristic", byteArrayOf(2)))
+        dispatcher.onDisconnected(29L)
+        assertEquals(
+            GattClientWriteDispatcher.Outcome.Failed(GattClientWriteQueueState.FailureReason.DISCONNECTED),
+            active.await()
+        )
     }
 
 }
