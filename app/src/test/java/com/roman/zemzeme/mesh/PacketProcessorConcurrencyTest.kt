@@ -1,8 +1,9 @@
+package com.roman.zemzeme.mesh
+
 import android.os.Build
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-package com.roman.zemzeme.mesh
 
 import com.roman.zemzeme.model.RoutedPacket
 import com.roman.zemzeme.protocol.MessageType
