@@ -305,6 +305,11 @@ class MediaSendingManager(
         filePath: String,
         messageType: ZemzemeMessageType
     ) {
+        if (!channelOrNull.isNullOrBlank() && !channelManager.canSendPlaintextToChannel(channelOrNull)) {
+            Log.w(TAG, "Blocked media send to protected channel before E2E transport is available")
+            return
+        }
+
         val payload = filePacket.encode()
         if (payload == null) {
             Log.e(TAG, "❌ Failed to encode file packet for broadcast send")
