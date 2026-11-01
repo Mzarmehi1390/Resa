@@ -114,10 +114,26 @@ object RelayDirectory {
         return R * c
     }
 
-    private fun normalizeRelayUrl(raw: String): String {
+    internal fun normalizeRelayUrl(raw: String): String? {
         val trimmed = raw.trim()
-        if (trimmed.isEmpty()) return trimmed
-        return if ("://" in trimmed) trimmed else "wss://$trimmed"
+        if (trimmed.isEmpty() || trimmed.any { it.isWhitespace() }) return null
+
+        val candidate = if ("://" in trimmed) trimmed else "wss://$trimmed"
+        return try {
+            val uri = java.net.URI(candidate)
+            if (!uri.scheme.equals("wss", ignoreCase = true) ||
+                uri.host.isNullOrBlank() ||
+                uri.rawUserInfo != null ||
+                uri.rawFragment != null ||
+                uri.port !in -1..65535
+            ) {
+                null
+            } else {
+                uri.toASCIIString()
+            }
+        } catch (_: java.net.URISyntaxException) {
+            null
+        }
     }
 
     // ===== Implementation details =====
@@ -267,10 +283,10 @@ object RelayDirectory {
                 if (trimmed.lowercase().startsWith("relay url")) continue
                 val parts = trimmed.split(",")
                 if (parts.size < 3) continue
-                val url = normalizeRelayUrl(parts[0].trim())
+                val url = normalizeRelayUrl(parts[0].trim()) ?: continue
                 val lat = parts[1].trim().toDoubleOrNull()
                 val lon = parts[2].trim().toDoubleOrNull()
-                if (url.isEmpty() || lat == null || lon == null) continue
+                if (lat == null || lon == null) continue
                 result.add(RelayInfo(url = url, latitude = lat, longitude = lon))
             }
         }
