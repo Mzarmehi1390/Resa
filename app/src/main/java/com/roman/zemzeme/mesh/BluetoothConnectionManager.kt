@@ -91,6 +91,9 @@ class BluetoothConnectionManager(
         },
         clientWriteEnqueuer = { deviceAddress, payload ->
             clientManager.enqueueClientWrite(deviceAddress, payload)
+        },
+        clientWriteAwaiter = { deviceAddress, payload ->
+            clientManager.awaitClientWrite(deviceAddress, payload)
         }
     )
     
