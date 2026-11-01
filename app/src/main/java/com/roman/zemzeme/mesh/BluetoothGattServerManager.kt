@@ -198,8 +198,19 @@ class BluetoothGattServerManager(
         return isActive && lifecycleGeneration.get() == generation
     }
 
+    private fun markSetupFailed(setupGeneration: Long) {
+        synchronized(serverLifecycleLock) {
+            if (lifecycleGeneration.get() == setupGeneration) {
+                isActive = false
+            }
+        }
+    }
+
     private fun setupGattServer(setupGeneration: Long) {
-        if (!permissionManager.hasBluetoothPermissions()) return
+        if (!permissionManager.hasBluetoothPermissions()) {
+            markSetupFailed(setupGeneration)
+            return
+        }
         if (!isCurrentServerGeneration(setupGeneration)) return
 
         val callbackServer = AtomicReference<BluetoothGattServer?>()
@@ -379,11 +390,13 @@ class BluetoothGattServerManager(
             bluetoothManager.openGattServer(context, serverCallback)
         } catch (e: Exception) {
             dispatcher.shutdown()
+            markSetupFailed(setupGeneration)
             Log.e(TAG, "Failed to open GATT server: ${e.message}", e)
             return
         }
         if (openedServer == null) {
             dispatcher.shutdown()
+            markSetupFailed(setupGeneration)
             Log.e(TAG, "Failed to open GATT server")
             return
         }
@@ -431,6 +444,7 @@ class BluetoothGattServerManager(
                     notificationDispatcher = null
                     gattServer = null
                     characteristic = null
+                    isActive = false
                 }
                 serviceAccepted
             }
