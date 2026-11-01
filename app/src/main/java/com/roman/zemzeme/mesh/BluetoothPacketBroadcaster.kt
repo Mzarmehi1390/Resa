@@ -11,6 +11,7 @@ import com.roman.zemzeme.model.RoutedPacket
 import com.roman.zemzeme.protocol.MessageType
 import com.roman.zemzeme.util.toHexString
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -185,7 +186,7 @@ class BluetoothPacketBroadcaster(
                 if (transferId != null) {
                     TransferProgressManager.start(transferId, fragments.size)
                 }
-                val job = connectionScope.launch {
+                val job = connectionScope.launch(start = CoroutineStart.LAZY) {
                     var sent = 0
                     fragments.forEach { fragment ->
                         if (!isActive) return@launch
@@ -216,7 +217,9 @@ class BluetoothPacketBroadcaster(
                 }
                 if (transferId != null) {
                     transferJobs[transferId] = job
-                    job.invokeOnCompletion { transferJobs.remove(transferId) }
+                    job.invokeOnCompletion { transferJobs.remove(transferId, job) }
+                    // Register before execution so an immediate cancel request can find the job.
+                    job.start()
                 }
                 return
             }
