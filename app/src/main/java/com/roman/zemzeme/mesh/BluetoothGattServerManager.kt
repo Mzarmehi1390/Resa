@@ -128,6 +128,11 @@ class BluetoothGattServerManager(
                 val servers = connectionTracker.getConnectedDevices().values.filter { !it.isClient }
                 servers.forEach { connection ->
                     try { server?.cancelConnection(connection.device) } catch (_: Exception) { }
+                    connectionTracker.cleanupDeviceConnection(connection.device.address)
+                }
+                connectionTracker.getSubscribedDevices().forEach { device ->
+                    connectionTracker.removeSubscribedDevice(device)
+                    connectionTracker.addressPeerMap.remove(device.address)
                 }
             } catch (_: Exception) { }
 
