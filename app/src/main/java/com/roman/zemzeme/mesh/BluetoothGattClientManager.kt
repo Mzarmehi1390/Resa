@@ -711,7 +711,11 @@ class BluetoothGattClientManager(
      * bounded local queue; completion is reported only by Android's matching
      * onCharacteristicWrite callback and is not remote application delivery.
      */
-    fun enqueueClientWrite(deviceAddress: String, payload: ByteArray): Boolean {
+    fun enqueueClientWrite(
+        deviceAddress: String,
+        payload: ByteArray,
+        onComplete: ((Boolean) -> Unit)? = null
+    ): Boolean {
         val session = clientWriteSessions[deviceAddress] ?: return false
         val tracked = connectionTracker.getDeviceConnection(deviceAddress) ?: return false
         if (tracked.gatt !== session.gatt || activeConnectionGenerations[deviceAddress] != session.generation) {
@@ -720,7 +724,9 @@ class BluetoothGattClientManager(
         return session.dispatcher.enqueue(
             AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID,
             payload.copyOf()
-        ) is GattClientWriteQueueState.Admission.Accepted
+        ) { outcome ->
+            onComplete?.invoke(outcome is GattClientWriteDispatcher.Outcome.Sent)
+        } is GattClientWriteQueueState.Admission.Accepted
     }
 
     /** Wait for local GATT callback completion on the current exact connection. */
