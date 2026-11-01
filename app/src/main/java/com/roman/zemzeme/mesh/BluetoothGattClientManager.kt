@@ -481,16 +481,22 @@ class BluetoothGattClientManager(
                                 Log.d(TAG, "Client: Updated device connection with characteristic for $deviceAddress")
                             }
                             
-                            gatt.setCharacteristicNotification(characteristic, true)
+                            val notificationsEnabled = gatt.setCharacteristicNotification(characteristic, true)
+                            if (!notificationsEnabled) {
+                                Log.e(TAG, "Client: Could not enable local notifications for $deviceAddress")
+                                gatt.disconnect()
+                                return
+                            }
+
                             val descriptor = characteristic.getDescriptor(AppConstants.Mesh.Gatt.DESCRIPTOR_UUID)
                             if (descriptor != null) {
                                 descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                                gatt.writeDescriptor(descriptor)
-                                
-                                connectionScope.launch {
-                                    delay(200)
-                                    Log.i(TAG, "Client: Connection setup complete for $deviceAddress")
-                                    delegate?.onDeviceConnected(device)
+                                val descriptorWriteStarted = gatt.writeDescriptor(descriptor)
+                                if (!descriptorWriteStarted) {
+                                    Log.e(TAG, "Client: CCCD descriptor write was rejected for $deviceAddress")
+                                    gatt.disconnect()
+                                } else {
+                                    Log.d(TAG, "Client: Waiting for CCCD write confirmation from $deviceAddress")
                                 }
                             } else {
                                 Log.e(TAG, "Client: CCCD descriptor not found for $deviceAddress")
@@ -510,6 +516,22 @@ class BluetoothGattClientManager(
                 }
             }
             
+            override fun onDescriptorWrite(
+                gatt: BluetoothGatt,
+                descriptor: BluetoothGattDescriptor,
+                status: Int
+            ) {
+                if (descriptor.uuid != AppConstants.Mesh.Gatt.DESCRIPTOR_UUID) return
+
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    Log.i(TAG, "Client: CCCD subscription confirmed for $deviceAddress")
+                    delegate?.onDeviceConnected(device)
+                } else {
+                    Log.e(TAG, "Client: CCCD subscription failed for $deviceAddress with status $status")
+                    gatt.disconnect()
+                }
+            }
+
             override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
                 val value = characteristic.value
                 Log.i(TAG, "Client: Received packet from ${gatt.device.address}, size: ${value.size} bytes")
