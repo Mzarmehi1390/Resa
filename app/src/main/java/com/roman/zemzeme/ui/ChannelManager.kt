@@ -11,6 +11,15 @@ import com.roman.zemzeme.util.DebugLogger
 import java.util.*
 
 /**
+ * Protected channels require a key in the current process before access is granted.
+ * Being the locally recorded creator is not proof that the key is available after restart.
+ */
+internal object ChannelAccessPolicy {
+    fun requiresPasswordVerification(passwordProtected: Boolean, hasSessionKey: Boolean): Boolean =
+        passwordProtected && !hasSessionKey
+}
+
+/**
  * Handles channel management including creation, joining, leaving, and encryption
  */
 class ChannelManager(
@@ -33,7 +42,10 @@ class ChannelManager(
         
         // Check if already joined
         if (state.getJoinedChannelsValue().contains(channelTag)) {
-            if (state.getPasswordProtectedChannelsValue().contains(channelTag) && !channelKeys.containsKey(channelTag)) {
+            if (ChannelAccessPolicy.requiresPasswordVerification(
+                    state.getPasswordProtectedChannelsValue().contains(channelTag),
+                    channelKeys.containsKey(channelTag)
+                )) {
                 // Need password verification
                 if (password != null) {
                     return verifyChannelPassword(channelTag, password)
@@ -48,10 +60,12 @@ class ChannelManager(
         }
         
         // If password protected and no key yet
-        if (state.getPasswordProtectedChannelsValue().contains(channelTag) && !channelKeys.containsKey(channelTag)) {
-            if (dataManager.isChannelCreator(channelTag, myPeerID)) {
-                // Channel creator bypass
-            } else if (password != null) {
+        if (ChannelAccessPolicy.requiresPasswordVerification(
+                state.getPasswordProtectedChannelsValue().contains(channelTag),
+                channelKeys.containsKey(channelTag)
+            )) {
+            // Creator status is local metadata, not proof of possession of the channel key.
+            if (password != null) {
                 if (!verifyChannelPassword(channelTag, password)) {
                     return false
                 }
