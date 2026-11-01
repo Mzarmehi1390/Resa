@@ -189,6 +189,23 @@ class GattServerNotificationDispatcherTest {
     }
 
     @Test
+    fun enqueueCompletionReportsOnlyAfterPlatformCallback() = runBlocking {
+        val adapter = FakeAdapter()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter)
+        val completion = CompletableDeferred<GattServerNotificationDispatcher.Outcome>()
+
+        assertTrue(dispatcher.enqueue("peer-a", byteArrayOf(6)) { completion.complete(it) })
+        awaitSubmissions(adapter, 1)
+        assertFalse(completion.isCompleted)
+
+        dispatcher.onNotificationSent("peer-a", 0, 0, dispatcher.currentServerGeneration())
+        assertEquals(GattServerNotificationDispatcher.Outcome.Sent, completion.await())
+        dispatcher.shutdown()
+        scope.cancel()
+    }
+
+    @Test
     fun enqueueRejectsAfterShutdown() = runBlocking {
         val adapter = FakeAdapter()
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
