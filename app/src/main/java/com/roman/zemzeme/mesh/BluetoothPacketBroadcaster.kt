@@ -50,7 +50,8 @@ class BluetoothPacketBroadcaster(
         ByteArray,
         BluetoothGattServer,
         (Boolean) -> Unit
-    ) -> Boolean
+    ) -> Boolean,
+    private val clientWriteEnqueuer: (String, ByteArray) -> Boolean
 ) {
     
     companion object {
@@ -579,17 +580,14 @@ class BluetoothPacketBroadcaster(
         data: ByteArray
     ): Boolean {
         return try {
-            deviceConn.characteristic?.let { char ->
-                char.value = data
-                // WRITE_TYPE_NO_RESPONSE avoids requiring an ATT Write Response from
-                // the peer. Android may still report onCharacteristicWrite for local
-                // stack flow control; that callback is not proof that the peer app
-                // received or processed this packet. This direct path currently checks
-                // only immediate API acceptance; per-GATT serialization is still needed.
-                char.writeType = android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-                val result = deviceConn.gatt?.writeCharacteristic(char) ?: false
-                result
-            } ?: false
+            if (deviceConn.characteristic == null || deviceConn.gatt == null) {
+                false
+            } else {
+                // Admission means the bounded per-GATT lane accepted the payload.
+                // Android callback completion is handled by BluetoothGattClientManager;
+                // it is not proof of remote application delivery.
+                clientWriteEnqueuer(deviceConn.device.address, data.copyOf())
+            }
         } catch (e: Exception) {
             Log.w(TAG, "Error sending to client connection ${deviceConn.device.address}: ${e.message}")
             connectionScope.launch {
