@@ -41,11 +41,13 @@ class VerificationHandler(
 
     private val pendingQRVerifications = ConcurrentHashMap<String, PendingVerification>()
     private val lastVerifyNonceByPeer = ConcurrentHashMap<String, ByteArray>()
+    private val lastInboundChallengeAtByPeer = ConcurrentHashMap<String, Long>()
     private val lastInboundVerifyChallengeAt = ConcurrentHashMap<String, Long>()
     private val lastMutualToastAt = ConcurrentHashMap<String, Long>()
 
     private companion object {
         const val PENDING_VERIFICATION_TIMEOUT_MS = 120_000L
+        const val INBOUND_CHALLENGE_RATE_LIMIT_MS = 3_000L
     }
 
     private fun isPendingVerificationExpired(pending: PendingVerification, now: Long = System.currentTimeMillis()): Boolean =
@@ -63,6 +65,9 @@ class VerificationHandler(
         lastVerifyNonceByPeer.keys
             .filterNot(connectedPeers::contains)
             .forEach { peerID -> lastVerifyNonceByPeer.remove(peerID) }
+        lastInboundChallengeAtByPeer.keys
+            .filterNot(connectedPeers::contains)
+            .forEach { peerID -> lastInboundChallengeAtByPeer.remove(peerID) }
 
         val connectedFingerprints = connectedPeerIDs.mapNotNull { peerID ->
             runCatching { meshService.getPeerFingerprint(peerID) }.getOrNull()
@@ -186,6 +191,20 @@ class VerificationHandler(
 
             val lastNonce = lastVerifyNonceByPeer[peerID]
             if (lastNonce != null && lastNonce.contentEquals(parsed.second)) return@launch
+
+            // A valid peer must not be able to force unbounded signing work by
+            // flooding fresh challenges. Rate-limit before recording the nonce.
+            val now = System.currentTimeMillis()
+            var rateLimited = false
+            lastInboundChallengeAtByPeer.compute(peerID) { _, previous ->
+                if (previous == null || now - previous >= INBOUND_CHALLENGE_RATE_LIMIT_MS) {
+                    now
+                } else {
+                    rateLimited = true
+                    previous
+                }
+            }
+            if (rateLimited) return@launch
             lastVerifyNonceByPeer[peerID] = parsed.second
 
             val fp = meshService.getPeerFingerprint(peerID)
