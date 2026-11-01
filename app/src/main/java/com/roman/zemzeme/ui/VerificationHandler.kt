@@ -80,30 +80,6 @@ class VerificationHandler(
             .forEach { fingerprint -> lastMutualToastAt.remove(fingerprint) }
     }
 
-    /**
-     * Drops connection-scoped verification state for peers that are no longer
-     * connected. Verified fingerprints remain persisted independently.
-     */
-    fun onPeerListUpdated(connectedPeerIDs: List<String>) {
-        val connectedPeers = connectedPeerIDs.toHashSet()
-        pendingQRVerifications.keys
-            .filterNot(connectedPeers::contains)
-            .forEach { peerID -> pendingQRVerifications.remove(peerID) }
-        lastVerifyNonceByPeer.keys
-            .filterNot(connectedPeers::contains)
-            .forEach { peerID -> lastVerifyNonceByPeer.remove(peerID) }
-
-        val connectedFingerprints = connectedPeerIDs.mapNotNull { peerID ->
-            runCatching { meshService.getPeerFingerprint(peerID) }.getOrNull()
-        }.toHashSet()
-        lastInboundVerifyChallengeAt.keys
-            .filterNot(connectedFingerprints::contains)
-            .forEach { fingerprint -> lastInboundVerifyChallengeAt.remove(fingerprint) }
-        lastMutualToastAt.keys
-            .filterNot(connectedFingerprints::contains)
-            .forEach { fingerprint -> lastMutualToastAt.remove(fingerprint) }
-    }
-
     fun loadVerifiedFingerprints() {
         _verifiedFingerprints.value = identityManager.getVerifiedFingerprints()
     }
