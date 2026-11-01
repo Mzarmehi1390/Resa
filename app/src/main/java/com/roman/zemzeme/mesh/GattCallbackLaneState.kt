@@ -60,7 +60,7 @@ internal class GattCallbackLaneState<K : Any> {
      * Android API only after receiving Started.
      */
     @Synchronized
-    fun begin(key: K, callbackGeneration: Long = serverGeneration): Event {
+    fun begin(key: K, callbackGeneration: Long): Event {
         if (callbackGeneration != serverGeneration) return Event.Ignored
         if (status == LaneStatus.CLOSED) return Event.Closed
         if (active != null) return Event.Busy
@@ -81,7 +81,7 @@ internal class GattCallbackLaneState<K : Any> {
         key: K,
         callbackStatus: Int,
         successStatus: Int,
-        callbackGeneration: Long = serverGeneration
+        callbackGeneration: Long
     ): Event {
         val current = active ?: return Event.Ignored
         if (callbackGeneration != serverGeneration || current.serverGeneration != callbackGeneration) return Event.Ignored
@@ -135,7 +135,7 @@ internal class GattCallbackLaneState<K : Any> {
      * connection-generation token to disambiguate a rapid reconnect.
      */
     @Synchronized
-    fun onDisconnected(key: K, callbackGeneration: Long = serverGeneration): Event {
+    fun onDisconnected(key: K, callbackGeneration: Long): Event {
         val current = active ?: return Event.Ignored
         if (callbackGeneration != serverGeneration || current.serverGeneration != callbackGeneration) return Event.Ignored
         if (current.key != key) return Event.Ignored
@@ -161,6 +161,9 @@ internal class GattCallbackLaneState<K : Any> {
      */
     @Synchronized
     fun resetForNewServer(): Long {
+        check(status == LaneStatus.CLOSED) {
+            "The previous GATT server lane must be closed before installing a replacement"
+        }
         active = null
         status = LaneStatus.READY
         serverGeneration += 1L
