@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.roman.zemzeme.mesh.BluetoothMeshService
 import com.roman.zemzeme.model.ZemzemeMessage
+import com.roman.zemzeme.security.ChannelKeyCommitmentStore
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
@@ -31,7 +32,8 @@ class CommandProcessorTest() {
     state = chatState,
     messageManager = messageManager,
     dataManager = DataManager(context = context),
-    coroutineScope = testScope
+    coroutineScope = testScope,
+    commitmentStore = ChannelKeyCommitmentStore(context)
   )
 
   private val meshService: BluetoothMeshService = mock()
