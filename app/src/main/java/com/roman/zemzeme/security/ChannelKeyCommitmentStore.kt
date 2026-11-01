@@ -116,6 +116,10 @@ internal class ChannelKeyCommitmentStore(context: Context) {
     fun get(channel: String): String? = if (healthy) entries[channel] else null
 
     @Synchronized
+    fun getKnownChannels(): Map<String, String>? =
+        if (healthy) LinkedHashMap(entries) else null
+
+    @Synchronized
     fun put(channel: String, commitment: String): Boolean {
         if (!healthy || channel.isBlank() ||
             !commitment.matches(Regex("^[a-fA-F0-9]{64}$"))
