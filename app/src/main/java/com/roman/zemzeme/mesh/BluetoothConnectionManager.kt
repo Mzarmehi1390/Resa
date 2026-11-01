@@ -86,8 +86,8 @@ class BluetoothConnectionManager(
         serverNotificationSender = { device, payload, server ->
             serverManager.sendNotification(device, payload, server)
         },
-        serverNotificationEnqueuer = { device, payload, server ->
-            serverManager.enqueueNotification(device, payload, server)
+        serverNotificationEnqueuer = { device, payload, server, onComplete ->
+            serverManager.enqueueNotification(device, payload, server, onComplete)
         }
     )
     
