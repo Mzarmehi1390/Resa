@@ -35,7 +35,7 @@ class GattClientWriteQueueStateTest {
 
         assertEquals(GattClientWriteQueueState.Admission.Full, queue.enqueue("gatt-a", byteArrayOf(3), 2L))
         assertEquals(2, queue.outstandingCount())
-        assertEquals(byteArrayOf(1), queue.takeNext(2L)!!.payload)
+        assertArrayEquals(byteArrayOf(1), queue.takeNext(2L)!!.payload)
     }
 
     @Test
