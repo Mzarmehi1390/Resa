@@ -1,3 +1,7 @@
+import android.os.Build
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 package com.roman.zemzeme.mesh
 
 import com.roman.zemzeme.model.RoutedPacket
@@ -10,6 +14,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [Build.VERSION_CODES.P], manifest = Config.NONE)
 class PacketProcessorConcurrencyTest {
     @Test
     fun concurrentCallbacksReuseOneActorForTheSamePeer() {
