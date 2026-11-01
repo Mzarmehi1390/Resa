@@ -82,7 +82,10 @@ class VerificationHandler(
         } ?: return false
 
         val existing = pendingQRVerifications[peerID]
-        if (existing != null && !isPendingVerificationExpired(existing)) return true
+        if (existing != null && !isPendingVerificationExpired(existing)) {
+            return existing.noiseKeyHex.equals(qr.noiseKeyHex, ignoreCase = true) &&
+                existing.signKeyHex.equals(qr.signKeyHex, ignoreCase = true)
+        }
         if (existing != null) pendingQRVerifications.remove(peerID, existing)
         val nonce = ByteArray(16)
         java.security.SecureRandom().nextBytes(nonce)
