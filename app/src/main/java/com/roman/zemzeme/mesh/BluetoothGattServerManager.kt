@@ -213,6 +213,15 @@ class BluetoothGattServerManager(
             if (gattServer !== expectedServer) null else notificationDispatcher
         } ?: return false
         return dispatcher.enqueue(device, payload) { outcome ->
+            if (
+                outcome is GattServerNotificationDispatcher.Outcome.Failed &&
+                (
+                    outcome.reason == GattCallbackLaneState.FailureReason.TIMEOUT ||
+                    outcome.reason == GattCallbackLaneState.FailureReason.DISCONNECTED
+                )
+            ) {
+                scheduleServerRecovery(expectedServer)
+            }
             onComplete(outcome == GattServerNotificationDispatcher.Outcome.Sent)
         }
     }
