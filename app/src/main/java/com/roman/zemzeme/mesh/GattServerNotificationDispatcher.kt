@@ -20,6 +20,10 @@ internal class GattServerNotificationDispatcher<K : Any>(
     private val callbackTimeoutMillis: Long = 10_000L,
     private val lane: GattCallbackLaneState<K> = GattCallbackLaneState()
 ) {
+    init {
+        require(callbackTimeoutMillis > 0) { "callbackTimeoutMillis must be positive" }
+    }
+
     internal interface Adapter<K : Any> {
         /** Returns false only when the platform synchronously rejects submission. */
         fun submit(key: K, payload: ByteArray): Boolean
