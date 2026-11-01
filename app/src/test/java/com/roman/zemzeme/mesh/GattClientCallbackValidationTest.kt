@@ -19,6 +19,10 @@ class GattClientCallbackValidationTest {
         assertTrue(GattClientCallbackValidation.isCurrentConnection(currentGatt, currentGatt))
         assertFalse(GattClientCallbackValidation.isCurrentConnection(staleGatt, currentGatt))
         assertFalse(GattClientCallbackValidation.isCurrentConnection(currentGatt, null))
+
+        assertTrue(GattClientCallbackValidation.isStaleConnection(staleGatt, currentGatt))
+        assertFalse(GattClientCallbackValidation.isStaleConnection(currentGatt, currentGatt))
+        assertFalse(GattClientCallbackValidation.isStaleConnection(currentGatt, null))
     }
 
     @Test
