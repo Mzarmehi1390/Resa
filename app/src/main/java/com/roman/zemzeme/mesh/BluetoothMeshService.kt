@@ -178,6 +178,34 @@ class BluetoothMeshService(private val context: Context) {
             }
         }
 
+        // Keep P2P mutually exclusive with Tor across startup and later preference changes.
+        serviceScope.launch {
+            kotlinx.coroutines.flow.combine(
+                com.roman.zemzeme.net.TorPreferenceManager.modeFlow,
+                com.roman.zemzeme.net.ArtiTorManager.getInstance().statusFlow
+            ) { preference, torStatus -> preference to torStatus.state }
+                .collect { (preference, torState) ->
+                    transportMutationLock.withLock {
+                        if (preference == com.roman.zemzeme.net.TorMode.ON) {
+                            stopP2PTransportLocked().onFailure { error ->
+                                Log.e(TAG, "Unable to stop P2P while Tor is enabled: ${error.message}")
+                            }
+                        } else if (
+                            torState == com.roman.zemzeme.net.ArtiTorManager.TorState.OFF &&
+                            com.roman.zemzeme.p2p.P2PTransportPolicy.shouldRun(
+                                desiredTransportToggles.p2pEnabled,
+                                p2pConfig.autoStart,
+                                preference
+                            )
+                        ) {
+                            startP2PTransportLocked()
+                        }
+                        updateActiveStateLocked()
+                        publishTransportRuntimeStateLocked(isApplying = false)
+                    }
+                }
+        }
+
         serviceScope.launch {
             com.roman.zemzeme.nostr.NostrRelayManager.getInstance(context).isConnected.collect {
                 transportMutationLock.withLock {
@@ -260,12 +288,21 @@ class BluetoothMeshService(private val context: Context) {
     }
 
     private fun updateActiveStateLocked(toggles: P2PConfig.TransportToggles = desiredTransportToggles) {
-        val p2pExpectedOrRunning = (toggles.p2pEnabled && p2pConfig.autoStart) || isP2PEnabledAtRuntime()
+        val p2pExpectedOrRunning =
+            com.roman.zemzeme.p2p.P2PTransportPolicy.shouldRun(
+                toggles.p2pEnabled,
+                p2pConfig.autoStart,
+                com.roman.zemzeme.net.TorPreferenceManager.get(context)
+            ) || isP2PEnabledAtRuntime()
         isActive = bleTransportRunning || p2pExpectedOrRunning || toggles.nostrEnabled
     }
 
     private fun isTransportStateConvergedLocked(target: P2PConfig.TransportToggles): Boolean {
-        val p2pShouldRun = target.p2pEnabled && p2pConfig.autoStart
+        val p2pShouldRun = com.roman.zemzeme.p2p.P2PTransportPolicy.shouldRun(
+            target.p2pEnabled,
+            p2pConfig.autoStart,
+            com.roman.zemzeme.net.TorPreferenceManager.get(context)
+        )
         val p2pRunning = isP2PEnabledAtRuntime()
 
         val bleConverged = if (target.bleEnabled) bleTransportRunning else !bleTransportRunning
@@ -280,11 +317,6 @@ class BluetoothMeshService(private val context: Context) {
         sendBleLeaveOnDisable: Boolean
     ) {
         val normalizedTarget = target
-
-        if (normalizedTarget.p2pEnabled && com.roman.zemzeme.net.TorPreferenceManager.get(context) == com.roman.zemzeme.net.TorMode.ON) {
-            com.roman.zemzeme.net.TorPreferenceManager.set(context, com.roman.zemzeme.net.TorMode.OFF)
-            Log.w(TAG, "Disabled Tor because P2P over Tor is not supported")
-        }
 
         if (p2pConfig.bleEnabled != normalizedTarget.bleEnabled) {
             p2pConfig.bleEnabled = normalizedTarget.bleEnabled
@@ -306,10 +338,24 @@ class BluetoothMeshService(private val context: Context) {
             stopBleTransportLocked(sendLeave = sendBleLeaveOnDisable, cancelScope = false)
         }
 
-        if (normalizedTarget.p2pEnabled && p2pConfig.autoStart) {
+        if (
+            com.roman.zemzeme.p2p.P2PTransportPolicy.shouldRun(
+                normalizedTarget.p2pEnabled,
+                p2pConfig.autoStart,
+                com.roman.zemzeme.net.TorPreferenceManager.get(context)
+            )
+        ) {
             startP2PTransportLocked()
         } else {
-            stopP2PTransportLocked()
+            if (
+                normalizedTarget.p2pEnabled &&
+                com.roman.zemzeme.net.TorPreferenceManager.get(context) == com.roman.zemzeme.net.TorMode.ON
+            ) {
+                Log.w(TAG, "P2P remains enabled in preferences but is paused while Tor is enabled")
+            }
+            stopP2PTransportLocked().onFailure { error ->
+                throw IllegalStateException("Unable to stop P2P transport", error)
+            }
         }
 
         updateActiveStateLocked(normalizedTarget)
@@ -357,7 +403,12 @@ class BluetoothMeshService(private val context: Context) {
     }
 
     private suspend fun startP2PTransportLocked() {
-        if (!p2pConfig.p2pEnabled || !p2pConfig.autoStart) {
+        if (!com.roman.zemzeme.p2p.P2PTransportPolicy.shouldRun(
+                p2pConfig.p2pEnabled,
+                p2pConfig.autoStart,
+                com.roman.zemzeme.net.TorPreferenceManager.get(context)
+            )
+        ) {
             return
         }
         if (p2pTransport.isRunning()) {
@@ -380,16 +431,16 @@ class BluetoothMeshService(private val context: Context) {
         }
     }
 
-    private suspend fun stopP2PTransportLocked() {
+    private suspend fun stopP2PTransportLocked(): Result<Unit> {
         if (!p2pTransport.isRunning() &&
             p2pTransport.p2pRepository.nodeStatus.value == com.roman.zemzeme.p2p.P2PNodeStatus.STOPPED
         ) {
-            return
+            return Result.success(Unit)
         }
 
-        runCatching { p2pTransport.stop() }
+        return p2pTransport.stop()
             .onSuccess { Log.d(TAG, "P2P transport stopped") }
-            .onFailure { e -> Log.w(TAG, "Error stopping P2P transport: ${e.message}") }
+            .onFailure { e -> Log.e(TAG, "Error stopping P2P transport: ${e.message}", e) }
     }
 
     private fun applyNostrEnabledLocked(enabled: Boolean) {
