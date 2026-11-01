@@ -375,7 +375,13 @@ class BluetoothGattServerManager(
         
         // Create a fresh server/dispatcher pair. Callbacks from a closed
         // server retain their old dispatcher and can never complete new work.
-        val openedServer = bluetoothManager.openGattServer(context, serverCallback)
+        val openedServer = try {
+            bluetoothManager.openGattServer(context, serverCallback)
+        } catch (e: Exception) {
+            dispatcher.shutdown()
+            Log.e(TAG, "Failed to open GATT server: ${e.message}", e)
+            return
+        }
         if (openedServer == null) {
             dispatcher.shutdown()
             Log.e(TAG, "Failed to open GATT server")
@@ -421,7 +427,6 @@ class BluetoothGattServerManager(
                 characteristic = createdCharacteristic
                 notificationDispatcher = dispatcher
                 openedServer.addService(service)
-                true
             }
         }
         if (!published) {
