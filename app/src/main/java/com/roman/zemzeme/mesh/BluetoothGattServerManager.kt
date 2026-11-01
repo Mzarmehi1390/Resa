@@ -117,7 +117,21 @@ class BluetoothGattServerManager(
      * Stop GATT server
      */
     fun stop() {
-        synchronized(serverLifecycleLock) {
+        stopServerIfCurrent(expectedServer = null)
+        Log.i(TAG, "GATT server stopped")
+    }
+
+    /**
+     * Stops the current server only when it is still the expected instance.
+     * The identity check and teardown share one lock, so a stale recovery task
+     * cannot stop a replacement server created after its failure was observed.
+     */
+    private fun stopServerIfCurrent(expectedServer: BluetoothGattServer?): Boolean {
+        val stopped = synchronized(serverLifecycleLock) {
+            if (expectedServer != null && gattServer !== expectedServer) {
+                return@synchronized false
+            }
+
             lifecycleGeneration.incrementAndGet()
             isActive = false
             notificationDispatcher?.shutdown()
@@ -143,9 +157,21 @@ class BluetoothGattServerManager(
             }
             gattServer = null
             characteristic = null
+            true
         }
-        stopAdvertising()
-        Log.i(TAG, "GATT server stopped")
+
+        if (stopped) stopAdvertising()
+        return stopped
+    }
+
+    private fun scheduleServerRecovery(expectedServer: BluetoothGattServer) {
+        connectionScope.launch {
+            if (stopServerIfCurrent(expectedServer)) {
+                Log.w(TAG, "Restarting GATT server after notification lane failure")
+            } else {
+                Log.d(TAG, "Skipping stale GATT server recovery request")
+            }
+        }
     }
 
     /** Waits for the Android onNotificationSent callback, not just API admission. */
@@ -182,7 +208,9 @@ class BluetoothGattServerManager(
         val dispatcher = synchronized(serverLifecycleLock) {
             if (gattServer !== expectedServer) null else notificationDispatcher
         } ?: return false
-        return dispatcher.enqueue(device, payload, onComplete)
+        return dispatcher.enqueue(device, payload) { outcome ->
+            onComplete(outcome == GattServerNotificationDispatcher.Outcome.Sent)
+        }
     }
     
     /**
