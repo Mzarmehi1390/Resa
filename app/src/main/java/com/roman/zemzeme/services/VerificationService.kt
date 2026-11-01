@@ -17,6 +17,12 @@ import java.lang.ref.WeakReference
 object VerificationService {
     private const val CONTEXT = "zemzeme-verify-v1"
     private const val RESPONSE_CONTEXT = "zemzeme-verify-resp-v1"
+    private const val QR_VERSION = 1
+    private const val MAX_QR_URL_LENGTH = 2048
+    private const val ED25519_KEY_HEX_LENGTH = 64
+    private const val ED25519_SIGNATURE_HEX_LENGTH = 128
+    private const val NONCE_BYTE_LENGTH = 16
+    private const val CLOCK_SKEW_TOLERANCE_SECONDS = 60L
 
     private var encryptionServiceRef: WeakReference<EncryptionService>? = null
 
@@ -39,9 +45,9 @@ object VerificationService {
 
             fun appendField(value: String) {
                 val data = value.toByteArray(Charsets.UTF_8)
-                val len = minOf(data.size, 255)
-                out.write(len)
-                out.write(data, 0, len)
+                require(data.size <= 255) { "Verification QR field exceeds protocol limit" }
+                out.write(data.size)
+                out.write(data)
             }
 
             appendField(CONTEXT)
@@ -74,21 +80,30 @@ object VerificationService {
 
         companion object {
             fun fromUrlString(urlString: String): VerificationQR? {
+                if (urlString.length > MAX_QR_URL_LENGTH) return null
                 val uri = runCatching { urlString.toUri() }.getOrNull() ?: return null
-                if (uri.scheme != "zemzeme" || uri.host != "verify") return null
+                if (uri.scheme != "zemzeme" || uri.host != "verify" ||
+                    !uri.path.isNullOrEmpty() || uri.fragment != null
+                ) return null
 
-                val vStr = uri.getQueryParameter("v") ?: return null
-                val v = vStr.toIntOrNull() ?: return null
-                val noise = uri.getQueryParameter("noise") ?: return null
-                val sign = uri.getQueryParameter("sign") ?: return null
-                val nick = uri.getQueryParameter("nick") ?: return null
-                val tsStr = uri.getQueryParameter("ts") ?: return null
-                val ts = tsStr.toLongOrNull() ?: return null
-                val nonce = uri.getQueryParameter("nonce") ?: return null
-                val sig = uri.getQueryParameter("sig") ?: return null
-                val npub = uri.getQueryParameter("npub")
+                fun singleParameter(name: String): String? {
+                    val values = uri.getQueryParameters(name)
+                    return values.singleOrNull()
+                }
 
-                return VerificationQR(
+                val v = singleParameter("v")?.toIntOrNull() ?: return null
+                if (v != QR_VERSION) return null
+                val noise = singleParameter("noise") ?: return null
+                val sign = singleParameter("sign") ?: return null
+                val nick = singleParameter("nick") ?: return null
+                val ts = singleParameter("ts")?.toLongOrNull() ?: return null
+                val nonce = singleParameter("nonce") ?: return null
+                val sig = singleParameter("sig") ?: return null
+                val npubValues = uri.getQueryParameters("npub")
+                if (npubValues.size > 1) return null
+                val npub = npubValues.singleOrNull()
+
+                val qr = VerificationQR(
                     v = v,
                     noiseKeyHex = noise,
                     signKeyHex = sign,
@@ -98,8 +113,32 @@ object VerificationService {
                     nonceB64 = nonce,
                     sigHex = sig
                 )
+                return qr.takeIf { it.hasValidStructure() }
             }
         }
+    }
+
+    private fun VerificationQR.hasValidStructure(): Boolean {
+        if (v != QR_VERSION || ts <= 0L) return false
+        if (noiseKeyHex.length != ED25519_KEY_HEX_LENGTH ||
+            !noiseKeyHex.matches(Regex("[0-9a-fA-F]{64}"))
+        ) return false
+        if (signKeyHex.length != ED25519_KEY_HEX_LENGTH ||
+            !signKeyHex.matches(Regex("[0-9a-fA-F]{64}"))
+        ) return false
+        if (sigHex.length != ED25519_SIGNATURE_HEX_LENGTH ||
+            !sigHex.matches(Regex("[0-9a-fA-F]{128}"))
+        ) return false
+        if (nonceB64.length != 22 ||
+            !nonceB64.matches(Regex("[A-Za-z0-9_-]{22}"))
+        ) return false
+        val nonce = runCatching {
+            Base64.decode(nonceB64, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
+        }.getOrNull() ?: return false
+        if (nonce.size != NONCE_BYTE_LENGTH) return false
+        if (nickname.isBlank() || nickname.toByteArray(Charsets.UTF_8).size > 255) return false
+        if ((npub?.toByteArray(Charsets.UTF_8)?.size ?: 0) > 255) return false
+        return true
     }
 
     fun buildMyQRString(nickname: String, npub: String?): String? {
@@ -145,7 +184,9 @@ object VerificationService {
     ): VerificationQR? {
         val service = encryptionServiceRef?.get() ?: return null
         val qr = VerificationQR.fromUrlString(urlString) ?: return null
+        if (maxAgeSeconds < 0L) return null
         val now = System.currentTimeMillis() / 1000L
+        if (qr.ts > now + CLOCK_SKEW_TOLERANCE_SECONDS) return null
         if (now - qr.ts > maxAgeSeconds) return null
 
         val sig = qr.sigHex.dataFromHexString() ?: return null
