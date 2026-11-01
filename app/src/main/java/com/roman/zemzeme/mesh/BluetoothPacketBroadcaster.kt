@@ -309,9 +309,15 @@ class BluetoothPacketBroadcaster(
             .firstOrNull { connectionTracker.addressPeerMap[it.address] == targetPeerID }
         if (serverTarget != null) {
             val onComplete: (Boolean) -> Unit = { delivered ->
-                if (delivered && transferId != null) {
-                    TransferProgressManager.progress(transferId, 1, 1)
-                    TransferProgressManager.complete(transferId, 1)
+                if (transferId != null) {
+                    if (delivered) {
+                        TransferProgressManager.progress(transferId, 1, 1)
+                        TransferProgressManager.complete(transferId, 1)
+                    } else {
+                        TransferProgressManager.fail(
+                            transferId, 0, 1, "Server notification was not confirmed"
+                        )
+                    }
                 }
             }
             if (enqueueServerNotification(
@@ -332,9 +338,15 @@ class BluetoothPacketBroadcaster(
             .firstOrNull { connectionTracker.addressPeerMap[it.device.address] == targetPeerID }
         if (clientTarget != null) {
             val onComplete: (Boolean) -> Unit = { completed ->
-                if (completed && transferId != null) {
-                    TransferProgressManager.progress(transferId, 1, 1)
-                    TransferProgressManager.complete(transferId, 1)
+                if (transferId != null) {
+                    if (completed) {
+                        TransferProgressManager.progress(transferId, 1, 1)
+                        TransferProgressManager.complete(transferId, 1)
+                    } else {
+                        TransferProgressManager.fail(
+                            transferId, 0, 1, "Client GATT write was not confirmed"
+                        )
+                    }
                 }
             }
             if (writeToDeviceConn(clientTarget, data, onComplete)) {
@@ -343,6 +355,11 @@ class BluetoothPacketBroadcaster(
             }
         }
 
+        if (transferId != null) {
+            TransferProgressManager.fail(
+                transferId, 0, 1, "No eligible route accepted the targeted packet"
+            )
+        }
         return false
     }
 
