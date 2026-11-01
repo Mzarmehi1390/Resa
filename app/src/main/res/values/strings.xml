@@ -707,6 +707,7 @@
     <string name="p2p_settings_header">SETTINGS</string>
     <string name="p2p_enable">Enable P2P</string>
     <string name="p2p_enable_desc">Connect directly to other Zemzeme peers</string>
+    <string name="p2p_paused_while_tor_enabled">P2P is paused while Tor is enabled and will resume after Tor stops.</string>
     <string name="p2p_use_default_nodes">Use Default Nodes</string>
     <string name="p2p_default_nodes_desc">Connect to public IPFS bootstrap nodes</string>
     <string name="p2p_custom_nodes_header">CUSTOM BOOTSTRAP NODES</string>
