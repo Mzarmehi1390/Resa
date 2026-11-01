@@ -1207,6 +1207,7 @@ class ChatViewModel(
     }
     
     override fun didUpdatePeerList(peers: List<String>) {
+        verificationHandler.onPeerListUpdated(peers)
         meshDelegateHandler.didUpdatePeerList(peers)
     }
     
