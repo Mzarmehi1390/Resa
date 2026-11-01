@@ -32,6 +32,8 @@ import com.roman.zemzeme.core.ui.component.sheet.ZemzemeBottomSheet
 import com.roman.zemzeme.p2p.P2PConfig
 import com.roman.zemzeme.p2p.P2PTransport
 import com.roman.zemzeme.p2p.P2PNodeStatus
+import com.roman.zemzeme.net.TorMode
+import com.roman.zemzeme.net.TorPreferenceManager
 import com.roman.zemzeme.service.MeshServiceHolder
 
 /**
@@ -69,6 +71,7 @@ fun P2PSettingsSheet(
     }
 
     val p2pEnabled = transportRuntimeState?.desiredToggles?.p2pEnabled ?: transportToggles.p2pEnabled
+    val torMode by TorPreferenceManager.modeFlow.collectAsState()
     var useDefaultBootstrap by remember { mutableStateOf(p2pConfig.useDefaultBootstrap) }
     var customNodes by remember { mutableStateOf(p2pConfig.customBootstrapNodes) }
     var showAddNodeDialog by remember { mutableStateOf(false) }
@@ -173,6 +176,15 @@ fun P2PSettingsSheet(
                                             style = MaterialTheme.typography.bodyMedium,
                                             fontWeight = FontWeight.Medium,
                                             color = colorScheme.onSurface
+                                        )
+                                    }
+
+                                    if (p2pEnabled && p2pConfig.autoStart && torMode == TorMode.ON) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.p2p_paused_while_tor_enabled),
+                                            fontSize = 12.sp,
+                                            color = colorScheme.primary
                                         )
                                     }
 
