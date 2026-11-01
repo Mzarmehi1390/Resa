@@ -168,11 +168,11 @@ class BluetoothGattServerManager(
     }
 
     /** Returns true when queued locally; it does not imply remote delivery. */
-    fun enqueueNotification(
+    internal fun enqueueNotification(
         device: BluetoothDevice,
         payload: ByteArray,
         expectedServer: BluetoothGattServer,
-        onComplete: (GattServerNotificationDispatcher.Outcome) -> Unit
+        onComplete: (Boolean) -> Unit
     ): Boolean {
         val dispatcher = synchronized(serverLifecycleLock) {
             if (gattServer !== expectedServer) null else notificationDispatcher
