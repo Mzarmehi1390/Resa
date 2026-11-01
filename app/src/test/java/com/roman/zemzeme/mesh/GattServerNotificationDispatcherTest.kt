@@ -206,6 +206,32 @@ class GattServerNotificationDispatcherTest {
     }
 
     @Test
+    fun shutdownCompletesQueuedCallbackExactlyOnce() = runBlocking {
+        val adapter = FakeAdapter()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter)
+        val completion = CompletableDeferred<GattServerNotificationDispatcher.Outcome>()
+        var callbackCount = 0
+
+        assertTrue(dispatcher.enqueue("peer-a", byteArrayOf(8)) {
+            callbackCount += 1
+            completion.complete(it)
+        })
+        awaitSubmissions(adapter, 1)
+        dispatcher.shutdown()
+
+        assertEquals(
+            GattServerNotificationDispatcher.Outcome.Failed(
+                GattCallbackLaneState.FailureReason.SHUTDOWN
+            ),
+            completion.await()
+        )
+        delay(20)
+        assertEquals(1, callbackCount)
+        scope.cancel()
+    }
+
+    @Test
     fun enqueueRejectsAfterShutdown() = runBlocking {
         val adapter = FakeAdapter()
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
