@@ -594,3 +594,16 @@ References:
 - [Nordic Semiconductor — BLE on Android, section on GATT write callbacks](https://devzone.nordicsemi.com/cfs-file/__key/support-attachments/beef5d1b77644c448dabff31668f3a47-619c0d8c9b7e4fefb966e9ce5b482155/BLE_5F00_on_5F00_Android_5F00_v1.0.1.pdf)
 
 **Verification status:** documentation/source-comment correction only. No client write runtime behavior has been changed. Device/vendor callback timing, queue sizing, overload behavior, and application-level acknowledgement remain to be implemented and tested.
+
+### BLE client bounded write-queue state foundation — 2026-11-01
+
+- Added platform-independent `GattClientWriteQueueState<K>` for a single GATT connection generation.
+- Admission is bounded by a configurable maximum outstanding count that includes the active write and pending FIFO entries. Full admission is explicitly rejected; existing messages are retained and no queued payload is silently evicted.
+- Payload bytes are copied at admission so later caller mutation cannot alter a queued packet.
+- The model allows only one active write at a time and correlates callback completion by connection key plus captured generation. Callback success/failure releases only the active slot; subsequent requests remain FIFO.
+- Synchronous submission rejection releases the active slot. Disconnect/shutdown fail the active request and every queued request exactly once, then close the queue. Stale-generation callbacks/disconnects cannot affect the current queue.
+- Added unit tests for FIFO ordering, one active write, capacity rejection, payload copying, stale generation, wrong connection callback, callback failure, synchronous rejection, disconnect and shutdown.
+- **Integration limitation:** this is still a platform-independent state foundation. It is not yet connected to `BluetoothGattClientManager` or `BluetoothPacketBroadcaster`; it does not submit Android GATT writes, implement callback timeouts, or revise transfer-progress semantics. Runtime BLE behavior remains unchanged.
+- The initial runtime integration must define an explicit overload response for the existing synchronous send APIs. Until all call sites and file-progress paths are migrated together, a queue-admission Boolean must not be described as remote delivery or transfer completion.
+
+**Verification status:** GitHub CI is pending for the commit containing the new state tests. No physical-device BLE test or release build is claimed.
