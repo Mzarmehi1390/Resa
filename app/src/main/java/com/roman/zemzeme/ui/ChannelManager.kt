@@ -7,6 +7,7 @@ import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import com.roman.zemzeme.model.ZemzemeMessage
+import com.roman.zemzeme.security.ChannelKeyCommitmentStore
 import com.roman.zemzeme.util.DebugLogger
 import java.util.*
 
@@ -29,7 +30,8 @@ class ChannelManager(
     private val state: ChatState,
     private val messageManager: MessageManager,
     private val dataManager: DataManager,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val commitmentStore: ChannelKeyCommitmentStore
 ) {
     
     // Channel encryption and security
@@ -37,6 +39,11 @@ class ChannelManager(
     private val channelPasswords = mutableMapOf<String, String>()
     private val channelKeyCommitments = mutableMapOf<String, String>()
     private val retentionEnabledChannels = mutableSetOf<String>()
+
+    init {
+        // Missing/corrupt encrypted storage returns no commitments; password checks fail closed.
+        commitmentStore.getKnownChannels()?.let(channelKeyCommitments::putAll)
+    }
     
     // MARK: - Channel Lifecycle
     
@@ -287,23 +294,32 @@ class ChannelManager(
         state.setPasswordPromptChannel(null)
     }
 
-    fun setChannelPassword(channel: String, password: String) {
+    fun setChannelPassword(channel: String, password: String): Boolean {
+        if (channel.isBlank() || password.isEmpty()) return false
 
-        channelPasswords[channel] = password
+        return try {
+            val derivedKey = deriveChannelKey(password, channel)
+            val commitment = com.roman.zemzeme.security.ChannelKeyCommitment.create(derivedKey.encoded)
 
-        val derivedKey = deriveChannelKey(password, channel)
-        channelKeys[channel] = derivedKey
-        channelKeyCommitments[channel] =
-            com.roman.zemzeme.security.ChannelKeyCommitment.create(derivedKey.encoded)
+            // Persist the verifier before publishing the protected marker. If secure
+            // storage fails, leave the channel unchanged rather than creating a lockout.
+            if (!commitmentStore.put(channel, commitment)) return false
 
-        state.setPasswordProtectedChannels(
-            state.getPasswordProtectedChannelsValue().toMutableSet().apply { add(channel) }
-        )
+            channelPasswords[channel] = password
+            channelKeys[channel] = derivedKey
+            channelKeyCommitments[channel] = commitment
 
-        dataManager.saveChannelData(
-            state.getJoinedChannelsValue(),
-            state.getPasswordProtectedChannelsValue()
-        )
+            state.setPasswordProtectedChannels(
+                state.getPasswordProtectedChannelsValue().toMutableSet().apply { add(channel) }
+            )
+            dataManager.saveChannelData(
+                state.getJoinedChannelsValue(),
+                state.getPasswordProtectedChannelsValue()
+            )
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
     
     // MARK: - Emergency Clear
@@ -318,6 +334,7 @@ class ChannelManager(
         channelKeys.clear()
         channelPasswords.clear()
         channelKeyCommitments.clear()
+        commitmentStore.clear()
         retentionEnabledChannels.clear()
     }
 }
