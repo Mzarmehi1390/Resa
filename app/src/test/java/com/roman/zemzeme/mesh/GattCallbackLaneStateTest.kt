@@ -110,4 +110,29 @@ class GattCallbackLaneStateTest {
         assertEquals(GattCallbackLaneState.Event.Closed, lane.close())
         assertEquals(GattCallbackLaneState.Event.Ignored, lane.onCallback("peer-a", 0, 0))
     }
+
+    @Test
+    fun lateCallbackFromPreviousServerCannotCompleteSamePeerOnReplacementServer() {
+        val lane = GattCallbackLaneState<String>()
+        val oldGeneration = lane.currentServerGeneration()
+        val oldOperation = lane.begin("peer-a", oldGeneration) as GattCallbackLaneState.Event.Started
+
+        assertTrue(lane.close() is GattCallbackLaneState.Event.Closed ||
+            lane.status() == GattCallbackLaneState.LaneStatus.CLOSED)
+        val newGeneration = lane.resetForNewServer()
+        assertTrue(newGeneration > oldGeneration)
+        val newOperation = lane.begin("peer-a", newGeneration) as GattCallbackLaneState.Event.Started
+
+        assertEquals(
+            GattCallbackLaneState.Event.Ignored,
+            lane.onCallback("peer-a", callbackStatus = 0, successStatus = 0, callbackGeneration = oldGeneration)
+        )
+        assertEquals(GattCallbackLaneState.LaneStatus.IN_FLIGHT, lane.status())
+        assertEquals(
+            GattCallbackLaneState.Event.Completed(newOperation.operationId, 0),
+            lane.onCallback("peer-a", callbackStatus = 0, successStatus = 0, callbackGeneration = newGeneration)
+        )
+        assertTrue(oldOperation.operationId != newOperation.operationId)
+    }
+
 }
