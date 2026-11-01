@@ -43,7 +43,9 @@ class BluetoothPacketBroadcaster(
     private val connectionScope: CoroutineScope,
     private val connectionTracker: BluetoothConnectionTracker,
     private val fragmentManager: FragmentManager?,
-    private val myPeerID: String
+    private val myPeerID: String,
+    private val serverNotificationSender: suspend (BluetoothDevice, ByteArray) -> Boolean,
+    private val serverNotificationEnqueuer: (BluetoothDevice, ByteArray) -> Boolean
 ) {
     
     companion object {
@@ -112,7 +114,8 @@ class BluetoothPacketBroadcaster(
     private data class BroadcastRequest(
         val routed: RoutedPacket,
         val gattServer: BluetoothGattServer?,
-        val characteristic: BluetoothGattCharacteristic?
+        val characteristic: BluetoothGattCharacteristic?,
+        val completion: kotlinx.coroutines.CompletableDeferred<Unit>? = null
     )
     
     // Actor scope for the broadcaster
@@ -127,7 +130,13 @@ class BluetoothPacketBroadcaster(
         Log.i(TAG, "🎭 Created packet broadcaster actor")
         try {
             for (request in channel) {
-                broadcastSinglePacketInternal(request.routed, request.gattServer, request.characteristic)
+                try {
+                    broadcastSinglePacketInternal(request.routed, request.gattServer, request.characteristic)
+                    request.completion?.complete(Unit)
+                } catch (e: Exception) {
+                    request.completion?.completeExceptionally(e)
+                    Log.e(TAG, "Broadcast request failed: ${e.message}", e)
+                }
             }
         } finally {
             Log.i(TAG, "🎭 Packet broadcaster actor terminated")
@@ -171,14 +180,19 @@ class BluetoothPacketBroadcaster(
                         if (!isActive) return@launch
                         // If cancelled, stop sending remaining fragments
                         if (transferId != null && transferJobs[transferId]?.isCancelled == true) return@launch
-                        broadcastSinglePacket(RoutedPacket(fragment, transferId = transferId), gattServer, characteristic)
-                        // 20ms delay between fragments
-                        delay(20)
+                        try {
+                            broadcastSinglePacketAwait(RoutedPacket(fragment, transferId = transferId), gattServer, characteristic)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Fragment broadcast failed: ${e.message}", e)
+                            return@launch
+                        }
                         if (transferId != null) {
                             sent += 1
                             TransferProgressManager.progress(transferId, sent, fragments.size)
                             if (sent == fragments.size) TransferProgressManager.complete(transferId, fragments.size)
                         }
+                        // Preserve pacing, but only advance after the GATT callback completes.
+                        delay(20)
                     }
                 }
                 if (transferId != null) {
@@ -193,10 +207,14 @@ class BluetoothPacketBroadcaster(
         if (transferId != null) {
             TransferProgressManager.start(transferId, 1)
         }
-        broadcastSinglePacket(routed, gattServer, characteristic)
-        if (transferId != null) {
-            TransferProgressManager.progress(transferId, 1, 1)
-            TransferProgressManager.complete(transferId, 1)
+        connectionScope.launch {
+            val completed = runCatching {
+                broadcastSinglePacketAwait(routed, gattServer, characteristic)
+            }.isSuccess
+            if (completed && transferId != null) {
+                TransferProgressManager.progress(transferId, 1, 1)
+                TransferProgressManager.complete(transferId, 1)
+            }
         }
     }
 
@@ -239,7 +257,7 @@ class BluetoothPacketBroadcaster(
         val serverTarget = connectionTracker.getSubscribedDevices()
             .firstOrNull { connectionTracker.addressPeerMap[it.address] == targetPeerID }
         if (serverTarget != null) {
-            if (notifyDevice(serverTarget, data, gattServer, characteristic)) {
+            if (enqueueServerNotification(serverTarget, data, gattServer, characteristic)) {
                 logPacketRelay(typeName, senderPeerID, senderNick, incomingPeer, incomingAddr, targetPeerID, serverTarget.address, packet.ttl, packet.version, routeInfo)
                 if (transferId != null) {
                     TransferProgressManager.progress(transferId, 1, 1)
@@ -281,16 +299,24 @@ class BluetoothPacketBroadcaster(
         gattServer: BluetoothGattServer?,
         characteristic: BluetoothGattCharacteristic?
     ) {
-        // Submit broadcast request to actor for serialized processing
         broadcasterScope.launch {
             try {
                 broadcasterActor.send(BroadcastRequest(routed, gattServer, characteristic))
             } catch (e: Exception) {
-                Log.w(TAG, "Failed to send broadcast request to actor: ${e.message}")
-                // Fallback to direct processing if actor fails
-                broadcastSinglePacketInternal(routed, gattServer, characteristic)
+                // Never bypass actor ordering with direct processing.
+                Log.w(TAG, "Broadcast actor rejected request: ${e.message}")
             }
         }
+    }
+
+    private suspend fun broadcastSinglePacketAwait(
+        routed: RoutedPacket,
+        gattServer: BluetoothGattServer?,
+        characteristic: BluetoothGattCharacteristic?
+    ) {
+        val completion = kotlinx.coroutines.CompletableDeferred<Unit>()
+        broadcasterActor.send(BroadcastRequest(routed, gattServer, characteristic, completion))
+        completion.await()
     }
 
     /**
@@ -315,7 +341,7 @@ class BluetoothPacketBroadcaster(
         val targetDevice = connectionTracker.getSubscribedDevices()
             .firstOrNull { connectionTracker.addressPeerMap[it.address] == targetPeerID }
         if (targetDevice != null) {
-            if (notifyDevice(targetDevice, data, gattServer, characteristic)) {
+            if (enqueueServerNotification(targetDevice, data, gattServer, characteristic)) {
                 logPacketRelay(typeName, senderPeerID, senderNick, incomingPeer, incomingAddr, targetPeerID, targetDevice.address, packet.ttl)
                 return true
             }
@@ -472,18 +498,15 @@ class BluetoothPacketBroadcaster(
     /**
      * Send data to a single device (server->client)
      */
-    private fun notifyDevice(
-        device: BluetoothDevice, 
+    private suspend fun notifyDevice(
+        device: BluetoothDevice,
         data: ByteArray,
         gattServer: BluetoothGattServer?,
         characteristic: BluetoothGattCharacteristic?
     ): Boolean {
         return try {
-            characteristic?.let { char ->
-                char.value = data
-                val result = gattServer?.notifyCharacteristicChanged(device, char, false) ?: false
-                result
-            } ?: false
+            if (gattServer == null || characteristic == null) return false
+            serverNotificationSender(device, data)
         } catch (e: Exception) {
             Log.w(TAG, "Error sending to server connection ${device.address}: ${e.message}")
             connectionScope.launch {
@@ -491,6 +514,21 @@ class BluetoothPacketBroadcaster(
                 connectionTracker.removeSubscribedDevice(device)
                 connectionTracker.addressPeerMap.remove(device.address)
             }
+            false
+        }
+    }
+
+    private fun enqueueServerNotification(
+        device: BluetoothDevice,
+        data: ByteArray,
+        gattServer: BluetoothGattServer?,
+        characteristic: BluetoothGattCharacteristic?
+    ): Boolean {
+        if (gattServer == null || characteristic == null) return false
+        return try {
+            serverNotificationEnqueuer(device, data)
+        } catch (e: Exception) {
+            Log.w(TAG, "Error queueing server notification for ${device.address}: ${e.message}")
             false
         }
     }
