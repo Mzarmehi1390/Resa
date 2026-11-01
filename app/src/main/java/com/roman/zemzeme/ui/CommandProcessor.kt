@@ -224,14 +224,18 @@ class CommandProcessor(
                 return
             }
             val newPassword = parts[1]
-            channelManager.setChannelPassword(currentChannel, newPassword)
+            val passwordSaved = channelManager.setChannelPassword(currentChannel, newPassword)
             val systemMessage = ZemzemeMessage(
                 sender = "system",
-                content = "password changed for channel $currentChannel",
+                content = if (passwordSaved) {
+                    "password changed for channel $currentChannel"
+                } else {
+                    "could not change channel password: secure storage is unavailable or the password is invalid."
+                },
                 timestamp = Date(),
                 isRelay = false
             )
-            channelManager.addChannelMessage(currentChannel,systemMessage,null)
+            channelManager.addChannelMessage(currentChannel, systemMessage, null)
         }
         else{
             val systemMessage = ZemzemeMessage(
