@@ -425,6 +425,21 @@ class BluetoothGattClientManager(
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                 if (!isCurrentAttempt()) {
                     Log.w(TAG, "Client: Ignoring callback from superseded connection attempt for $deviceAddress")
+                    // Retire an obsolete GATT without touching a newer connection for this address.
+                    if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                        connectionTracker.cleanupDeviceConnection(deviceAddress, gatt)
+                        try {
+                            gatt.close()
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Error closing superseded GATT for $deviceAddress: ${e.message}")
+                        }
+                    } else if (newState == BluetoothProfile.STATE_CONNECTED) {
+                        try {
+                            gatt.disconnect()
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Error disconnecting superseded GATT for $deviceAddress: ${e.message}")
+                        }
+                    }
                     return
                 }
                 Log.d(TAG, "Client: Connection state change - Device: $deviceAddress, Status: $status, NewState: $newState")
