@@ -45,7 +45,12 @@ class BluetoothPacketBroadcaster(
     private val fragmentManager: FragmentManager?,
     private val myPeerID: String,
     private val serverNotificationSender: suspend (BluetoothDevice, ByteArray, BluetoothGattServer) -> Boolean,
-    private val serverNotificationEnqueuer: (BluetoothDevice, ByteArray, BluetoothGattServer) -> Boolean
+    private val serverNotificationEnqueuer: (
+        BluetoothDevice,
+        ByteArray,
+        BluetoothGattServer,
+        (GattServerNotificationDispatcher.Outcome) -> Unit
+    ) -> Boolean
 ) {
     
     companion object {
@@ -257,12 +262,21 @@ class BluetoothPacketBroadcaster(
         val serverTarget = connectionTracker.getSubscribedDevices()
             .firstOrNull { connectionTracker.addressPeerMap[it.address] == targetPeerID }
         if (serverTarget != null) {
-            if (enqueueServerNotification(serverTarget, data, gattServer, characteristic)) {
-                logPacketRelay(typeName, senderPeerID, senderNick, incomingPeer, incomingAddr, targetPeerID, serverTarget.address, packet.ttl, packet.version, routeInfo)
-                if (transferId != null) {
+            val onComplete: (GattServerNotificationDispatcher.Outcome) -> Unit = { outcome ->
+                if (outcome == GattServerNotificationDispatcher.Outcome.Sent && transferId != null) {
                     TransferProgressManager.progress(transferId, 1, 1)
                     TransferProgressManager.complete(transferId, 1)
                 }
+            }
+            if (enqueueServerNotification(
+                    serverTarget,
+                    data,
+                    gattServer,
+                    characteristic,
+                    onComplete
+                )
+            ) {
+                logPacketRelay(typeName, senderPeerID, senderNick, incomingPeer, incomingAddr, targetPeerID, serverTarget.address, packet.ttl, packet.version, routeInfo)
                 return true
             }
         }
@@ -522,11 +536,12 @@ class BluetoothPacketBroadcaster(
         device: BluetoothDevice,
         data: ByteArray,
         gattServer: BluetoothGattServer?,
-        characteristic: BluetoothGattCharacteristic?
+        characteristic: BluetoothGattCharacteristic?,
+        onComplete: (GattServerNotificationDispatcher.Outcome) -> Unit = {}
     ): Boolean {
         if (gattServer == null || characteristic == null) return false
         return try {
-            serverNotificationEnqueuer(device, data, gattServer)
+            serverNotificationEnqueuer(device, data, gattServer, onComplete)
         } catch (e: Exception) {
             Log.w(TAG, "Error queueing server notification for ${device.address}: ${e.message}")
             false
