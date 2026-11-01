@@ -27,6 +27,7 @@ import java.util.Date
 import kotlin.random.Random
 import com.roman.zemzeme.services.VerificationService
 import com.roman.zemzeme.identity.SecureIdentityStateManager
+import com.roman.zemzeme.security.ChannelKeyCommitmentStore
 import com.roman.zemzeme.noise.NoiseSession
 import com.roman.zemzeme.nostr.GeohashAliasRegistry
 import com.roman.zemzeme.util.dataFromHexString
@@ -165,9 +166,16 @@ class ChatViewModel(
 
     // Specialized managers
     private val dataManager = DataManager(application.applicationContext)
+    private val channelKeyCommitmentStore = ChannelKeyCommitmentStore(application.applicationContext)
     private val identityManager by lazy { SecureIdentityStateManager(getApplication()) }
     private val messageManager = MessageManager(state)
-    private val channelManager = ChannelManager(state, messageManager, dataManager, viewModelScope)
+    private val channelManager = ChannelManager(
+        state,
+        messageManager,
+        dataManager,
+        viewModelScope,
+        channelKeyCommitmentStore
+    )
 
     // Create Noise session delegate for clean dependency injection
     private val noiseSessionDelegate = object : NoiseSessionDelegate {
