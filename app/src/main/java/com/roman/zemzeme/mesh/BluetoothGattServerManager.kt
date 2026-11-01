@@ -164,10 +164,11 @@ class BluetoothGattServerManager(
     fun enqueueNotification(
         device: BluetoothDevice,
         payload: ByteArray,
-        expectedServer: BluetoothGattServer
+        expectedServer: BluetoothGattServer,
+        onComplete: (GattServerNotificationDispatcher.Outcome) -> Unit
     ): Boolean {
         if (gattServer !== expectedServer) return false
-        return notificationDispatcher?.enqueue(device, payload) ?: false
+        return notificationDispatcher?.enqueue(device, payload, onComplete) ?: false
     }
     
     /**
