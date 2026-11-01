@@ -848,7 +848,7 @@ class ChatViewModel(
                     // The current encrypted-envelope helper is not connected to the
                     // transport receive path yet, so fail closed before optimistic UI
                     // insertion or SEND logging.
-                    if (channelManager.isChannelPasswordProtected(currentChannelValue)) {
+                    if (channelManager.isChannelPasswordProtected(currentChannelValue) || channelManager.hasChannelKey(currentChannelValue)) {
                         android.widget.Toast.makeText(
                             getApplication(),
                             "ارسال پیام در کانال رمزدار تا تکمیل رمزگذاری سرتاسری غیرفعال است.",
@@ -870,40 +870,16 @@ class ChatViewModel(
                     )
                     channelManager.addChannelMessage(currentChannelValue, message, meshService.myPeerID)
 
-                    // Check if encrypted channel
-                    if (channelManager.hasChannelKey(currentChannelValue)) {
-                        channelManager.sendEncryptedChannelMessage(
-                            content,
-                            mentions,
-                            currentChannelValue,
-                            state.getNicknameValue(),
-                            meshService.myPeerID,
-                            onEncryptedPayload = { encryptedData ->
-                                // This would need proper mesh service integration
-                                meshService.sendMessage(
-                            content, mentions, currentChannelValue,
-                            messageId = message.id,
-                            messageTimestamp = message.timestamp,
-                            senderNickname = message.sender
-                        )
-                            },
-                            onFallback = {
-                                meshService.sendMessage(
-                            content, mentions, currentChannelValue,
-                            messageId = message.id,
-                            messageTimestamp = message.timestamp,
-                            senderNickname = message.sender
-                        )
-                            }
-                        )
-                    } else {
-                        meshService.sendMessage(
-                            content, mentions, currentChannelValue,
-                            messageId = message.id,
-                            messageTimestamp = message.timestamp,
-                            senderNickname = message.sender
-                        )
-                    }
+
+                    // Only unprotected channels reach this point. Protected-channel
+                    // encryption is intentionally disabled until the authenticated
+                    // envelope is integrated end-to-end with transport and receive handling.
+                    meshService.sendMessage(
+                        content, mentions, currentChannelValue,
+                        messageId = message.id,
+                        messageTimestamp = message.timestamp,
+                        senderNickname = message.sender
+                    )
                 } else {
                     messageManager.addMessage(message)
                     DebugLogger.log(
