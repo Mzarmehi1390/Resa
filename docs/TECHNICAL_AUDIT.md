@@ -568,3 +568,11 @@ A static trace of all BluetoothPacketBroadcaster.writeToDeviceConn call sites id
 **Safe next implementation boundary:** add platform-independent client write-lane state tests first (one in-flight operation, ordered queue admission, stale GATT/generation rejection, synchronous submission rejection, callback success/failure, disconnect and shutdown). Then inject an Android adapter into BluetoothGattClientManager to bridge the active GATT callback and the lane. Only after callback behavior is verified should the broadcaster route all six call sites through the lane and progress semantics be revised. Keep packet wire format and fragment pacing unchanged during that work.
 
 **Verification status:** static source review only. No client write runtime changes, Android callback/device tests, throughput measurements or delivery guarantees are claimed.
+
+### BLE client write-lane state foundation — 2026-11-01
+
+- Added platform-independent GattClientWriteLaneState with a single-flight gate bound to one captured connection generation.
+- The state model rejects callbacks and disconnect events from older generations, ignores callbacks for a different connection key, distinguishes callback failure from synchronous submission rejection, and closes on disconnect/shutdown.
+- Added unit tests for single-flight admission, ordered release after matching callback, stale-generation isolation, wrong-key callbacks, callback failure, synchronous rejection, disconnect and shutdown.
+- **Integration limitation:** this state model is not yet wired into BluetoothGattClientManager or BluetoothPacketBroadcaster. It does not create a queue, submit Android writes, prove WRITE_TYPE_NO_RESPONSE callback behavior, or change transfer-progress semantics. Runtime behavior remains unchanged.
+- Next: verify callback behavior across the supported Android API range, then add a bounded per-GATT queue/adapter with explicit backpressure and route all broadcaster call sites through it. Keep legacy Boolean results documented as local admission until callers are migrated to an awaited completion API.
