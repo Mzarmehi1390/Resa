@@ -69,6 +69,18 @@ internal class GattServerNotificationDispatcher<K : Any>(
         }
     }
 
+    /**
+     * Non-suspending admission for legacy synchronous routing APIs.
+     * True means queued locally, not delivered to the remote peer.
+     */
+    fun enqueue(key: K, payload: ByteArray): Boolean {
+        synchronized(lock) {
+            if (closed) return false
+            val result = CompletableDeferred<Outcome>()
+            return requests.trySend(Request(key, payload.copyOf(), result)).isSuccess
+        }
+    }
+
     /** Caller cancellation does not cancel an already admitted platform operation. */
     suspend fun send(key: K, payload: ByteArray): Outcome {
         val result = CompletableDeferred<Outcome>()
