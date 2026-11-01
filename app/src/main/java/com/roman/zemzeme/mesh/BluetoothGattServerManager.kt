@@ -167,7 +167,11 @@ class BluetoothGattServerManager(
     private fun scheduleServerRecovery(expectedServer: BluetoothGattServer) {
         connectionScope.launch {
             if (stopServerIfCurrent(expectedServer)) {
-                Log.w(TAG, "Restarting GATT server after notification lane failure")
+                if (start()) {
+                    Log.i(TAG, "GATT server recovery restart scheduled")
+                } else {
+                    Log.e(TAG, "GATT server recovery could not be scheduled")
+                }
             } else {
                 Log.d(TAG, "Skipping stale GATT server recovery request")
             }
