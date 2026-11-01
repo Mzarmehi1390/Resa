@@ -116,33 +116,29 @@ class BluetoothGattServerManager(
      * Stop GATT server
      */
     fun stop() {
-        val serverToClose = synchronized(serverLifecycleLock) {
+        synchronized(serverLifecycleLock) {
             lifecycleGeneration.incrementAndGet()
             isActive = false
-
-            // Stop admitting work before closing the Android server.
             notificationDispatcher?.shutdown()
             notificationDispatcher = null
 
             val server = gattServer
-            gattServer = null
-            characteristic = null
+            try {
+                val servers = connectionTracker.getConnectedDevices().values.filter { !it.isClient }
+                servers.forEach { connection ->
+                    try { server?.cancelConnection(connection.device) } catch (_: Exception) { }
+                }
+            } catch (_: Exception) { }
+
             try {
                 server?.close()
             } catch (e: Exception) {
                 Log.w(TAG, "Error closing GATT server: ${e.message}")
             }
-            server
+            gattServer = null
+            characteristic = null
         }
         stopAdvertising()
-
-        try {
-            val servers = connectionTracker.getConnectedDevices().values.filter { !it.isClient }
-            servers.forEach { connection ->
-                try { serverToClose?.cancelConnection(connection.device) } catch (_: Exception) { }
-            }
-        } catch (_: Exception) { }
-
         Log.i(TAG, "GATT server stopped")
     }
 
@@ -363,13 +359,40 @@ class BluetoothGattServerManager(
             Log.d(TAG, "Server stopped while opening GATT server; discarded stale instance")
             return
         }
+        // Create characteristic before publishing the server so stop() cannot
+        // race with partially initialized adapter state.
+        val createdCharacteristic = BluetoothGattCharacteristic(
+            AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID,
+            BluetoothGattCharacteristic.PROPERTY_READ or
+            BluetoothGattCharacteristic.PROPERTY_WRITE or
+            BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE or
+            BluetoothGattCharacteristic.PROPERTY_NOTIFY,
+            BluetoothGattCharacteristic.PERMISSION_READ or
+            BluetoothGattCharacteristic.PERMISSION_WRITE
+        )
+
+        val descriptor = BluetoothGattDescriptor(
+            AppConstants.Mesh.Gatt.DESCRIPTOR_UUID,
+            BluetoothGattDescriptor.PERMISSION_READ or BluetoothGattDescriptor.PERMISSION_WRITE
+        )
+        createdCharacteristic.addDescriptor(descriptor)
+        callbackCharacteristic.set(createdCharacteristic)
+
+        val service = BluetoothGattService(
+            AppConstants.Mesh.Gatt.SERVICE_UUID,
+            BluetoothGattService.SERVICE_TYPE_PRIMARY
+        )
+        service.addCharacteristic(createdCharacteristic)
+
         val published = synchronized(serverLifecycleLock) {
             if (!isCurrentServerGeneration(setupGeneration)) {
                 false
             } else {
                 callbackServer.set(openedServer)
                 gattServer = openedServer
+                characteristic = createdCharacteristic
                 notificationDispatcher = dispatcher
+                openedServer.addService(service)
                 true
             }
         }
@@ -379,30 +402,6 @@ class BluetoothGattServerManager(
             Log.d(TAG, "Server stopped during publication; discarded stale instance")
             return
         }
-
-        // Create characteristic with notification support
-        val createdCharacteristic = BluetoothGattCharacteristic(
-            AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID,
-            BluetoothGattCharacteristic.PROPERTY_READ or 
-            BluetoothGattCharacteristic.PROPERTY_WRITE or 
-            BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE or
-            BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-            BluetoothGattCharacteristic.PERMISSION_READ or 
-            BluetoothGattCharacteristic.PERMISSION_WRITE
-        )
-        
-        val descriptor = BluetoothGattDescriptor(
-            AppConstants.Mesh.Gatt.DESCRIPTOR_UUID,
-            BluetoothGattDescriptor.PERMISSION_READ or BluetoothGattDescriptor.PERMISSION_WRITE
-        )
-        createdCharacteristic.addDescriptor(descriptor)
-        callbackCharacteristic.set(createdCharacteristic)
-        characteristic = createdCharacteristic
-
-        val service = BluetoothGattService(AppConstants.Mesh.Gatt.SERVICE_UUID, BluetoothGattService.SERVICE_TYPE_PRIMARY)
-        service.addCharacteristic(createdCharacteristic)
-
-        openedServer.addService(service)
         
         Log.i(TAG, "GATT server setup complete")
     }
