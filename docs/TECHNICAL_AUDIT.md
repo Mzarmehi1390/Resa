@@ -408,3 +408,22 @@ The receive-path trace adds an important constraint to the PacketProcessor redes
 5. The client-side GATT sender deliberately uses `WRITE_TYPE_NO_RESPONSE` to allow multiple in-flight writes. Consequently the current transport does not provide a reliable per-packet application delivery acknowledgement through that write path.
 
 **Implication:** no queue-capacity change should be made until the BLE protocol defines explicit overload behavior and reliable retransmission/acknowledgement above GATT. The inbound processor and outbound broadcaster need separate bounded-flow designs, with no coroutine-per-item unbounded staging and no direct-processing fallback that breaks ordering. Preserve fragment ordering and test notification/write pressure on actual Android devices.
+
+### Tor/P2P exclusion implementation — 2026-11-01
+
+A first runtime implementation was added on `feat/resa-foundation` after the static audit:
+
+1. `P2PTransportPolicy` centralizes the current rule: P2P may run only when the user's P2P and auto-start preferences are enabled and the Tor preference is OFF. The policy does not rewrite either preference.
+2. `P2PLibraryRepository.startNode()` checks the Tor preference while holding its node lifecycle mutex and rejects a new start while Tor is ON. This also protects the settings-sheet fallback that can call `P2PTransport.start()` without a mesh-service instance.
+3. `BluetoothMeshService` observes the Tor preference together with Arti's runtime state. It stops P2P when Tor is requested and only resumes P2P after Tor reaches OFF, provided P2P and auto-start remain enabled. Its normal transport reconciliation no longer silently turns Tor OFF.
+4. `ArtiTorManager.applyMode(ON)` explicitly stops the shared P2P repository and verifies the node reached STOPPED before starting Arti. If stop fails or the node is not STOPPED, Arti startup is refused and Tor status is set to ERROR.
+5. The P2P settings sheet preserves the Tor preference and displays a localized explanation while P2P is paused by Tor (English and Persian resources).
+6. A unit test covers the pure P2P transport eligibility policy.
+
+**Important verification limits and follow-up:**
+
+- The current implementation has unit coverage for the policy predicate, but not yet deterministic coroutine tests for the complete Tor/P2P lifecycle, stop-failure behavior, rapid toggles, or process startup/shutdown races.
+- Android CI for the current code head must complete before treating the change as build-verified. A successful CI run still does not prove device-level Tor isolation.
+- No SOCKS proxy configuration was added to the Go libp2p binding. P2P remains paused while Tor is enabled; this change does not route libp2p through Tor.
+- Multi-device BLE/P2P interoperability and real Arti startup/stop failure scenarios remain untested on physical devices.
+- The service and repository lifecycle mutexes serialize node operations, but a dedicated injectable transport coordinator with deterministic transition tests remains a desirable hardening step before release.
