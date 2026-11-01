@@ -49,7 +49,7 @@ class BluetoothPacketBroadcaster(
         BluetoothDevice,
         ByteArray,
         BluetoothGattServer,
-        (GattServerNotificationDispatcher.Outcome) -> Unit
+        (Boolean) -> Unit
     ) -> Boolean
 ) {
     
@@ -275,8 +275,8 @@ class BluetoothPacketBroadcaster(
         val serverTarget = connectionTracker.getSubscribedDevices()
             .firstOrNull { connectionTracker.addressPeerMap[it.address] == targetPeerID }
         if (serverTarget != null) {
-            val onComplete: (GattServerNotificationDispatcher.Outcome) -> Unit = { outcome ->
-                if (outcome == GattServerNotificationDispatcher.Outcome.Sent && transferId != null) {
+            val onComplete: (Boolean) -> Unit = { delivered ->
+                if (delivered && transferId != null) {
                     TransferProgressManager.progress(transferId, 1, 1)
                     TransferProgressManager.complete(transferId, 1)
                 }
@@ -560,7 +560,7 @@ class BluetoothPacketBroadcaster(
         data: ByteArray,
         gattServer: BluetoothGattServer?,
         characteristic: BluetoothGattCharacteristic?,
-        onComplete: (GattServerNotificationDispatcher.Outcome) -> Unit = {}
+        onComplete: (Boolean) -> Unit = {}
     ): Boolean {
         if (gattServer == null || characteristic == null) return false
         return try {
