@@ -392,3 +392,15 @@ This section records a follow-up inspection of the current `feat/resa-foundation
 ### Verification boundary
 
 These are static-source findings, not device-level reproduction. No runtime Tor/P2P isolation, libp2p proxy support, BLE backpressure behavior or multi-device interoperability has been demonstrated by the Android CI workflow. The workflow currently verifies unit tests, lint and Debug APK assembly only.
+
+### BLE ingress and outbound queue semantics — 2026-11-01
+
+The receive-path trace adds an important constraint to the PacketProcessor redesign:
+
+1. `BluetoothGattServerManager.onCharacteristicWriteRequest` parses the packet and invokes the delegate synchronously, then responds with `BluetoothGatt.GATT_SUCCESS`. The delegate ultimately calls `PacketProcessor.processPacket()`, which only schedules a coroutine to enqueue the packet for processing. Therefore the GATT success response confirms receipt at the GATT callback, not successful validation or application processing. It cannot be treated as an application-level retry/ACK if a future bounded actor rejects a packet.
+2. The GATT client notification callback also dispatches directly to the delegate without an application-level acknowledgement or backpressure contract.
+3. `PacketProcessor.processPacket()` creates a new coroutine for each packet before calling `actor.send()`. Merely changing the actor channel from unlimited to bounded would not bound all pending work: producer coroutines can accumulate while suspended on a full channel.
+4. `BluetoothPacketBroadcaster` has a second independent `Channel.UNLIMITED` actor. Its public broadcast entry point also launches one coroutine per request before calling `broadcasterActor.send()`; on send failure it falls back to direct broadcast processing, which can bypass serialization. This queue needs a separate outbound-flow audit and must not be conflated with the inbound PacketProcessor queue.
+5. The client-side GATT sender deliberately uses `WRITE_TYPE_NO_RESPONSE` to allow multiple in-flight writes. Consequently the current transport does not provide a reliable per-packet application delivery acknowledgement through that write path.
+
+**Implication:** no queue-capacity change should be made until the BLE protocol defines explicit overload behavior and reliable retransmission/acknowledgement above GATT. The inbound processor and outbound broadcaster need separate bounded-flow designs, with no coroutine-per-item unbounded staging and no direct-processing fallback that breaks ordering. Preserve fragment ordering and test notification/write pressure on actual Android devices.
