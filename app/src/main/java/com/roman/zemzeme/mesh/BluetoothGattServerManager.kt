@@ -292,6 +292,11 @@ class BluetoothGattServerManager(
                     Log.d(TAG, "Server: Service added successfully: ${service.uuid}")
                 } else {
                     Log.e(TAG, "Server: Failed to add service: ${service.uuid}, status: $status")
+                    connectionScope.launch {
+                        if (isCurrentServerGeneration(setupGeneration)) {
+                            stop()
+                        }
+                    }
                 }
             }
             
