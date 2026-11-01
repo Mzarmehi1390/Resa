@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.channels.Channel
@@ -176,6 +177,9 @@ class BluetoothPacketBroadcaster(
                 if (isFile) {
                     Log.e(TAG, "❌ File fragmentation failed for ${packet.payload.size} byte file")
                 }
+                if (transferId != null) {
+                    TransferProgressManager.fail(transferId, 0, 0, e.message ?: "Fragment creation failed")
+                }
                 return
             }
             if (fragments.size > 1) {
@@ -188,40 +192,46 @@ class BluetoothPacketBroadcaster(
                 }
                 val job = connectionScope.launch(start = CoroutineStart.LAZY) {
                     var sent = 0
-                    fragments.forEach { fragment ->
-                        if (!isActive) return@launch
-                        // If cancelled, stop sending remaining fragments
-                        if (transferId != null && transferJobs[transferId]?.isCancelled == true) return@launch
-                        try {
+                    try {
+                        for (fragment in fragments) {
+                            ensureActive()
                             val delivered = broadcastSinglePacketAwait(
                                 RoutedPacket(fragment, transferId = transferId),
                                 gattServer,
                                 characteristic
                             )
                             if (!delivered) {
-                                Log.w(TAG, "Fragment was not confirmed on all eligible routes")
+                                val reason = "Fragment was not confirmed on all eligible routes"
+                                Log.w(TAG, reason)
+                                if (transferId != null) {
+                                    TransferProgressManager.fail(transferId, sent, fragments.size, reason)
+                                }
                                 return@launch
                             }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Fragment broadcast failed: ${e.message}", e)
-                            return@launch
+                            if (transferId != null) {
+                                sent += 1
+                                TransferProgressManager.progress(transferId, sent, fragments.size)
+                                if (sent == fragments.size) TransferProgressManager.complete(transferId, fragments.size)
+                            }
+                            // Preserve pacing, but only advance after the GATT callback completes.
+                            delay(20)
                         }
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Fragment broadcast failed: ${e.message}", e)
                         if (transferId != null) {
-                            sent += 1
-                            TransferProgressManager.progress(transferId, sent, fragments.size)
-                            if (sent == fragments.size) TransferProgressManager.complete(transferId, fragments.size)
+                            TransferProgressManager.fail(transferId, sent, fragments.size, e.message ?: "Fragment broadcast failed")
                         }
-                        // Preserve pacing, but only advance after the GATT callback completes.
-                        delay(20)
                     }
                 }
                 if (transferId != null) {
                     transferJobs[transferId] = job
                     job.invokeOnCompletion { transferJobs.remove(transferId, job) }
                     // Register before execution so an immediate cancel request can find the job.
-                    job.start()
                 }
-                return
+                // Non-transfer packets must also start their fragmented send job.
+                job.start()                return
             }
         }
         
@@ -229,19 +239,36 @@ class BluetoothPacketBroadcaster(
         if (transferId != null) {
             TransferProgressManager.start(transferId, 1)
         }
-        connectionScope.launch {
-            val completed = runCatching {
-                broadcastSinglePacketAwait(routed, gattServer, characteristic)
-            }.getOrDefault(false)
-            if (completed && transferId != null) {
-                TransferProgressManager.progress(transferId, 1, 1)
-                TransferProgressManager.complete(transferId, 1)
+        val job = connectionScope.launch(start = CoroutineStart.LAZY) {
+            try {
+                val completed = broadcastSinglePacketAwait(routed, gattServer, characteristic)
+                if (transferId != null) {
+                    if (completed) {
+                        TransferProgressManager.progress(transferId, 1, 1)
+                        TransferProgressManager.complete(transferId, 1)
+                    } else {
+                        TransferProgressManager.fail(transferId, 0, 1, "Packet was not confirmed on eligible routes")
+                    }
+                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Single packet broadcast failed: ${e.message}", e)
+                if (transferId != null) {
+                    TransferProgressManager.fail(transferId, 0, 1, e.message ?: "Packet broadcast failed")
+                }
             }
         }
+        if (transferId != null) {
+            transferJobs[transferId] = job
+            job.invokeOnCompletion { transferJobs.remove(transferId, job) }
+        }
+        job.start()
     }
 
     fun cancelTransfer(transferId: String): Boolean {
         val job = transferJobs.remove(transferId) ?: return false
+        TransferProgressManager.cancel(transferId, 0, 1)
         job.cancel()
         return true
     }
