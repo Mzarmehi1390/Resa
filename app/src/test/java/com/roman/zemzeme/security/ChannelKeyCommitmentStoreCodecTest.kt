@@ -24,6 +24,7 @@ class ChannelKeyCommitmentStoreCodecTest {
             mapOf("#general" to "a".repeat(64))
         )
         val duplicate = encoded + encoded.copyOfRange(7, encoded.size)
+        duplicate[6] = 2 // The encoded entry count is the low byte of the header count.
 
         assertThrows(IllegalArgumentException::class.java) {
             ChannelKeyCommitmentStoreCodec.decode(duplicate)
