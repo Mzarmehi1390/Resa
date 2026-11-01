@@ -29,4 +29,28 @@ class ChannelAccessPolicyTest {
             hasSessionKey = false
         ))
     }
+
+    @Test
+    fun protectedChannelBlocksPlaintextMediaOrText() {
+        assertTrue(ChannelAccessPolicy.blocksPlaintextSend(
+            passwordProtected = true,
+            hasSessionKey = false
+        ))
+    }
+
+    @Test
+    fun orphanedKeyAlsoBlocksPlaintextSend() {
+        assertTrue(ChannelAccessPolicy.blocksPlaintextSend(
+            passwordProtected = false,
+            hasSessionKey = true
+        ))
+    }
+
+    @Test
+    fun openChannelWithoutKeyAllowsPlaintextSend() {
+        assertFalse(ChannelAccessPolicy.blocksPlaintextSend(
+            passwordProtected = false,
+            hasSessionKey = false
+        ))
+    }
 }
