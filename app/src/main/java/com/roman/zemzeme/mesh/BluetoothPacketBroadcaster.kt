@@ -231,7 +231,8 @@ class BluetoothPacketBroadcaster(
 
     /**
      * Send a packet to a specific peer only, without broadcasting.
-     * Returns true if a direct path was found and used.
+     * Returns true when a client write is accepted locally or a server notification
+     * is queued. A true result is not remote-delivery confirmation.
      */
     fun sendPacketToPeer(
         routed: RoutedPacket,
@@ -335,7 +336,8 @@ class BluetoothPacketBroadcaster(
 
     /**
      * Targeted send to a specific peer (by peerID) if directly connected.
-     * Returns true if sent to at least one matching connection.
+     * Returns true when a client write is accepted locally or a server notification
+     * is queued. A true result is not remote-delivery confirmation.
      */
     fun sendToPeer(
         targetPeerID: String,
