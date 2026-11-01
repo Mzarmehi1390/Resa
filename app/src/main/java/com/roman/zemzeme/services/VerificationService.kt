@@ -142,6 +142,9 @@ object VerificationService {
     }
 
     fun buildMyQRString(nickname: String, npub: String?): String? {
+        if (nickname.isBlank() || nickname.toByteArray(Charsets.UTF_8).size > 255 ||
+            (npub?.toByteArray(Charsets.UTF_8)?.size ?: 0) > 255
+        ) return null
         val service = encryptionServiceRef?.get() ?: return null
         val cache = Cache.last
         if (cache != null && cache.nickname == nickname && cache.npub == npub) {
@@ -195,38 +198,47 @@ object VerificationService {
         return if (ok) qr else null
     }
 
+    private fun isNoiseKeyHex(value: String): Boolean =
+        value.length == ED25519_KEY_HEX_LENGTH && value.matches(Regex("[0-9a-fA-F]{64}"))
+
+    private fun isValidNonce(value: ByteArray): Boolean = value.size == NONCE_BYTE_LENGTH
+
     fun buildVerifyChallenge(noiseKeyHex: String, nonceA: ByteArray): ByteArray {
-        val noiseData = noiseKeyHex.toByteArray(Charsets.UTF_8)
+        require(isNoiseKeyHex(noiseKeyHex)) { "Invalid Noise public key" }
+        require(isValidNonce(nonceA)) { "Invalid verification nonce" }
+        val noiseData = noiseKeyHex.toByteArray(Charsets.US_ASCII)
         val out = ByteArrayOutputStream()
         out.write(0x01)
-        out.write(minOf(noiseData.size, 255))
-        out.write(noiseData, 0, minOf(noiseData.size, 255))
+        out.write(noiseData.size)
+        out.write(noiseData)
         out.write(0x02)
-        out.write(minOf(nonceA.size, 255))
-        out.write(nonceA, 0, minOf(nonceA.size, 255))
+        out.write(nonceA.size)
+        out.write(nonceA)
         return out.toByteArray()
     }
 
     fun buildVerifyResponse(noiseKeyHex: String, nonceA: ByteArray): ByteArray? {
+        if (!isNoiseKeyHex(noiseKeyHex) || !isValidNonce(nonceA)) return null
         val service = encryptionServiceRef?.get() ?: return null
-        val noiseData = noiseKeyHex.toByteArray(Charsets.UTF_8)
+        val noiseData = noiseKeyHex.toByteArray(Charsets.US_ASCII)
         val msg = ByteArrayOutputStream()
         msg.write(RESPONSE_CONTEXT.toByteArray(Charsets.UTF_8))
-        msg.write(minOf(noiseData.size, 255))
-        msg.write(noiseData, 0, minOf(noiseData.size, 255))
+        msg.write(noiseData.size)
+        msg.write(noiseData)
         msg.write(nonceA)
         val sig = service.signData(msg.toByteArray()) ?: return null
+        if (sig.size != 64) return null
 
         val out = ByteArrayOutputStream()
         out.write(0x01)
-        out.write(minOf(noiseData.size, 255))
-        out.write(noiseData, 0, minOf(noiseData.size, 255))
+        out.write(noiseData.size)
+        out.write(noiseData)
         out.write(0x02)
-        out.write(minOf(nonceA.size, 255))
-        out.write(nonceA, 0, minOf(nonceA.size, 255))
+        out.write(nonceA.size)
+        out.write(nonceA)
         out.write(0x03)
-        out.write(minOf(sig.size, 255))
-        out.write(sig, 0, minOf(sig.size, 255))
+        out.write(sig.size)
+        out.write(sig)
         return out.toByteArray()
     }
 
@@ -234,22 +246,26 @@ object VerificationService {
         var idx = 0
 
         fun take(n: Int): ByteArray? {
-            if (idx + n > data.size) return null
+            if (n < 0 || idx > data.size - n) return null
             val out = data.copyOfRange(idx, idx + n)
             idx += n
             return out
         }
 
         val t1 = take(1) ?: return null
-        if (t1[0].toInt() != 0x01) return null
-        val l1 = take(1)?.get(0)?.toInt() ?: return null
+        if ((t1[0].toInt() and 0xff) != 0x01) return null
+        val l1 = take(1)?.get(0)?.toInt()?.and(0xff) ?: return null
+        if (l1 != ED25519_KEY_HEX_LENGTH) return null
         val noiseBytes = take(l1) ?: return null
-        val noise = noiseBytes.toString(Charsets.UTF_8)
+        if (noiseBytes.any { (it.toInt() and 0xff).toChar() !in "0123456789abcdefABCDEF" }) return null
+        val noise = noiseBytes.toString(Charsets.US_ASCII)
 
         val t2 = take(1) ?: return null
-        if (t2[0].toInt() != 0x02) return null
-        val l2 = take(1)?.get(0)?.toInt() ?: return null
+        if ((t2[0].toInt() and 0xff) != 0x02) return null
+        val l2 = take(1)?.get(0)?.toInt()?.and(0xff) ?: return null
+        if (l2 != NONCE_BYTE_LENGTH) return null
         val nonce = take(l2) ?: return null
+        if (idx != data.size) return null
 
         return noise to nonce
     }
@@ -280,27 +296,32 @@ object VerificationService {
         var idx = 0
 
         fun take(n: Int): ByteArray? {
-            if (idx + n > data.size) return null
+            if (n < 0 || idx > data.size - n) return null
             val out = data.copyOfRange(idx, idx + n)
             idx += n
             return out
         }
 
         val t1 = take(1) ?: return null
-        if (t1[0].toInt() != 0x01) return null
-        val l1 = take(1)?.get(0)?.toInt() ?: return null
+        if ((t1[0].toInt() and 0xff) != 0x01) return null
+        val l1 = take(1)?.get(0)?.toInt()?.and(0xff) ?: return null
+        if (l1 != ED25519_KEY_HEX_LENGTH) return null
         val noiseBytes = take(l1) ?: return null
-        val noise = noiseBytes.toString(Charsets.UTF_8)
+        if (noiseBytes.any { (it.toInt() and 0xff).toChar() !in "0123456789abcdefABCDEF" }) return null
+        val noise = noiseBytes.toString(Charsets.US_ASCII)
 
         val t2 = take(1) ?: return null
-        if (t2[0].toInt() != 0x02) return null
-        val l2 = take(1)?.get(0)?.toInt() ?: return null
+        if ((t2[0].toInt() and 0xff) != 0x02) return null
+        val l2 = take(1)?.get(0)?.toInt()?.and(0xff) ?: return null
+        if (l2 != NONCE_BYTE_LENGTH) return null
         val nonce = take(l2) ?: return null
 
         val t3 = take(1) ?: return null
-        if (t3[0].toInt() != 0x03) return null
-        val l3 = take(1)?.get(0)?.toInt() ?: return null
+        if ((t3[0].toInt() and 0xff) != 0x03) return null
+        val l3 = take(1)?.get(0)?.toInt()?.and(0xff) ?: return null
+        if (l3 != 64) return null
         val sig = take(l3) ?: return null
+        if (idx != data.size) return null
 
         return VerifyResponse(noise, nonce, sig)
     }
@@ -311,12 +332,15 @@ object VerificationService {
         signature: ByteArray,
         signerPublicKeyHex: String
     ): Boolean {
+        if (!isNoiseKeyHex(noiseKeyHex) || !isValidNonce(nonceA) ||
+            signature.size != 64 || !isNoiseKeyHex(signerPublicKeyHex)
+        ) return false
         val service = encryptionServiceRef?.get() ?: return false
-        val noiseData = noiseKeyHex.toByteArray(Charsets.UTF_8)
+        val noiseData = noiseKeyHex.toByteArray(Charsets.US_ASCII)
         val msg = ByteArrayOutputStream()
         msg.write(RESPONSE_CONTEXT.toByteArray(Charsets.UTF_8))
-        msg.write(minOf(noiseData.size, 255))
-        msg.write(noiseData, 0, minOf(noiseData.size, 255))
+        msg.write(noiseData.size)
+        msg.write(noiseData)
         msg.write(nonceA)
         val signerKey = signerPublicKeyHex.dataFromHexString() ?: return false
         return service.verifyEd25519Signature(signature, msg.toByteArray(), signerKey)
