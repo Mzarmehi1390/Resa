@@ -730,16 +730,16 @@ class BluetoothGattClientManager(
     }
 
     /** Wait for local GATT callback completion on the current exact connection. */
-    suspend fun awaitClientWrite(deviceAddress: String, payload: ByteArray): GattClientWriteDispatcher.Outcome? {
-        val session = clientWriteSessions[deviceAddress] ?: return null
-        val tracked = connectionTracker.getDeviceConnection(deviceAddress) ?: return null
+    internal suspend fun awaitClientWrite(deviceAddress: String, payload: ByteArray): Boolean {
+        val session = clientWriteSessions[deviceAddress] ?: return false
+        val tracked = connectionTracker.getDeviceConnection(deviceAddress) ?: return false
         if (tracked.gatt !== session.gatt || activeConnectionGenerations[deviceAddress] != session.generation) {
-            return null
+            return false
         }
         return session.dispatcher.enqueueAndAwait(
             AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID,
             payload.copyOf()
-        )
+        ) is GattClientWriteDispatcher.Outcome.Sent
     }
 
     private fun installClientWriteSession(
