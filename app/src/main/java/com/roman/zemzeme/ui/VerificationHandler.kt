@@ -44,6 +44,13 @@ class VerificationHandler(
     private val lastInboundVerifyChallengeAt = ConcurrentHashMap<String, Long>()
     private val lastMutualToastAt = ConcurrentHashMap<String, Long>()
 
+    private companion object {
+        const val PENDING_VERIFICATION_TIMEOUT_MS = 120_000L
+    }
+
+    private fun isPendingVerificationExpired(pending: PendingVerification, now: Long = System.currentTimeMillis()): Boolean =
+        now - pending.startedAtMs >= PENDING_VERIFICATION_TIMEOUT_MS
+
     fun loadVerifiedFingerprints() {
         _verifiedFingerprints.value = identityManager.getVerifiedFingerprints()
     }
@@ -74,7 +81,9 @@ class VerificationHandler(
             noiseKeyHex == targetNoise
         } ?: return false
 
-        if (pendingQRVerifications.containsKey(peerID)) return true
+        val existing = pendingQRVerifications[peerID]
+        if (existing != null && !isPendingVerificationExpired(existing)) return true
+        if (existing != null) pendingQRVerifications.remove(peerID, existing)
         val nonce = ByteArray(16)
         java.security.SecureRandom().nextBytes(nonce)
         val pending = PendingVerification(qr.noiseKeyHex, qr.signKeyHex, nonce, System.currentTimeMillis(), false)
@@ -96,9 +105,13 @@ class VerificationHandler(
 
     fun sendPendingVerificationIfNeeded(peerID: String) {
         val pending = pendingQRVerifications[peerID] ?: return
+        if (isPendingVerificationExpired(pending)) {
+            pendingQRVerifications.remove(peerID, pending)
+            return
+        }
         if (pending.sent) return
         meshService.sendVerifyChallenge(peerID, pending.noiseKeyHex, pending.nonceA)
-        pendingQRVerifications[peerID] = pending.copy(sent = true)
+        pendingQRVerifications.replace(peerID, pending, pending.copy(sent = true))
     }
 
     fun didReceiveVerifyChallenge(peerID: String, payload: ByteArray) {
@@ -134,6 +147,11 @@ class VerificationHandler(
         scope.launch {
             val resp = VerificationService.parseVerifyResponse(payload) ?: return@launch
             val pending = pendingQRVerifications[peerID] ?: return@launch
+            if (isPendingVerificationExpired(pending)) {
+                pendingQRVerifications.remove(peerID, pending)
+                return@launch
+            }
+            if (!pending.sent) return@launch
             if (!resp.noiseKeyHex.equals(pending.noiseKeyHex, ignoreCase = true)) return@launch
             if (!resp.nonceA.contentEquals(pending.nonceA)) return@launch
 
