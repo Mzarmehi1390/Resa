@@ -365,3 +365,30 @@ Session teardown now coordinates with the transport cipher lock, preventing a co
 - Fragment IDs are generated with `SecureRandom`; the wire format remains the existing 8-byte ID and 13-byte fragment header.
 - Added regression coverage for sender isolation and rejection of excessive fragment counts, oversized fragment data and nested fragment types.
 - **Verification status:** pending CI for the fragment hardening commits. Real interoperability with the iOS implementation and multi-device transfer testing remains required.
+
+## P2P/Tor lifecycle and packet-ingress audit — 2026-11-01
+
+This section records a follow-up inspection of the current `feat/resa-foundation` source. It supersedes any earlier assumption that the only Tor/P2P issue is a missing SOCKS proxy option.
+
+### Confirmed P2P/Tor lifecycle findings
+
+1. **Enabling P2P can overwrite the user's persisted Tor preference.** In `BluetoothMeshService.applyTransportSettingsLocked`, when the target P2P toggle is enabled and `TorPreferenceManager.get(context)` is `ON`, the code writes `OFF` to `TorPreferenceManager` before starting P2P. This avoids starting P2P while the saved Tor mode is ON, but it silently changes a user setting rather than representing the transport conflict in runtime state.
+2. **Changing Tor to ON does not itself stop an already-running libp2p node.** `ArtiTorManager.applyMode(ON)` starts Arti and resets OkHttp/Nostr connections; `resetNetworkConnections()` does not stop or reconfigure libp2p. The mesh service does not currently collect `TorPreferenceManager.modeFlow` to reconcile P2P runtime state. Therefore the P2P-start guard in `applyTransportSettingsLocked` is not sufficient to prevent overlap when Tor is enabled independently while P2P is already running.
+3. **The Go libp2p node creation API currently receives no Tor/SOCKS configuration.** Both profile-based creation and fallback creation call the bundled Go binding without a proxy argument. Do not claim libp2p traffic is routed through Tor.
+4. **Topic restoration has a useful existing mechanism.** `P2PTopicsRepository` persists its own topic list and observes `P2PLibraryRepository.nodeStatus`; on transition to RUNNING it re-subscribes saved topics and restarts discovery/refresh. However, `P2PLibraryRepository.stopNode()` clears its in-memory subscribed-topic set. Any coordinated Tor/P2P stop-and-restart must rely on the topics repository's persisted list and verify duplicate refresh-job behavior, not the cleared repository set.
+5. **Application initialization order matters.** `ZemzemeApplication.onCreate()` initializes `ArtiTorManager` before proactively starting `MeshForegroundService`. Tor preferences are loaded during Arti initialization, and the default saved mode is ON. A fix must handle both this startup order and later user-driven mode changes.
+
+**Required design before changing runtime behavior:** make Tor/P2P mutual exclusion explicit and fail closed. Enabling Tor must coordinate a successful P2P stop before Arti begins routing; if P2P cannot be stopped, do not claim Tor protection is active. Enabling P2P while Tor is ON must leave the user's Tor preference unchanged and keep P2P stopped, with a clear runtime reason. When Tor is turned OFF, P2P may restart only if the user's P2P and auto-start preferences still permit it. Preserve saved topic subscriptions and test OFF→ON→OFF, P2P enable/disable, startup, shutdown, stop failure and rapid-toggle races. A real SOCKS integration should only be attempted if the bundled Go binding is rebuilt with a documented, tested proxy configuration; do not simulate it in Kotlin.
+
+### Confirmed PacketProcessor findings
+
+1. `PacketProcessor.actors` is a plain mutable map accessed by the non-suspending `processPacket()` entry point. If receive callbacks can invoke it concurrently, actor lookup/creation and debug/shutdown iteration are not thread-safe.
+2. The per-peer actor uses `Channel.UNLIMITED`, so pending packets have no per-peer memory bound.
+3. Actors are retained until global shutdown; processing a `LEAVE` packet does not evict the actor. The separate `peerActors` map of `CompletableDeferred<Unit>` is declared but unused.
+4. When `actor.send()` fails, the current catch block processes the packet directly. This fallback can bypass per-peer serialization precisely when the actor is closing or cancelled.
+
+**Required design before changing queue capacity:** trace receive callback threading, BLE write/notification acknowledgement semantics, packet retransmission, fragmentation and handshake ordering. A bounded queue must apply backpressure or an explicit protocol-safe overflow response; it must not silently drop handshake, encrypted-session or fragment packets. Actor eviction must preserve FIFO processing for packets already accepted and must never fall back to concurrent direct handling. Add stress tests for concurrent producers, bounded memory, LEAVE ordering, shutdown races and retry/overflow semantics.
+
+### Verification boundary
+
+These are static-source findings, not device-level reproduction. No runtime Tor/P2P isolation, libp2p proxy support, BLE backpressure behavior or multi-device interoperability has been demonstrated by the Android CI workflow. The workflow currently verifies unit tests, lint and Debug APK assembly only.
