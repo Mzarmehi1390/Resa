@@ -1,5 +1,6 @@
 package com.roman.zemzeme.p2p
 
+import com.roman.zemzeme.net.ArtiTorManager
 import com.roman.zemzeme.net.TorMode
 
 /**
@@ -14,4 +15,13 @@ internal object P2PTransportPolicy {
         autoStart: Boolean,
         torMode: TorMode
     ): Boolean = p2pEnabled && autoStart && torMode == TorMode.OFF
+
+    /**
+     * A node may start only after both the saved preference and Arti's
+     * observed runtime state confirm that Tor is OFF.
+     */
+    fun canStartNode(
+        torPreference: TorMode,
+        torRuntimeState: ArtiTorManager.TorState
+    ): Boolean = torPreference == TorMode.OFF && torRuntimeState == ArtiTorManager.TorState.OFF
 }

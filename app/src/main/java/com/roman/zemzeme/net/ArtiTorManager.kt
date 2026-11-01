@@ -194,7 +194,24 @@ class ArtiTorManager private constructor() {
                             state = TorState.STOPPING
                         )
                         stopArti()
-                        waitForStateTransition(target = TorState.OFF, timeoutMs = STOP_TIMEOUT_MS)
+                        val stoppedState = waitForStateTransition(
+                            target = TorState.OFF,
+                            timeoutMs = STOP_TIMEOUT_MS
+                        )
+                        if (stoppedState != TorState.OFF) {
+                            // Fail closed: never advertise Tor as OFF, or resume P2P,
+                            // until Arti explicitly confirms that it has stopped.
+                            socksAddr = null
+                            _statusFlow.value = _statusFlow.value.copy(
+                                mode = TorMode.OFF,
+                                running = false,
+                                bootstrapPercent = 0,
+                                state = TorState.ERROR,
+                                lastLogLine = "Tor stop was not confirmed; P2P remains paused"
+                            )
+                            Log.e(TAG, "Tor stop was not confirmed; keeping P2P paused")
+                            return@withLock
+                        }
                         socksAddr = null
                         _statusFlow.value = _statusFlow.value.copy(
                             mode = TorMode.OFF,

@@ -427,3 +427,13 @@ A first runtime implementation was added on `feat/resa-foundation` after the sta
 - No SOCKS proxy configuration was added to the Go libp2p binding. P2P remains paused while Tor is enabled; this change does not route libp2p through Tor.
 - Multi-device BLE/P2P interoperability and real Arti startup/stop failure scenarios remain untested on physical devices.
 - The service and repository lifecycle mutexes serialize node operations, but a dedicated injectable transport coordinator with deterministic transition tests remains a desirable hardening step before release.
+
+### Tor stop confirmation fail-closed guard — 2026-11-01
+
+A follow-up hardening change closes a lifecycle gap found during review:
+
+1. Switching Tor OFF no longer publishes runtime state OFF when Arti does not confirm its stopped transition before the configured timeout. The manager leaves the runtime state in ERROR and records that P2P remains paused.
+2. Direct P2P node startup now requires both the persisted Tor preference and Arti's observed runtime state to be OFF. This protects callers that bypass the mesh-service reconciliation path.
+3. Unit coverage now checks that P2P startup is rejected for Tor STARTING, BOOTSTRAPPING, RUNNING, STOPPING, and ERROR states, as well as when the saved preference is ON.
+
+This is fail-closed state gating, not proof of device-level isolation. Runtime Arti stop-failure injection and physical-device verification remain outstanding.

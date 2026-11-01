@@ -221,10 +221,19 @@ class P2PLibraryRepository(
     @Suppress("UNUSED_PARAMETER")
     suspend fun startNode(privateKeyBase64: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
         nodeLock.withLock {
-            if (com.roman.zemzeme.net.TorPreferenceManager.get(context) == com.roman.zemzeme.net.TorMode.ON) {
-                return@withLock Result.failure(
-                    IllegalStateException("P2P is unavailable while Tor is enabled")
-                )
+            val torPreference = com.roman.zemzeme.net.TorPreferenceManager.get(context)
+            val torRuntimeState = com.roman.zemzeme.net.ArtiTorManager
+                .getInstance()
+                .statusFlow
+                .value
+                .state
+            if (!P2PTransportPolicy.canStartNode(torPreference, torRuntimeState)) {
+                val reason = if (torPreference == com.roman.zemzeme.net.TorMode.ON) {
+                    "P2P is unavailable while Tor is enabled"
+                } else {
+                    "P2P is unavailable until Tor has confirmed that it is stopped"
+                }
+                return@withLock Result.failure(IllegalStateException(reason))
             }
 
             if (_nodeStatus.value == P2PNodeStatus.RUNNING) {
