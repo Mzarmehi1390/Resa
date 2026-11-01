@@ -178,16 +178,29 @@ class ChannelManager(
     }
     
     private fun deriveChannelKey(password: String, channelName: String): SecretKeySpec {
-        // PBKDF2 key derivation (same as iOS version)
-        val factory = javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+        // Keep the existing iOS-compatible derivation parameters while clearing
+        // temporary password/key buffers as soon as derivation completes.
+        val passwordChars = password.toCharArray()
         val spec = javax.crypto.spec.PBEKeySpec(
-            password.toCharArray(),
-            channelName.toByteArray(),
-            100000, // 100,000 iterations (same as iOS)
-            256 // 256-bit key
+            passwordChars,
+            channelName.toByteArray(Charsets.UTF_8),
+            100000,
+            256
         )
-        val secretKey = factory.generateSecret(spec)
-        return SecretKeySpec(secretKey.encoded, "AES")
+        try {
+            val secretKey = javax.crypto.SecretKeyFactory
+                .getInstance("PBKDF2WithHmacSHA256")
+                .generateSecret(spec)
+            val encodedKey = secretKey.encoded
+            return try {
+                SecretKeySpec(encodedKey, "AES")
+            } finally {
+                encodedKey.fill(0)
+            }
+        } finally {
+            spec.clearPassword()
+            passwordChars.fill('\\u0000')
+        }
     }
     
     fun decryptChannelMessage(encryptedContent: ByteArray, channel: String): String? {
