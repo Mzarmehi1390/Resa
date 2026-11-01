@@ -1,0 +1,175 @@
+package com.roman.zemzeme.mesh
+
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import java.util.Collections
+
+class GattServerNotificationDispatcherTest {
+
+    private class FakeAdapter : GattServerNotificationDispatcher.Adapter<String> {
+        data class Submission(val key: String, val payload: ByteArray)
+        val submissions = Collections.synchronizedList(mutableListOf<Submission>())
+        var accept: Boolean = true
+
+        override fun submit(key: String, payload: ByteArray): Boolean {
+            submissions += Submission(key, payload.copyOf())
+            return accept
+        }
+    }
+
+    private suspend fun awaitSubmissions(adapter: FakeAdapter, count: Int) {
+        withTimeout(2_000) {
+            while (adapter.submissions.size < count) delay(1)
+        }
+    }
+
+    @Test
+    fun serializesDifferentPeersUntilMatchingCallbackCompletes() = runBlocking {
+        val adapter = FakeAdapter()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter)
+        val first = async { dispatcher.send("peer-a", byteArrayOf(1)) }
+        awaitSubmissions(adapter, 1)
+        val second = async { dispatcher.send("peer-b", byteArrayOf(2)) }
+        delay(20)
+        assertEquals(1, adapter.submissions.size)
+
+        val generation = dispatcher.currentServerGeneration()
+        dispatcher.onNotificationSent("peer-a", 0, 0, generation)
+        assertEquals(GattServerNotificationDispatcher.Outcome.Sent, first.await())
+        awaitSubmissions(adapter, 2)
+        dispatcher.onNotificationSent("peer-b", 0, 0, generation)
+        assertEquals(GattServerNotificationDispatcher.Outcome.Sent, second.await())
+        dispatcher.shutdown()
+        scope.cancel()
+    }
+
+    @Test
+    fun callbackFailureIsReturnedToTheRequest() = runBlocking {
+        val adapter = FakeAdapter()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter)
+        val request = async { dispatcher.send("peer-a", byteArrayOf(1)) }
+        awaitSubmissions(adapter, 1)
+
+        dispatcher.onNotificationSent("peer-a", 133, 0, dispatcher.currentServerGeneration())
+        assertEquals(
+            GattServerNotificationDispatcher.Outcome.Failed(
+                GattCallbackLaneState.FailureReason.CALLBACK_FAILURE,
+                133
+            ),
+            request.await()
+        )
+        dispatcher.shutdown()
+        scope.cancel()
+    }
+
+    @Test
+    fun synchronousSubmissionRejectionDoesNotWaitForCallback() = runBlocking {
+        val adapter = FakeAdapter().apply { accept = false }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter)
+
+        assertEquals(
+            GattServerNotificationDispatcher.Outcome.Failed(
+                GattCallbackLaneState.FailureReason.SUBMISSION_REJECTED
+            ),
+            withTimeout(2_000) { dispatcher.send("peer-a", byteArrayOf(1)) }
+        )
+        dispatcher.shutdown()
+        scope.cancel()
+    }
+
+    @Test
+    fun timeoutClosesLaneUntilReplacementServerIsInstalled() = runBlocking {
+        val adapter = FakeAdapter()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter, callbackTimeoutMillis = 30)
+
+        assertEquals(
+            GattServerNotificationDispatcher.Outcome.Failed(
+                GattCallbackLaneState.FailureReason.TIMEOUT
+            ),
+            dispatcher.send("peer-a", byteArrayOf(1))
+        )
+        val oldGeneration = dispatcher.currentServerGeneration()
+        val newGeneration = dispatcher.onServerReplaced()
+        assertTrue(newGeneration > oldGeneration)
+
+        val next = async { dispatcher.send("peer-a", byteArrayOf(2)) }
+        awaitSubmissions(adapter, 2)
+        dispatcher.onNotificationSent("peer-a", 0, 0, oldGeneration)
+        delay(20)
+        assertFalse(next.isCompleted)
+        dispatcher.onNotificationSent("peer-a", 0, 0, newGeneration)
+        assertEquals(GattServerNotificationDispatcher.Outcome.Sent, next.await())
+        dispatcher.shutdown()
+        scope.cancel()
+    }
+
+    @Test
+    fun disconnectFailsActiveRequestAndClosesLane() = runBlocking {
+        val adapter = FakeAdapter()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter)
+        val request = async { dispatcher.send("peer-a", byteArrayOf(1)) }
+        awaitSubmissions(adapter, 1)
+
+        dispatcher.onPeerDisconnected("peer-a", dispatcher.currentServerGeneration())
+        assertEquals(
+            GattServerNotificationDispatcher.Outcome.Failed(
+                GattCallbackLaneState.FailureReason.DISCONNECTED
+            ),
+            request.await()
+        )
+        dispatcher.shutdown()
+        scope.cancel()
+    }
+
+    @Test
+    fun shutdownResolvesActiveAndQueuedRequests() = runBlocking {
+        val adapter = FakeAdapter()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter)
+        val first = async { dispatcher.send("peer-a", byteArrayOf(1)) }
+        awaitSubmissions(adapter, 1)
+        val second = async { dispatcher.send("peer-b", byteArrayOf(2)) }
+        delay(20)
+
+        dispatcher.shutdown()
+        val expected = GattServerNotificationDispatcher.Outcome.Failed(
+            GattCallbackLaneState.FailureReason.SHUTDOWN
+        )
+        assertEquals(expected, first.await())
+        assertEquals(expected, second.await())
+        scope.cancel()
+    }
+
+    @Test
+    fun payloadIsCopiedBeforeItIsQueued() = runBlocking {
+        val adapter = FakeAdapter()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val dispatcher = GattServerNotificationDispatcher(scope, adapter)
+        val payload = byteArrayOf(7)
+        val request = async { dispatcher.send("peer-a", payload) }
+        awaitSubmissions(adapter, 1)
+        payload[0] = 9
+
+        assertEquals(7.toByte(), adapter.submissions.single().payload.single())
+        dispatcher.onNotificationSent("peer-a", 0, 0, dispatcher.currentServerGeneration())
+        assertEquals(GattServerNotificationDispatcher.Outcome.Sent, request.await())
+        dispatcher.shutdown()
+        scope.cancel()
+    }
+}
