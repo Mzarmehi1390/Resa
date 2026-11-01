@@ -140,4 +140,11 @@ class GattCallbackLaneStateTest {
         assertTrue(oldOperation.operationId != newOperation.operationId)
     }
 
+
+    @Test(expected = IllegalStateException::class)
+    fun replacementServerCannotResetLaneBeforePreviousLaneIsClosed() {
+        val lane = GattCallbackLaneState<String>()
+        lane.resetForNewServer()
+    }
+
 }
