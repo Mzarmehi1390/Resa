@@ -149,8 +149,9 @@ class BluetoothGattServerManager(
         payload: ByteArray,
         expectedServer: BluetoothGattServer
     ): Boolean {
-        if (gattServer !== expectedServer) return false
-        val dispatcher = notificationDispatcher ?: return false
+        val dispatcher = synchronized(serverLifecycleLock) {
+            if (gattServer !== expectedServer) null else notificationDispatcher
+        } ?: return false
         return when (val outcome = dispatcher.send(device, payload)) {
             GattServerNotificationDispatcher.Outcome.Sent -> true
             is GattServerNotificationDispatcher.Outcome.Failed -> {
@@ -167,8 +168,10 @@ class BluetoothGattServerManager(
         expectedServer: BluetoothGattServer,
         onComplete: (GattServerNotificationDispatcher.Outcome) -> Unit
     ): Boolean {
-        if (gattServer !== expectedServer) return false
-        return notificationDispatcher?.enqueue(device, payload, onComplete) ?: false
+        val dispatcher = synchronized(serverLifecycleLock) {
+            if (gattServer !== expectedServer) null else notificationDispatcher
+        } ?: return false
+        return dispatcher.enqueue(device, payload, onComplete)
     }
     
     /**
