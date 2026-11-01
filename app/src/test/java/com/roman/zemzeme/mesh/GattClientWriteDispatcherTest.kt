@@ -1,6 +1,7 @@
 package com.roman.zemzeme.mesh
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
@@ -196,6 +197,31 @@ class GattClientWriteDispatcherTest {
         )
         assertEquals(expected, withTimeout(1_000L) { firstOutcome.await() })
         assertEquals(expected, withTimeout(1_000L) { secondOutcome.await() })
+        assertEquals(0, dispatcher.outstandingCount())
+    }
+
+
+    @Test
+    fun adapterCancellationClosesDispatcherAndFailsRequest() = runBlocking {
+        val outcome = CompletableDeferred<GattClientWriteDispatcher.Outcome>()
+        val dispatcher = GattClientWriteDispatcher(
+            scope = this,
+            connectionGeneration = 27L,
+            adapter = object : GattClientWriteDispatcher.Adapter<String> {
+                override fun submit(key: String, payload: ByteArray): Boolean {
+                    throw CancellationException("test cancellation")
+                }
+            },
+            callbackTimeoutMillis = 5_000L
+        )
+
+        dispatcher.enqueue("characteristic", byteArrayOf(1)) { outcome.complete(it) }
+        assertEquals(
+            GattClientWriteDispatcher.Outcome.Failed(
+                GattClientWriteQueueState.FailureReason.SHUTDOWN
+            ),
+            withTimeout(1_000L) { outcome.await() }
+        )
         assertEquals(0, dispatcher.outstandingCount())
     }
 
