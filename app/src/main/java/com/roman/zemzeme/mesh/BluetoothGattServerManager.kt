@@ -52,6 +52,7 @@ class BluetoothGattServerManager(
     private var notificationDispatcher: GattServerNotificationDispatcher<BluetoothDevice>? = null
 
     // State management
+    @Volatile
     private var isActive = false
 
     /**
@@ -143,7 +144,12 @@ class BluetoothGattServerManager(
     }
 
     /** Waits for the Android onNotificationSent callback, not just API admission. */
-    suspend fun sendNotification(device: BluetoothDevice, payload: ByteArray): Boolean {
+    suspend fun sendNotification(
+        device: BluetoothDevice,
+        payload: ByteArray,
+        expectedServer: BluetoothGattServer
+    ): Boolean {
+        if (gattServer !== expectedServer) return false
         val dispatcher = notificationDispatcher ?: return false
         return when (val outcome = dispatcher.send(device, payload)) {
             GattServerNotificationDispatcher.Outcome.Sent -> true
@@ -155,7 +161,12 @@ class BluetoothGattServerManager(
     }
 
     /** Returns true when queued locally; it does not imply remote delivery. */
-    fun enqueueNotification(device: BluetoothDevice, payload: ByteArray): Boolean {
+    fun enqueueNotification(
+        device: BluetoothDevice,
+        payload: ByteArray,
+        expectedServer: BluetoothGattServer
+    ): Boolean {
+        if (gattServer !== expectedServer) return false
         return notificationDispatcher?.enqueue(device, payload) ?: false
     }
     
@@ -322,19 +333,26 @@ class BluetoothGattServerManager(
             }
         }
         
-        // Proper cleanup sequencing to prevent race conditions
-        notificationDispatcher?.shutdown()
-        notificationDispatcher = null
-        gattServer?.let { server ->
-            Log.d(TAG, "Cleaning up existing GATT server")
-            try {
-                server.close()
-            } catch (e: Exception) {
-                Log.w(TAG, "Error closing existing GATT server: ${e.message}")
+        // Retire any previous instance under the same lock used by stop()
+        // and server publication.
+        synchronized(serverLifecycleLock) {
+            if (!isCurrentServerGeneration(setupGeneration)) {
+                dispatcher.shutdown()
+                return
             }
+            notificationDispatcher?.shutdown()
+            notificationDispatcher = null
+            gattServer?.let { server ->
+                Log.d(TAG, "Cleaning up existing GATT server")
+                try {
+                    server.close()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error closing existing GATT server: ${e.message}")
+                }
+            }
+            gattServer = null
+            characteristic = null
         }
-        gattServer = null
-        characteristic = null
         
         // Small delay to ensure cleanup is complete
         Thread.sleep(100)
