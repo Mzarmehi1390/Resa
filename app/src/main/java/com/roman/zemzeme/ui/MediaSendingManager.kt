@@ -261,7 +261,7 @@ class MediaSendingManager(
         }
         Log.d(TAG, "🔒 Encoded private packet: ${payload.size} bytes")
 
-        val transferId = sha256Hex(payload)
+        val transferId = java.util.UUID.randomUUID().toString().uppercase()
         val contentHash = sha256Hex(filePacket.content)
 
         Log.d(TAG, "📤 FILE_TRANSFER send (private): name='${filePacket.fileName}', size=${filePacket.fileSize}, mime='${filePacket.mimeType}', sha256=$contentHash, to=${toPeerID.take(8)} transferId=${transferId.take(16)}…")
@@ -292,7 +292,7 @@ class MediaSendingManager(
         )
 
         Log.d(TAG, "📤 Calling meshService.sendFilePrivate to $toPeerID")
-        meshService.sendFilePrivate(toPeerID, filePacket)
+        meshService.sendFilePrivate(toPeerID, filePacket, transferId)
         Log.d(TAG, "✅ File send completed successfully")
     }
 
@@ -317,7 +317,7 @@ class MediaSendingManager(
         }
         Log.d(TAG, "🔓 Encoded broadcast packet: ${payload.size} bytes")
         
-        val transferId = sha256Hex(payload)
+        val transferId = java.util.UUID.randomUUID().toString().uppercase()
         val contentHash = sha256Hex(filePacket.content)
         
         Log.d(TAG, "📤 FILE_TRANSFER send (broadcast): name='${filePacket.fileName}', size=${filePacket.fileSize}, mime='${filePacket.mimeType}', sha256=$contentHash, transferId=${transferId.take(16)}…")
@@ -365,7 +365,7 @@ class MediaSendingManager(
         }
 
         Log.d(TAG, "📤 Calling meshService.sendFileBroadcast")
-        meshService.sendFileBroadcast(filePacket)
+        meshService.sendFileBroadcast(filePacket, transferId)
         Log.d(TAG, "✅ File broadcast completed successfully")
     }
 
