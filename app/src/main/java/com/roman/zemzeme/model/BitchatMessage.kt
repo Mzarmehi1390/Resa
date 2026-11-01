@@ -172,13 +172,10 @@ data class ZemzemeMessage(
         }
     }
 
-    private companion object {
-        const val MAX_BINARY_PAYLOAD_BYTES = 4096
-        const val MAX_OPTIONAL_FIELD_BYTES = 255
-        const val MAX_CONTENT_FIELD_BYTES = 65535
-    }
-
     companion object {
+        private const val MAX_BINARY_PAYLOAD_BYTES = 4096
+        private const val MAX_OPTIONAL_FIELD_BYTES = 255
+        private const val MAX_CONTENT_FIELD_BYTES = 65535
         /**
          * Parse message from binary payload - exactly same logic as iOS version
          */
