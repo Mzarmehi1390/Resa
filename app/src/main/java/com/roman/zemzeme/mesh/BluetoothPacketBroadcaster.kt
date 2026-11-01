@@ -52,7 +52,7 @@ class BluetoothPacketBroadcaster(
         (Boolean) -> Unit
     ) -> Boolean,
     private val clientWriteEnqueuer: (String, ByteArray, (Boolean) -> Unit) -> Boolean,
-    private val clientWriteAwaiter: suspend (String, ByteArray) -> GattClientWriteDispatcher.Outcome?
+    private val clientWriteAwaiter: suspend (String, ByteArray) -> Boolean
 ) {
     
     companion object {
@@ -607,7 +607,7 @@ class BluetoothPacketBroadcaster(
     ): Boolean {
         if (deviceConn.characteristic == null || deviceConn.gatt == null) return false
         return try {
-            clientWriteAwaiter(deviceConn.device.address, data.copyOf()) is GattClientWriteDispatcher.Outcome.Sent
+            clientWriteAwaiter(deviceConn.device.address, data.copyOf())
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
