@@ -33,6 +33,7 @@ internal class GattClientWriteQueueState<K : Any>(
         CALLBACK_FAILURE,
         SUBMISSION_REJECTED,
         DISCONNECTED,
+        TIMEOUT,
         SHUTDOWN
     }
 
@@ -103,6 +104,14 @@ internal class GattClientWriteQueueState<K : Any>(
         if (request.key != key) return Completion.Ignored
         active = null
         return Completion.Failed(request, FailureReason.SUBMISSION_REJECTED)
+    }
+
+    /** A callback timeout is ambiguous: close the lane so a late callback cannot
+     * be mistaken for completion of a later request on this GATT connection. */
+    @Synchronized
+    fun onTimeout(callbackGeneration: Long): List<Completion<K>> {
+        if (callbackGeneration != connectionGeneration || closed || active == null) return emptyList()
+        return closeAndFail(FailureReason.TIMEOUT)
     }
 
     /** Fail the active request and every queued request; stale disconnects do nothing. */
