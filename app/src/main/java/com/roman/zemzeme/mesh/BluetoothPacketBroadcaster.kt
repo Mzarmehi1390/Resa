@@ -51,7 +51,8 @@ class BluetoothPacketBroadcaster(
         BluetoothGattServer,
         (Boolean) -> Unit
     ) -> Boolean,
-    private val clientWriteEnqueuer: (String, ByteArray) -> Boolean
+    private val clientWriteEnqueuer: (String, ByteArray) -> Boolean,
+    private val clientWriteAwaiter: suspend (String, ByteArray) -> GattClientWriteDispatcher.Outcome?
 ) {
     
     companion object {
@@ -434,7 +435,7 @@ class BluetoothPacketBroadcaster(
                 
                 if (clientTarget != null) {
                     Log.i(TAG, "Source Routing: sending directly to first hop (client conn) $firstHop: ${clientTarget.device.address}")
-                    if (writeToDeviceConn(clientTarget, data)) {
+                    if (writeToDeviceConnAwait(clientTarget, data)) {
                         val toPeer = connectionTracker.addressPeerMap[clientTarget.device.address]
                         logPacketRelay(typeName, senderPeerID, senderNick, incomingPeer, incomingAddr, toPeer, clientTarget.device.address, packet.ttl, packet.version, routeInfo)
                         sent = true
@@ -471,7 +472,7 @@ class BluetoothPacketBroadcaster(
             // If found, send directly
             if (targetDeviceConn != null) {
                 Log.i(TAG, "Send packet type ${packet.type} directly to target client connection for recipient $recipientID: ${targetDeviceConn.device.address}")
-                if (writeToDeviceConn(targetDeviceConn, data)) {
+                if (writeToDeviceConnAwait(targetDeviceConn, data)) {
                     val toPeer = connectionTracker.addressPeerMap[targetDeviceConn.device.address]
                     logPacketRelay(typeName, senderPeerID, senderNick, incomingPeer, incomingAddr, toPeer, targetDeviceConn.device.address, packet.ttl, packet.version, routeInfo)
                     return true  // Sent, no need to continue
@@ -521,7 +522,7 @@ class BluetoothPacketBroadcaster(
                     return@forEach
                 }
                 attempted += 1
-                val sent = writeToDeviceConn(deviceConn, data)
+                val sent = writeToDeviceConnAwait(deviceConn, data)
                 if (sent) {
                     val toPeer = connectionTracker.addressPeerMap[deviceConn.device.address]
                     logPacketRelay(typeName, senderPeerID, senderNick, incomingPeer, incomingAddr, toPeer, deviceConn.device.address, packet.ttl, packet.version, routeInfo)
@@ -598,6 +599,21 @@ class BluetoothPacketBroadcaster(
         }
     }
     
+    private suspend fun writeToDeviceConnAwait(
+        deviceConn: BluetoothConnectionTracker.DeviceConnection,
+        data: ByteArray
+    ): Boolean {
+        if (deviceConn.characteristic == null || deviceConn.gatt == null) return false
+        return try {
+            clientWriteAwaiter(deviceConn.device.address, data.copyOf()) is GattClientWriteDispatcher.Outcome.Sent
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(TAG, "Error awaiting client GATT write for ${deviceConn.device.address}: ${e.message}")
+            false
+        }
+    }
+
     /**
      * Get debug information
      */
