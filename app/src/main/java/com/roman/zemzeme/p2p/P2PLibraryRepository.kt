@@ -221,6 +221,12 @@ class P2PLibraryRepository(
     @Suppress("UNUSED_PARAMETER")
     suspend fun startNode(privateKeyBase64: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
         nodeLock.withLock {
+            if (com.roman.zemzeme.net.TorPreferenceManager.get(context) == com.roman.zemzeme.net.TorMode.ON) {
+                return@withLock Result.failure(
+                    IllegalStateException("P2P is unavailable while Tor is enabled")
+                )
+            }
+
             if (_nodeStatus.value == P2PNodeStatus.RUNNING) {
                 Log.d(TAG, "P2P node already running, skipping start")
                 return@withLock Result.success(Unit)
