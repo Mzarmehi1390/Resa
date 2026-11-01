@@ -148,4 +148,24 @@ class ZemzemeMessagePayloadTest {
         assertEquals(null, invalid.toBinaryPayload())
     }
 
+    @Test
+    fun decoderRejectsPayloadAboveWireLimit() {
+        assertEquals(null, ZemzemeMessage.fromBinaryPayload(ByteArray(4097)))
+    }
+
+    @Test
+    fun decoderRejectsMalformedUtf8InContent() {
+        val original = ZemzemeMessage(
+            id = "id",
+            sender = "peer-a",
+            content = "hello",
+            timestamp = Date(1_700_000_000_000L)
+        )
+        val encoded = original.toBinaryPayload()!!
+        val contentOffset = 1 + 8 + 1 + original.id.toByteArray(Charsets.UTF_8).size +
+            1 + original.sender.toByteArray(Charsets.UTF_8).size + 2
+        encoded[contentOffset] = 0xC3.toByte()
+        assertEquals(null, ZemzemeMessage.fromBinaryPayload(encoded))
+    }
+
 }
