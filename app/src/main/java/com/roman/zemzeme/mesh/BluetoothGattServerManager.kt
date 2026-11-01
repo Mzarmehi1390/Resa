@@ -426,7 +426,13 @@ class BluetoothGattServerManager(
                 gattServer = openedServer
                 characteristic = createdCharacteristic
                 notificationDispatcher = dispatcher
-                openedServer.addService(service)
+                val serviceAccepted = openedServer.addService(service)
+                if (!serviceAccepted) {
+                    notificationDispatcher = null
+                    gattServer = null
+                    characteristic = null
+                }
+                serviceAccepted
             }
         }
         if (!published) {
