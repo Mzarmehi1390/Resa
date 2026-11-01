@@ -436,9 +436,11 @@ class MediaSendingManager(
                     removeTransferTracking(evt.transferId)
                 }
                 evt.completed -> {
+                    // Completion here confirms local BLE transport writes, not a
+                    // remote application-level delivery acknowledgement.
                     messageManager.updateMessageDeliveryStatus(
                         msgId,
-                        DeliveryStatus.Delivered(to = "mesh", at = java.util.Date())
+                        DeliveryStatus.Sent
                     )
                     removeTransferTracking(evt.transferId)
                 }
