@@ -39,27 +39,34 @@ internal class GattCallbackLaneState<K : Any> {
 
     private data class Active<K>(
         val operationId: Long,
-        val key: K
+        val key: K,
+        val serverGeneration: Long
     )
 
     private var status: LaneStatus = LaneStatus.READY
+    private var serverGeneration = 0L
     private var nextOperationId = 1L
     private var active: Active<K>? = null
 
     @Synchronized
     fun status(): LaneStatus = status
 
+    /** Identifies the currently installed GATT server callback generation. */
+    @Synchronized
+    fun currentServerGeneration(): Long = serverGeneration
+
     /**
      * Starts tracking one platform operation. The caller must invoke the
      * Android API only after receiving Started.
      */
     @Synchronized
-    fun begin(key: K): Event {
+    fun begin(key: K, callbackGeneration: Long = serverGeneration): Event {
+        if (callbackGeneration != serverGeneration) return Event.Ignored
         if (status == LaneStatus.CLOSED) return Event.Closed
         if (active != null) return Event.Busy
 
         val operationId = nextOperationId++
-        active = Active(operationId, key)
+        active = Active(operationId, key, callbackGeneration)
         status = LaneStatus.IN_FLIGHT
         return Event.Started(operationId)
     }
@@ -70,8 +77,14 @@ internal class GattCallbackLaneState<K : Any> {
      * is a required invariant of the owner.
      */
     @Synchronized
-    fun onCallback(key: K, callbackStatus: Int, successStatus: Int): Event {
+    fun onCallback(
+        key: K,
+        callbackStatus: Int,
+        successStatus: Int,
+        callbackGeneration: Long = serverGeneration
+    ): Event {
         val current = active ?: return Event.Ignored
+        if (callbackGeneration != serverGeneration || current.serverGeneration != callbackGeneration) return Event.Ignored
         if (current.key != key) return Event.Ignored
 
         active = null
@@ -122,8 +135,9 @@ internal class GattCallbackLaneState<K : Any> {
      * connection-generation token to disambiguate a rapid reconnect.
      */
     @Synchronized
-    fun onDisconnected(key: K): Event {
+    fun onDisconnected(key: K, callbackGeneration: Long = serverGeneration): Event {
         val current = active ?: return Event.Ignored
+        if (callbackGeneration != serverGeneration || current.serverGeneration != callbackGeneration) return Event.Ignored
         if (current.key != key) return Event.Ignored
 
         active = null
@@ -146,8 +160,10 @@ internal class GattCallbackLaneState<K : Any> {
      * closed and a new server callback instance is installed.
      */
     @Synchronized
-    fun resetForNewServer() {
+    fun resetForNewServer(): Long {
         active = null
         status = LaneStatus.READY
+        serverGeneration += 1L
+        return serverGeneration
     }
 }
