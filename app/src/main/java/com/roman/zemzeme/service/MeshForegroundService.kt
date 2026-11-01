@@ -42,23 +42,26 @@ class MeshForegroundService : Service() {
             // only when we can actually post a notification (Android 13+ requires runtime notif permission)
             val bgEnabled = MeshServicePreferences.isBackgroundEnabled(true)
             val hasNotifPerm = hasNotificationPermissionStatic(context)
+            val hasBluetoothPerms = hasBluetoothPermissionsStatic(context)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                if (bgEnabled && hasNotifPerm) {
+                if (bgEnabled && hasNotifPerm && hasBluetoothPerms) {
                     context.startForegroundService(intent)
                 } else {
-                    // Do not attempt to start a background service from headless context without notif permission
-                    // or when background is disabled, to avoid BackgroundServiceStartNotAllowedException.
+                    // Do not start the foreground service until its runtime prerequisites are granted.
                     android.util.Log.i(
                         "MeshForegroundService",
-                        "Not starting service on API>=26 (bgEnabled=$bgEnabled, hasNotifPerm=$hasNotifPerm)"
+                        "Not starting service on API>=26 (bgEnabled=$bgEnabled, hasNotifPerm=$hasNotifPerm, hasBluetoothPerms=$hasBluetoothPerms)"
                     )
                 }
             } else {
-                if (bgEnabled) {
+                if (bgEnabled && hasBluetoothPerms) {
                     context.startService(intent)
                 } else {
-                    android.util.Log.i("MeshForegroundService", "Background disabled; not starting service (pre-O)")
+                    android.util.Log.i(
+                        "MeshForegroundService",
+                        "Not starting service on pre-O (bgEnabled=$bgEnabled, hasBluetoothPerms=$hasBluetoothPerms)"
+                    )
                 }
             }
         }
@@ -70,7 +73,8 @@ class MeshForegroundService : Service() {
         fun onNotificationPermissionGranted(context: Context) {
             // If background is enabled and permission now granted, start/promo service
             val hasNotifPerm = hasNotificationPermissionStatic(context)
-            if (!MeshServicePreferences.isBackgroundEnabled(true) || !hasNotifPerm) return
+            val hasBluetoothPerms = hasBluetoothPermissionsStatic(context)
+            if (!MeshServicePreferences.isBackgroundEnabled(true) || !hasNotifPerm || !hasBluetoothPerms) return
 
             val intent = Intent(context, MeshForegroundService::class.java).apply { action = ACTION_UPDATE_NOTIFICATION }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

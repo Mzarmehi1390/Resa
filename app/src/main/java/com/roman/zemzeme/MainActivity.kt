@@ -675,6 +675,9 @@ class MainActivity : OrientationAwareActivity() {
                     return@launch
                 }
 
+                // Start the foreground service only after onboarding has granted its runtime prerequisites.
+                com.roman.zemzeme.service.MeshForegroundService.start(applicationContext)
+
                 // Set up mesh service delegate and start services
                 meshService.delegate = chatViewModel
                 meshService.startServices()
