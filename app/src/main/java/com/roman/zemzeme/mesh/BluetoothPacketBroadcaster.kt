@@ -231,7 +231,8 @@ class BluetoothPacketBroadcaster(
                     // Register before execution so an immediate cancel request can find the job.
                 }
                 // Non-transfer packets must also start their fragmented send job.
-                job.start()                return
+                job.start()
+                return
             }
         }
         
