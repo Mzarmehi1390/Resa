@@ -53,6 +53,7 @@ class NostrRelayManager private constructor() {
         private const val MAX_BACKOFF_INTERVAL = com.roman.zemzeme.util.AppConstants.Nostr.MAX_BACKOFF_INTERVAL_MS    // 5 minutes
         private const val BACKOFF_MULTIPLIER = com.roman.zemzeme.util.AppConstants.Nostr.BACKOFF_MULTIPLIER
         private const val MAX_RECONNECT_ATTEMPTS = com.roman.zemzeme.util.AppConstants.Nostr.MAX_RECONNECT_ATTEMPTS
+        private const val MAX_PENDING_EVENTS = 256
         
         // Track gift-wraps we initiated for logging
         private val pendingGiftWrapIDs = ConcurrentHashMap.newKeySet<String>()
@@ -110,9 +111,8 @@ class NostrRelayManager private constructor() {
     // Event deduplication system
     private val eventDeduplicator = NostrEventDeduplicator.getInstance()
     
-    // Message queue for reliability
-    private val messageQueue = mutableListOf<Pair<NostrEvent, List<String>>>()
-    private val messageQueueLock = Any()
+    // Bounded queue retains events until each target relay acknowledges them.
+    private val messageQueue = NostrPendingEventQueue(MAX_PENDING_EVENTS)
     
     // Coroutine scope for background operations
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -302,6 +302,7 @@ class NostrRelayManager private constructor() {
         // Stop subscription validation
         stopSubscriptionValidation()
         
+        connections.keys.forEach { relayUrl -> messageQueue.releaseRelay(relayUrl) }
         connections.values.forEach { webSocket ->
             webSocket.close(1000, "Manual disconnect")
         }
@@ -323,19 +324,19 @@ class NostrRelayManager private constructor() {
             return
         }
         
-        val targetRelays = relayUrls ?: relaysList.map { it.url }
-        
-        // Add to queue for reliability
-        synchronized(messageQueueLock) {
-            messageQueue.add(Pair(event, targetRelays))
+        val targetRelays = (relayUrls ?: relaysList.map { it.url }).distinct()
+        if (!messageQueue.enqueue(event, targetRelays)) {
+            Log.e(TAG, "Pending event queue is full or event has no valid ID/relay targets; rejecting event id=${event.id.take(16)}")
+            return
         }
-        
-        // Attempt immediate send
+
+        // Attempt immediate send. The event remains queued until the relay replies with OK.
         scope.launch {
             targetRelays.forEach { relayUrl ->
+                val queuedEvent = messageQueue.claim(event.id, relayUrl) ?: return@forEach
                 val webSocket = connections[relayUrl]
-                if (webSocket != null) {
-                    sendToRelay(event, webSocket, relayUrl)
+                if (webSocket == null || !sendToRelay(queuedEvent, webSocket, relayUrl)) {
+                    messageQueue.release(event.id, relayUrl)
                 }
             }
         }
@@ -518,9 +519,7 @@ class NostrRelayManager private constructor() {
             geohashToRelays.clear()
 
             // Clear any queued messages waiting to be sent
-            synchronized(messageQueueLock) {
-                messageQueue.clear()
-            }
+            messageQueue.clear()
 
             Log.i(TAG, "🧹 Cleared all Nostr subscriptions and routing caches")
         } catch (e: Exception) {
@@ -678,24 +677,26 @@ class NostrRelayManager private constructor() {
         }
     }
     
-    private fun sendToRelay(event: NostrEvent, webSocket: WebSocket, relayUrl: String) {
-        try {
+    private fun sendToRelay(event: NostrEvent, webSocket: WebSocket, relayUrl: String): Boolean {
+        return try {
             val request = NostrRequest.Event(event)
             val message = gson.toJson(request, NostrRequest::class.java)
-            
+
             Log.v(TAG, "📤 Sending Nostr event (kind: ${event.kind}) to relay: $relayUrl")
-            
+
             val success = webSocket.send(message)
             if (success) {
-                // Update relay stats
+                // Update relay stats. Keep the event queued until the relay's OK response.
                 val relay = relaysList.find { it.url == relayUrl }
                 relay?.messagesSent = (relay?.messagesSent ?: 0) + 1
                 updateRelaysList()
             } else {
                 Log.e(TAG, "❌ Failed to send event to $relayUrl: WebSocket send failed")
             }
+            success
         } catch (e: Exception) {
             Log.e(TAG, "❌ Failed to send event to $relayUrl: ${e.message}")
+            false
         }
     }
     
@@ -759,6 +760,7 @@ class NostrRelayManager private constructor() {
                 }
                 
                 is NostrResponse.Ok -> {
+                    messageQueue.acknowledge(response.eventId, relayUrl)
                     val wasGiftWrap = pendingGiftWrapIDs.remove(response.eventId)
                     if (response.accepted) {
                         Log.d(TAG, "✅ Event accepted id=${response.eventId.take(16)}... by relay: $relayUrl")
@@ -783,6 +785,7 @@ class NostrRelayManager private constructor() {
     
     private fun handleDisconnection(relayUrl: String, error: Throwable) {
         connections.remove(relayUrl)
+        messageQueue.releaseRelay(relayUrl)
         // NOTE: Don't remove subscriptions here - keep them for restoration on reconnection
         // subscriptions.remove(relayUrl)  // REMOVED - this was causing subscription loss
         
@@ -908,14 +911,10 @@ class NostrRelayManager private constructor() {
             // Restore all active subscriptions for this relay
             restoreSubscriptionsForRelay(relayUrl, webSocket)
             
-            // Process any queued messages for this relay
-            synchronized(messageQueueLock) {
-                val iterator = messageQueue.iterator()
-                while (iterator.hasNext()) {
-                    val (event, targetRelays) = iterator.next()
-                    if (relayUrl in targetRelays) {
-                        sendToRelay(event, webSocket, relayUrl)
-                    }
+            // Retry events still awaiting this relay's acknowledgement.
+            messageQueue.claimForRelay(relayUrl).forEach { event ->
+                if (!sendToRelay(event, webSocket, relayUrl)) {
+                    messageQueue.release(event.id, relayUrl)
                 }
             }
         }
