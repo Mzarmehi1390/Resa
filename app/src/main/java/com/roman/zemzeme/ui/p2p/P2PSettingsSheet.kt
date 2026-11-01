@@ -32,8 +32,6 @@ import com.roman.zemzeme.core.ui.component.sheet.ZemzemeBottomSheet
 import com.roman.zemzeme.p2p.P2PConfig
 import com.roman.zemzeme.p2p.P2PTransport
 import com.roman.zemzeme.p2p.P2PNodeStatus
-import com.roman.zemzeme.net.TorMode
-import com.roman.zemzeme.net.TorPreferenceManager
 import com.roman.zemzeme.service.MeshServiceHolder
 
 /**
@@ -275,15 +273,8 @@ fun P2PSettingsSheet(
                                         subtitle = stringResource(R.string.p2p_enable_desc),
                                         checked = p2pEnabled,
                                         onCheckedChange = { enabled ->
-                                            if (enabled && TorPreferenceManager.get(context) == TorMode.ON) {
-                                                TorPreferenceManager.set(context, TorMode.OFF)
-                                                android.widget.Toast.makeText(
-                                                    context,
-                                                    context.getString(R.string.toast_p2p_tor_disabled),
-                                                    android.widget.Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-
+                                            // Keep the user's Tor preference intact. P2P is paused by
+                                            // the transport policy while Tor is enabled.
                                             p2pConfig.p2pEnabled = enabled
                                             coroutineScope.launch {
                                                 val meshService = attachedMeshService
