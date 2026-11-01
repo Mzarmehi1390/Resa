@@ -42,7 +42,9 @@ class BluetoothGattServerManager(
     private var gattServer: BluetoothGattServer? = null
     private var characteristic: BluetoothGattCharacteristic? = null
     private var advertiseCallback: AdvertiseCallback? = null
-    
+    @Volatile
+    private var notificationDispatcher: GattServerNotificationDispatcher<BluetoothDevice>? = null
+
     // State management
     private var isActive = false
 
@@ -103,36 +105,47 @@ class BluetoothGattServerManager(
      * Stop GATT server
      */
     fun stop() {
-        if (!isActive) {
-            // Idempotent stop
-            stopAdvertising()
-            // Ensure server is closed if present
-            gattServer?.close()
-            gattServer = null
-            Log.i(TAG, "GATT server stopped (already inactive)")
-            return
-        }
-
         isActive = false
+        stopAdvertising()
 
-        connectionScope.launch {
-            stopAdvertising()
-            
-            // Try to cancel any active connections explicitly before closing
-            try {
-                // Disconnect ALL server connections
-                val servers = connectionTracker.getConnectedDevices().values.filter { !it.isClient }
-                servers.forEach { d ->
-                    try { gattServer?.cancelConnection(d.device) } catch (_: Exception) { }
-                }
-            } catch (_: Exception) { }
-            
-            // Close GATT server
+        // Stop admitting work before closing the Android server. This resolves
+        // active and queued dispatcher requests with a terminal shutdown result.
+        notificationDispatcher?.shutdown()
+        notificationDispatcher = null
+
+        try {
+            val server = gattServer
+            val servers = connectionTracker.getConnectedDevices().values.filter { !it.isClient }
+            servers.forEach { connection ->
+                try { server?.cancelConnection(connection.device) } catch (_: Exception) { }
+            }
+        } catch (_: Exception) { }
+
+        try {
             gattServer?.close()
-            gattServer = null
-            
-            Log.i(TAG, "GATT server stopped")
+        } catch (e: Exception) {
+            Log.w(TAG, "Error closing GATT server: ${e.message}")
         }
+        gattServer = null
+        characteristic = null
+        Log.i(TAG, "GATT server stopped")
+    }
+
+    /** Waits for the Android onNotificationSent callback, not just API admission. */
+    suspend fun sendNotification(device: BluetoothDevice, payload: ByteArray): Boolean {
+        val dispatcher = notificationDispatcher ?: return false
+        return when (val outcome = dispatcher.send(device, payload)) {
+            GattServerNotificationDispatcher.Outcome.Sent -> true
+            is GattServerNotificationDispatcher.Outcome.Failed -> {
+                Log.w(TAG, "GATT notification to ${device.address} failed: ${outcome.reason}, status=${outcome.status}")
+                false
+            }
+        }
+    }
+
+    /** Returns true when queued locally; it does not imply remote delivery. */
+    fun enqueueNotification(device: BluetoothDevice, payload: ByteArray): Boolean {
+        return notificationDispatcher?.enqueue(device, payload) ?: false
     }
     
     /**
@@ -152,8 +165,34 @@ class BluetoothGattServerManager(
     private fun setupGattServer() {
         if (!permissionManager.hasBluetoothPermissions()) return
         
+        var callbackServer: BluetoothGattServer? = null
+        var callbackCharacteristic: BluetoothGattCharacteristic? = null
+        val dispatcher = GattServerNotificationDispatcher(
+            connectionScope,
+            object : GattServerNotificationDispatcher.Adapter<BluetoothDevice> {
+                override fun submit(key: BluetoothDevice, payload: ByteArray): Boolean {
+                    val server = callbackServer ?: return false
+                    val char = callbackCharacteristic ?: return false
+                    char.value = payload.copyOf()
+                    return server.notifyCharacteristicChanged(key, char, false)
+                }
+            }
+        )
+        val callbackGeneration = dispatcher.currentServerGeneration()
+
         val serverCallback = object : BluetoothGattServerCallback() {
+            override fun onNotificationSent(device: BluetoothDevice, status: Int) {
+                dispatcher.onNotificationSent(
+                    device,
+                    status,
+                    BluetoothGatt.GATT_SUCCESS,
+                    callbackGeneration
+                )
+            }
             override fun onConnectionStateChange(device: BluetoothDevice, status: Int, newState: Int) {
+                if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    dispatcher.onPeerDisconnected(device, callbackGeneration)
+                }
                 // Guard against callbacks after service shutdown
                 if (!isActive) {
                     Log.d(TAG, "Server: Ignoring connection state change after shutdown")
@@ -271,6 +310,8 @@ class BluetoothGattServerManager(
         }
         
         // Proper cleanup sequencing to prevent race conditions
+        notificationDispatcher?.shutdown()
+        notificationDispatcher = null
         gattServer?.let { server ->
             Log.d(TAG, "Cleaning up existing GATT server")
             try {
@@ -279,6 +320,8 @@ class BluetoothGattServerManager(
                 Log.w(TAG, "Error closing existing GATT server: ${e.message}")
             }
         }
+        gattServer = null
+        characteristic = null
         
         // Small delay to ensure cleanup is complete
         Thread.sleep(100)
@@ -288,11 +331,20 @@ class BluetoothGattServerManager(
             return
         }
         
-        // Create new server
-        gattServer = bluetoothManager.openGattServer(context, serverCallback)
-        
+        // Create a fresh server/dispatcher pair. Callbacks from a closed
+        // server retain their old dispatcher and can never complete new work.
+        val openedServer = bluetoothManager.openGattServer(context, serverCallback)
+        if (openedServer == null) {
+            dispatcher.shutdown()
+            Log.e(TAG, "Failed to open GATT server")
+            return
+        }
+        callbackServer = openedServer
+        gattServer = openedServer
+        notificationDispatcher = dispatcher
+
         // Create characteristic with notification support
-        characteristic = BluetoothGattCharacteristic(
+        val createdCharacteristic = BluetoothGattCharacteristic(
             AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID,
             BluetoothGattCharacteristic.PROPERTY_READ or 
             BluetoothGattCharacteristic.PROPERTY_WRITE or 
@@ -306,12 +358,14 @@ class BluetoothGattServerManager(
             AppConstants.Mesh.Gatt.DESCRIPTOR_UUID,
             BluetoothGattDescriptor.PERMISSION_READ or BluetoothGattDescriptor.PERMISSION_WRITE
         )
-        characteristic?.addDescriptor(descriptor)
-        
+        createdCharacteristic.addDescriptor(descriptor)
+        callbackCharacteristic = createdCharacteristic
+        characteristic = createdCharacteristic
+
         val service = BluetoothGattService(AppConstants.Mesh.Gatt.SERVICE_UUID, BluetoothGattService.SERVICE_TYPE_PRIMARY)
-        service.addCharacteristic(characteristic)
-        
-        gattServer?.addService(service)
+        service.addCharacteristic(createdCharacteristic)
+
+        openedServer.addService(service)
         
         Log.i(TAG, "GATT server setup complete")
     }
