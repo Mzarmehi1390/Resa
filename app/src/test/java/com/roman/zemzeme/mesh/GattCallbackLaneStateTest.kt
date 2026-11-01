@@ -46,6 +46,22 @@ class GattCallbackLaneStateTest {
     }
 
     @Test
+    fun synchronousSubmissionRejectionReleasesLaneWithoutWaitingForCallback() {
+        val lane = GattCallbackLaneState<String>()
+        val started = lane.begin("peer-a") as GattCallbackLaneState.Event.Started
+
+        assertEquals(
+            GattCallbackLaneState.Event.Failed(
+                started.operationId,
+                GattCallbackLaneState.FailureReason.SUBMISSION_REJECTED
+            ),
+            lane.onSubmissionRejected(started.operationId)
+        )
+        assertEquals(GattCallbackLaneState.LaneStatus.READY, lane.status())
+        assertEquals(GattCallbackLaneState.Event.Ignored, lane.onCallback("peer-a", 0, 0))
+    }
+
+    @Test
     fun timeoutClosesLaneUntilNewServerIsInstalled() {
         val lane = GattCallbackLaneState<String>()
         val started = lane.begin("peer-a") as GattCallbackLaneState.Event.Started
