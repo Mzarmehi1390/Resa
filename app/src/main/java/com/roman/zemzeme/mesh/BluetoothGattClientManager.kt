@@ -449,8 +449,10 @@ class BluetoothGattClientManager(
                         }
                     } else {
                         Log.d(TAG, "Client: Cleanly disconnected from $deviceAddress")
-                        connectionTracker.cleanupDeviceConnection(deviceAddress, gatt)
                     }
+                    // A failed disconnect must release this GATT's tracked state too.
+                    // Identity-conditional removal protects a newer connection or server-side entry.
+                    connectionTracker.cleanupDeviceConnection(deviceAddress, gatt)
 
                     // Only the current attempt may retire its generation or notify higher layers.
                     activeConnectionGenerations.remove(deviceAddress, connectionGeneration)
