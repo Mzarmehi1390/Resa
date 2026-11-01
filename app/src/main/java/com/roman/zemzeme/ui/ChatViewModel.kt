@@ -747,7 +747,7 @@ class ChatViewModel(
                         meshService.myPeerID,
                         state.getNicknameValue()
                     )
-                } else if (channel != null && channelManager.isChannelPasswordProtected(channel)) {
+                } else if (channel != null && (channelManager.isChannelPasswordProtected(channel) || channelManager.hasChannelKey(channel))) {
                     // Protected-channel transport is intentionally fail-closed until
                     // encrypted envelopes are wired into both BLE send and receive.
                     android.widget.Toast.makeText(
