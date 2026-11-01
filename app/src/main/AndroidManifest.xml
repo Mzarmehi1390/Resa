@@ -26,8 +26,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- Connected device foreground service type for BLE operations (API 34+) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
-    <!-- Data sync foreground service type (required when declaring dataSync) -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <!-- Location foreground service type required for BLE scanning in background -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -37,7 +35,7 @@
     <!-- Camera for QR verification -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- File access uses Android system document/content pickers. -->
-<!-- Haptic feedback permission -->
+    <!-- Haptic feedback permission -->
     <uses-permission android:name="android.permission.VIBRATE" />
     
     <!-- Battery optimization permission -->
@@ -1605,7 +1603,7 @@
         <service
             android:name=".service.MeshForegroundService"
             android:exported="false"
-            android:foregroundServiceType="connectedDevice|dataSync|location"
+            android:foregroundServiceType="connectedDevice|location"
             tools:ignore="DataExtractionRules">
         </service>
 
