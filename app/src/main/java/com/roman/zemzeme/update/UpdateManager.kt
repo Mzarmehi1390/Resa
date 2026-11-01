@@ -10,6 +10,8 @@ import android.os.Build
 import android.util.Log
 import androidx.core.content.FileProvider
 import com.roman.zemzeme.util.AppConstants
+import com.roman.zemzeme.net.TorMode
+import com.roman.zemzeme.net.TorPreferenceManager
 import com.roman.zemzeme.net.OkHttpProvider
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -200,7 +202,15 @@ class UpdateManager private constructor(private val context: Context) {
         try {
             _updateState.value = UpdateState.Checking
 
-            val playStoreUpdate = tryPlayStoreCheck()
+            // Play Core performs update checks outside the app-managed OkHttp client.
+            // Do not invoke it while Tor is enabled; use the GitHub path below instead,
+            // which is routed through OkHttpProvider and fails closed if Tor is unavailable.
+            val playStoreUpdate = if (TorPreferenceManager.get(context) == TorMode.OFF) {
+                tryPlayStoreCheck()
+            } else {
+                Log.i(TAG, "Skipping Play Store update check while Tor routing is enabled")
+                null
+            }
             if (playStoreUpdate != null) {
                 currentUpdateInfo = playStoreUpdate
                 _updateState.value = UpdateState.Available(playStoreUpdate)
