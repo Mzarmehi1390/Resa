@@ -528,3 +528,14 @@ The platform-independent GATT callback lane now requires an explicit server-gene
 5. Tests cover an old callback arriving while the same peer has an operation on the replacement generation, and reject resetting a lane before it has been closed.
 
 **Integration limitation:** the generation token is not yet captured by `BluetoothGattServerManager` callbacks or passed by the live notification submission path. This commit hardens the isolated state machine only; it does not yet serialize characteristic mutation, await `onNotificationSent`, or change runtime BLE behavior. Android unit tests and physical-device tests remain unverified.
+
+
+### BLE server notification dispatcher foundation — 2026-11-01
+
+- Added `GattServerNotificationDispatcher<K>` as a platform-independent serialization layer for server notifications that share one mutable GATT characteristic.
+- The injected adapter owns the critical section containing characteristic payload mutation and the synchronous Android notification submission. The dispatcher does not claim success on a Boolean submission result; it resolves an admitted request only after the matching callback.
+- The dispatcher provides global single-flight ordering, copied payload ownership, callback peer/generation matching through `GattCallbackLaneState`, timeout fail-closed behavior, synchronous rejection handling, active-peer disconnect handling, server-generation replacement, and shutdown resolution for active and queued requests.
+- Caller cancellation does not cancel an already-admitted notification. The queue remains unbounded intentionally; no packets are dropped while application-level acknowledgement/retry semantics remain undefined.
+- Added fake-adapter unit coverage for cross-peer serialization, callback success/failure, synchronous rejection, timeout and replacement generation, stale callbacks, disconnect, shutdown, caller cancellation, and payload copying.
+- **Integration is not yet complete:** `BluetoothGattServerManager` does not yet own this dispatcher, its callback does not yet forward `onNotificationSent`, and `BluetoothPacketBroadcaster` server-side send paths still call `notifyCharacteristicChanged` directly. Do not treat this foundation as a runtime BLE fix.
+- CI and local/device execution have not been verified for these commits. Empty GitHub status and workflow-run responses are not evidence of success.
