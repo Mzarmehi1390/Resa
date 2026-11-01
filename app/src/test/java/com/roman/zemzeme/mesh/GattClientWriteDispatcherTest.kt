@@ -337,4 +337,67 @@ class GattClientWriteDispatcherTest {
         dispatcher.shutdown()
     }
 
+
+    @Test
+    fun enqueueAndAwaitReturnsFailureWhenConnectionDisconnects() = runBlocking {
+        val submitted = CompletableDeferred<Unit>()
+        val dispatcher = GattClientWriteDispatcher(
+            scope = this,
+            connectionGeneration = 32L,
+            adapter = object : GattClientWriteDispatcher.Adapter<String> {
+                override fun submit(key: String, payload: ByteArray): Boolean {
+                    submitted.complete(Unit)
+                    return true
+                }
+            },
+            callbackTimeoutMillis = 5_000L
+        )
+
+        val result = async {
+            dispatcher.enqueueAndAwait("characteristic", byteArrayOf(11))
+        }
+        submitted.await()
+        dispatcher.onDisconnected(32L)
+
+        assertEquals(
+            GattClientWriteDispatcher.Outcome.Failed(
+                GattClientWriteQueueState.FailureReason.DISCONNECTED
+            ),
+            result.await()
+        )
+        assertEquals(0, dispatcher.outstandingCount())
+    }
+
+    @Test
+    fun enqueueAndAwaitReturnsFailureAndInvalidatesLaneOnTimeout() = runBlocking {
+        val submitted = CompletableDeferred<Unit>()
+        val invalidated = CompletableDeferred<Unit>()
+        val dispatcher = GattClientWriteDispatcher(
+            scope = this,
+            connectionGeneration = 33L,
+            adapter = object : GattClientWriteDispatcher.Adapter<String> {
+                override fun submit(key: String, payload: ByteArray): Boolean {
+                    submitted.complete(Unit)
+                    return true
+                }
+            },
+            callbackTimeoutMillis = 30L,
+            onLaneInvalidated = { invalidated.complete(Unit) }
+        )
+
+        val result = async {
+            dispatcher.enqueueAndAwait("characteristic", byteArrayOf(12))
+        }
+        submitted.await()
+
+        assertEquals(
+            GattClientWriteDispatcher.Outcome.Failed(
+                GattClientWriteQueueState.FailureReason.TIMEOUT
+            ),
+            withTimeout(1_000L) { result.await() }
+        )
+        withTimeout(1_000L) { invalidated.await() }
+        assertEquals(0, dispatcher.outstandingCount())
+    }
+
 }
