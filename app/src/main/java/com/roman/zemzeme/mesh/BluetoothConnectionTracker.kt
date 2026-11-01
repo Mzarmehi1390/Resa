@@ -303,6 +303,17 @@ class BluetoothConnectionTracker(
         }
         Log.d(TAG, "Cleaned up device connection for $deviceAddress")
     }
+
+    /** Remove a connection only when the callback belongs to its currently tracked GATT. */
+    fun cleanupDeviceConnection(deviceAddress: String, expectedGatt: BluetoothGatt): Boolean {
+        val current = connectedDevices[deviceAddress] ?: return false
+        if (current.gatt !== expectedGatt) return false
+        if (!connectedDevices.remove(deviceAddress, current)) return false
+        subscribedDevices.removeAll { it.address == deviceAddress }
+        addressPeerMap.remove(deviceAddress)
+        Log.d(TAG, "Cleaned up current GATT connection for $deviceAddress")
+        return true
+    }
     
     /**
      * Clean up all connections
