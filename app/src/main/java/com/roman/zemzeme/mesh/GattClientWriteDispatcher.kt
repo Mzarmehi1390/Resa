@@ -90,6 +90,12 @@ internal class GattClientWriteDispatcher<K : Any>(
                 }
             }
         }
+    }.also { job ->
+        // A cancelled parent scope must not leave active or queued callers
+        // suspended forever. Convert worker cancellation into terminal failures.
+        job.invokeOnCompletion { cause ->
+            if (cause != null) shutdown()
+        }
     }
 
     /**
