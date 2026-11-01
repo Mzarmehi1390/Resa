@@ -275,4 +275,66 @@ class GattClientWriteDispatcherTest {
         )
     }
 
+
+    @Test
+    fun enqueueAndAwaitReturnsFailureWhenAndroidCallbackReportsError() = runBlocking {
+        val submitted = CompletableDeferred<Unit>()
+        val dispatcher = GattClientWriteDispatcher(
+            scope = this,
+            connectionGeneration = 30L,
+            adapter = object : GattClientWriteDispatcher.Adapter<String> {
+                override fun submit(key: String, payload: ByteArray): Boolean {
+                    submitted.complete(Unit)
+                    return true
+                }
+            },
+            callbackTimeoutMillis = 1_000L
+        )
+
+        val result = async {
+            dispatcher.enqueueAndAwait("characteristic", byteArrayOf(9))
+        }
+        submitted.await()
+        dispatcher.onWriteCallback("characteristic", 133, 0, 30L)
+
+        assertEquals(
+            GattClientWriteDispatcher.Outcome.Failed(
+                GattClientWriteQueueState.FailureReason.CALLBACK_FAILURE,
+                status = 133
+            ),
+            result.await()
+        )
+        dispatcher.shutdown()
+    }
+
+    @Test
+    fun enqueueCompletionCallbackReceivesFailureWhenAndroidCallbackReportsError() = runBlocking {
+        val submitted = CompletableDeferred<Unit>()
+        val outcome = CompletableDeferred<GattClientWriteDispatcher.Outcome>()
+        val dispatcher = GattClientWriteDispatcher(
+            scope = this,
+            connectionGeneration = 31L,
+            adapter = object : GattClientWriteDispatcher.Adapter<String> {
+                override fun submit(key: String, payload: ByteArray): Boolean {
+                    submitted.complete(Unit)
+                    return true
+                }
+            },
+            callbackTimeoutMillis = 1_000L
+        )
+
+        dispatcher.enqueue("characteristic", byteArrayOf(10)) { outcome.complete(it) }
+        submitted.await()
+        dispatcher.onWriteCallback("characteristic", 8, 0, 31L)
+
+        assertEquals(
+            GattClientWriteDispatcher.Outcome.Failed(
+                GattClientWriteQueueState.FailureReason.CALLBACK_FAILURE,
+                status = 8
+            ),
+            outcome.await()
+        )
+        dispatcher.shutdown()
+    }
+
 }
