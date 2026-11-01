@@ -10,6 +10,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.content.FileProvider
 import com.roman.zemzeme.util.AppConstants
+import com.roman.zemzeme.net.OkHttpProvider
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -90,13 +91,19 @@ class UpdateManager private constructor(private val context: Context) {
     private val _updateState = MutableStateFlow<UpdateState>(UpdateState.Idle)
     val updateState: StateFlow<UpdateState> = _updateState.asStateFlow()
 
-    private val httpClient: OkHttpClient by lazy {
-        OkHttpClient.Builder()
+    /**
+     * Derive the updater client from the shared client so GitHub requests and APK
+     * downloads inherit the currently configured Tor SOCKS proxy.
+     *
+     * Resolve it per request: Tor mode changes reset OkHttpProvider, and a cached
+     * updater client would otherwise keep using the old (possibly direct) route.
+     */
+    private fun createHttpClient(): OkHttpClient =
+        OkHttpProvider.httpClient().newBuilder()
             .connectTimeout(AppConstants.Update.CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(AppConstants.Update.READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(AppConstants.Update.WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .build()
-    }
 
     private val playAppUpdateManager: AppUpdateManager by lazy {
         AppUpdateManagerFactory.create(context)
@@ -246,7 +253,7 @@ class UpdateManager private constructor(private val context: Context) {
             .build()
 
         try {
-            httpClient.newCall(request).execute().use { response ->
+            createHttpClient().newCall(request).execute().use { response ->
                 if (response.code == 403) return@withContext null
                 if (!response.isSuccessful) return@withContext null
 
@@ -344,7 +351,7 @@ class UpdateManager private constructor(private val context: Context) {
             .header("User-Agent", "Zemzeme-Android/${getCurrentVersionName()}")
         if (existingBytes > 0) requestBuilder.header("Range", "bytes=$existingBytes-")
 
-        httpClient.newCall(requestBuilder.build()).execute().use { response ->
+        createHttpClient().newCall(requestBuilder.build()).execute().use { response ->
             val isResuming = response.code == 206
             if (!response.isSuccessful && response.code != 206) {
                 if (existingBytes > 0) {
@@ -378,7 +385,7 @@ class UpdateManager private constructor(private val context: Context) {
 
     private suspend fun downloadApkFresh(url: String, apkFile: File, onProgress: (Float) -> Unit): File = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(url).header("User-Agent", "Zemzeme-Android/${getCurrentVersionName()}").build()
-        httpClient.newCall(request).execute().use { response ->
+        createHttpClient().newCall(request).execute().use { response ->
             if (!response.isSuccessful) throw IOException("Download failed: HTTP ${response.code}")
             val body = response.body ?: throw IOException("Empty response body")
             val contentLength = body.contentLength()
