@@ -16,6 +16,9 @@ import java.util.*
  * Being the locally recorded creator is not proof that the key is available after restart.
  */
 internal object ChannelAccessPolicy {
+    fun isPasswordProtected(markerPresent: Boolean, commitmentPresent: Boolean): Boolean =
+        markerPresent || commitmentPresent
+
     fun requiresPasswordVerification(passwordProtected: Boolean, hasSessionKey: Boolean): Boolean =
         passwordProtected && !hasSessionKey
 
@@ -249,8 +252,10 @@ class ChannelManager(
     fun isChannelPasswordProtected(channel: String): Boolean {
         // The encrypted commitment is also authoritative: if the legacy marker
         // was not durably written, an orphan commitment must still fail closed.
-        return state.getPasswordProtectedChannelsValue().contains(channel) ||
-            channelKeyCommitments.containsKey(channel)
+        return ChannelAccessPolicy.isPasswordProtected(
+            markerPresent = state.getPasswordProtectedChannelsValue().contains(channel),
+            commitmentPresent = channelKeyCommitments.containsKey(channel)
+        )
     }
     
     fun hasChannelKey(channel: String): Boolean {
