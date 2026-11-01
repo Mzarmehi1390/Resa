@@ -128,7 +128,7 @@ class VerificationServiceTest {
             byteArrayOf(0x03, 0x40) + signature
 
         val badSignatureLength = valid.copyOf().also {
-            it[it.size - 66] = 0x3f
+            it[it.size - 65] = 0x3f
         }
         assertNull(VerificationService.parseVerifyResponse(badSignatureLength))
         assertNull(VerificationService.parseVerifyResponse(byteArrayOf(0x01, 0xff.toByte())))
