@@ -539,3 +539,16 @@ The platform-independent GATT callback lane now requires an explicit server-gene
 - Added fake-adapter unit coverage for cross-peer serialization, callback success/failure, synchronous rejection, timeout and replacement generation, stale callbacks, disconnect, shutdown, caller cancellation, and payload copying.
 - **Integration is not yet complete:** `BluetoothGattServerManager` does not yet own this dispatcher, its callback does not yet forward `onNotificationSent`, and `BluetoothPacketBroadcaster` server-side send paths still call `notifyCharacteristicChanged` directly. Do not treat this foundation as a runtime BLE fix.
 - CI and local/device execution have not been verified for these commits. Empty GitHub status and workflow-run responses are not evidence of success.
+
+
+### BLE server notification dispatcher runtime wiring — 2026-11-01
+
+- `BluetoothGattServerManager` now creates one dispatcher for each opened `BluetoothGattServer` instance and forwards `BluetoothGattServerCallback.onNotificationSent` plus matching peer-disconnect events to that instance's dispatcher.
+- The adapter owns the shared characteristic mutation and the Android notification submission in one serialized operation. Server-side notifications are no longer submitted directly by `BluetoothPacketBroadcaster`.
+- The broadcaster's actor path now waits for callback-confirmed server notifications before advancing fragmented-transfer progress. The prior direct actor-failure fallback was removed so a failed actor submission cannot bypass ordering.
+- Legacy synchronous targeted-send APIs use explicit non-blocking queue admission. Their Boolean return now means local queue admission (or local client-write API acceptance), not remote delivery. For targeted file sends, completion progress advances only when the server notification callback succeeds.
+- Each broadcaster server send carries the expected `BluetoothGattServer` instance; the manager rejects stale server references rather than routing them through a replacement server's dispatcher.
+- Server start/stop publication is guarded by a lifecycle generation and lock. Callback handlers from an old lifecycle are ignored; server open failures and rejected service registration are treated as setup failures.
+- An ambiguous notification timeout or disconnect closes the lane and schedules recreation of the owning GATT server. This is intentionally disruptive to current server-side connections, but avoids silently reusing a lane whose late callback cannot be correlated safely.
+- Unit tests cover dispatcher queue admission, callback completion, shutdown completion exactly once, callback failures, timeout/generation isolation, disconnect, cancellation, and payload ownership.
+- **Verification limitation:** these are source-level changes and unit tests added to the repository. GitHub CI status and local/device execution have not yet been confirmed. BLE interoperability, callback timing across Android vendors, service-registration behavior, and recovery on physical devices still require runtime testing.
