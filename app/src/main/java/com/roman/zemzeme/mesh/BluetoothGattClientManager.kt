@@ -73,6 +73,15 @@ class BluetoothGattClientManager(
     private var isActive = false
     private val connectionGenerationCounter = AtomicLong(0L)
     private val activeConnectionGenerations = ConcurrentHashMap<String, Long>()
+
+    /** One serialized write lane bound to one exact GATT instance and generation. */
+    private data class ClientWriteSession(
+        val gatt: BluetoothGatt,
+        val generation: Long,
+        val dispatcher: GattClientWriteDispatcher<UUID>
+    )
+
+    private val clientWriteSessions = ConcurrentHashMap<String, ClientWriteSession>()
     
     /**
      * Start client manager
@@ -125,8 +134,11 @@ class BluetoothGattClientManager(
      * Stop client manager
      */
     fun stop() {
-        // Invalidate callbacks immediately, before asynchronous disconnect/cleanup work.
+        // Invalidate callbacks and fail queued writes before asynchronous disconnect/cleanup work.
         activeConnectionGenerations.clear()
+        clientWriteSessions.entries.toList().forEach { (address, session) ->
+            if (clientWriteSessions.remove(address, session)) session.dispatcher.shutdown()
+        }
         if (!isActive) {
             // Idempotent stop
             stopScanning()
@@ -412,6 +424,7 @@ class BluetoothGattClientManager(
 
         val deviceAddress = device.address
         val connectionGeneration = connectionGenerationCounter.incrementAndGet()
+        clientWriteSessions.remove(deviceAddress)?.dispatcher?.shutdown()
         activeConnectionGenerations[deviceAddress] = connectionGeneration
         Log.i(TAG, "Connecting to zemzeme device: $deviceAddress (peerID: $peerID, generation: $connectionGeneration)")
         
@@ -467,6 +480,13 @@ class BluetoothGattClientManager(
                     }
                     // A failed disconnect must release this GATT's tracked state too.
                     // Identity-conditional removal protects a newer connection or server-side entry.
+                    clientWriteSessions[deviceAddress]?.let { session ->
+                        if (session.gatt === gatt && session.generation == connectionGeneration &&
+                            clientWriteSessions.remove(deviceAddress, session)
+                        ) {
+                            session.dispatcher.onDisconnected(connectionGeneration)
+                        }
+                    }
                     connectionTracker.cleanupDeviceConnection(deviceAddress, gatt)
 
                     // Only the current attempt may retire its generation or notify higher layers.
@@ -535,6 +555,7 @@ class BluetoothGattClientManager(
                                 connectionTracker.updateDeviceConnection(deviceAddress, updatedConn)
                                 Log.d(TAG, "Client: Updated device connection with characteristic for $deviceAddress")
                             }
+                            installClientWriteSession(deviceAddress, gatt, connectionGeneration, characteristic)
                             
                             val notificationsEnabled = gatt.setCharacteristicNotification(characteristic, true)
                             if (!notificationsEnabled) {
@@ -603,6 +624,26 @@ class BluetoothGattClientManager(
                 }
             }
 
+            override fun onCharacteristicWrite(
+                gatt: BluetoothGatt,
+                characteristic: BluetoothGattCharacteristic,
+                status: Int
+            ) {
+                if (!isCurrentAttempt()) return
+                if (characteristic.uuid != AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID) return
+                val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
+                if (!GattClientCallbackValidation.isCurrentConnection(gatt, trackedGatt)) return
+
+                val session = clientWriteSessions[deviceAddress] ?: return
+                if (session.gatt !== gatt || session.generation != connectionGeneration) return
+                session.dispatcher.onWriteCallback(
+                    characteristic.uuid,
+                    status,
+                    BluetoothGatt.GATT_SUCCESS,
+                    connectionGeneration
+                )
+            }
+
             override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
                 if (!isCurrentAttempt()) return
                 val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
@@ -665,6 +706,59 @@ class BluetoothGattClientManager(
         }
     }
     
+    /**
+     * Queue a client-side characteristic write. True means accepted into the
+     * bounded local queue; completion is reported only by Android's matching
+     * onCharacteristicWrite callback and is not remote application delivery.
+     */
+    fun enqueueClientWrite(deviceAddress: String, payload: ByteArray): Boolean {
+        val session = clientWriteSessions[deviceAddress] ?: return false
+        val tracked = connectionTracker.getDeviceConnection(deviceAddress) ?: return false
+        if (tracked.gatt !== session.gatt || activeConnectionGenerations[deviceAddress] != session.generation) {
+            return false
+        }
+        return session.dispatcher.enqueue(
+            AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID,
+            payload.copyOf()
+        ) is GattClientWriteQueueState.Admission.Accepted
+    }
+
+    private fun installClientWriteSession(
+        deviceAddress: String,
+        gatt: BluetoothGatt,
+        generation: Long,
+        characteristic: BluetoothGattCharacteristic
+    ) {
+        val dispatcher = GattClientWriteDispatcher(
+            scope = connectionScope,
+            connectionGeneration = generation,
+            adapter = object : GattClientWriteDispatcher.Adapter<UUID> {
+                override fun submit(key: UUID, payload: ByteArray): Boolean {
+                    if (key != AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID ||
+                        activeConnectionGenerations[deviceAddress] != generation ||
+                        connectionTracker.getDeviceConnection(deviceAddress)?.gatt !== gatt
+                    ) return false
+
+                    characteristic.value = payload.copyOf()
+                    characteristic.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+                    return gatt.writeCharacteristic(characteristic)
+                }
+            },
+            onLaneInvalidated = {
+                if (activeConnectionGenerations[deviceAddress] == generation &&
+                    connectionTracker.getDeviceConnection(deviceAddress)?.gatt === gatt
+                ) {
+                    Log.e(TAG, "Client write callback timed out for $deviceAddress; disconnecting invalidated GATT lane")
+                    try { gatt.disconnect() } catch (e: Exception) {
+                        Log.w(TAG, "Could not disconnect timed-out GATT for $deviceAddress: ${e.message}")
+                    }
+                }
+            }
+        )
+        val session = ClientWriteSession(gatt, generation, dispatcher)
+        clientWriteSessions.put(deviceAddress, session)?.dispatcher?.shutdown()
+    }
+
     /**
      * Restart scanning for power mode changes
      */
