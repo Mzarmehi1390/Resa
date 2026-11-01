@@ -410,6 +410,11 @@ class BluetoothGattClientManager(
         val gattCallback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
                 Log.d(TAG, "Client: Connection state change - Device: $deviceAddress, Status: $status, NewState: $newState")
+                val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
+                if (GattClientCallbackValidation.isStaleConnection(gatt, trackedGatt)) {
+                    Log.w(TAG, "Client: Ignoring stale connection-state callback for $deviceAddress")
+                    return
+                }
 
                 if (newState == BluetoothProfile.STATE_CONNECTED && status == BluetoothGatt.GATT_SUCCESS) {
                     Log.i(TAG, "Client: Successfully connected to $deviceAddress. Requesting MTU...")
@@ -446,6 +451,11 @@ class BluetoothGattClientManager(
             override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
                 val deviceAddress = gatt.device.address
                 Log.i(TAG, "Client: MTU changed for $deviceAddress to $mtu with status $status")
+                val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
+                if (GattClientCallbackValidation.isStaleConnection(gatt, trackedGatt)) {
+                    Log.w(TAG, "Client: Ignoring stale MTU callback for $deviceAddress")
+                    return
+                }
 
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     Log.i(TAG, "MTU successfully negotiated for $deviceAddress. Discovering services.")
@@ -469,7 +479,13 @@ class BluetoothGattClientManager(
                 }
             }
 
-            override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {                
+            override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+                val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
+                if (!GattClientCallbackValidation.isCurrentConnection(gatt, trackedGatt)) {
+                    Log.w(TAG, "Client: Ignoring non-current service-discovery callback for $deviceAddress")
+                    return
+                }
+
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     val service = gatt.getService(AppConstants.Mesh.Gatt.SERVICE_UUID)
                     if (service != null) {
@@ -548,6 +564,12 @@ class BluetoothGattClientManager(
             }
 
             override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+                val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
+                if (!GattClientCallbackValidation.isCurrentConnection(gatt, trackedGatt)) {
+                    Log.w(TAG, "Client: Ignoring non-current notification callback for $deviceAddress")
+                    return
+                }
+                if (characteristic.uuid != AppConstants.Mesh.Gatt.CHARACTERISTIC_UUID) return
                 val value = characteristic.value
                 Log.i(TAG, "Client: Received packet from ${gatt.device.address}, size: ${value.size} bytes")
                 val packet = ZemzemePacket.fromBinaryData(value)
@@ -563,6 +585,11 @@ class BluetoothGattClientManager(
             
             override fun onReadRemoteRssi(gatt: BluetoothGatt, rssi: Int, status: Int) {
                 val deviceAddress = gatt.device.address
+                val trackedGatt = connectionTracker.getDeviceConnection(deviceAddress)?.gatt
+                if (!GattClientCallbackValidation.isCurrentConnection(gatt, trackedGatt)) {
+                    Log.w(TAG, "Client: Ignoring non-current RSSI callback for $deviceAddress")
+                    return
+                }
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     Log.d(TAG, "Client: RSSI updated for $deviceAddress: $rssi dBm")
                     
