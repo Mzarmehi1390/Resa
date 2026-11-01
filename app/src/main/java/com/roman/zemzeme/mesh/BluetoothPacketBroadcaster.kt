@@ -581,11 +581,11 @@ class BluetoothPacketBroadcaster(
         return try {
             deviceConn.characteristic?.let { char ->
                 char.value = data
-                // Use WRITE_NO_RESPONSE so the GATT stack allows multiple in-flight
-                // writes without blocking on onCharacteristicWrite() ACKs.
-                // WRITE_TYPE_DEFAULT (write with response) only allows one pending
-                // write per connection, causing every subsequent fragment write to
-                // fail silently when the 20ms inter-fragment delay < BLE round-trip.
+                // WRITE_TYPE_NO_RESPONSE avoids requiring an ATT Write Response from
+                // the peer. Android may still report onCharacteristicWrite for local
+                // stack flow control; that callback is not proof that the peer app
+                // received or processed this packet. This direct path currently checks
+                // only immediate API acceptance; per-GATT serialization is still needed.
                 char.writeType = android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
                 val result = deviceConn.gatt?.writeCharacteristic(char) ?: false
                 result
