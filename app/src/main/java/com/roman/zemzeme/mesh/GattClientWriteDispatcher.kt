@@ -83,7 +83,7 @@ internal class GattClientWriteDispatcher<K : Any>(
 
                 val outcome = withTimeoutOrNull(callbackTimeoutMillis) {
                     entry.result.await()
-                } ?: timeoutActiveWrite(entry)
+                } ?: timeoutActiveWrite(request.id, entry)
 
                 if (outcome.reasonIsTimeout()) {
                     break
@@ -117,14 +117,35 @@ internal class GattClientWriteDispatcher<K : Any>(
 
     /** Forward BluetoothGattCallback.onCharacteristicWrite for this GATT session. */
     fun onWriteCallback(key: K, status: Int, successStatus: Int, callbackGeneration: Long) {
-        val completion = synchronized(lock) {
-            state.onWriteCallback(key, status, successStatus, callbackGeneration)
+        var callback: ((Outcome) -> Unit)? = null
+        var outcome: Outcome? = null
+        synchronized(lock) {
+            val completion = state.onWriteCallback(key, status, successStatus, callbackGeneration)
+            when (completion) {
+                is GattClientWriteQueueState.Completion.Succeeded -> {
+                    val entry = entries.remove(completion.request.id)
+                    if (entry != null && entry.result.complete(Outcome.Sent)) {
+                        callback = entry.onComplete
+                        outcome = Outcome.Sent
+                    }
+                }
+                is GattClientWriteQueueState.Completion.Failed -> {
+                    val result = Outcome.Failed(completion.reason, completion.status)
+                    val entry = entries.remove(completion.request.id)
+                    if (entry != null && entry.result.complete(result)) {
+                        callback = entry.onComplete
+                        outcome = result
+                    }
+                }
+                GattClientWriteQueueState.Completion.Ignored -> Unit
+            }
         }
-        completeFromState(completion)
+        outcome?.let { completed -> runCatching { callback?.invoke(completed) } }
     }
 
     /** Fail active and queued writes when this exact GATT connection disconnects. */
     fun onDisconnected(callbackGeneration: Long) {
+        if (callbackGeneration != generation) return
         val failures = synchronized(lock) {
             if (closed) return
             closed = true
@@ -147,16 +168,31 @@ internal class GattClientWriteDispatcher<K : Any>(
 
     fun outstandingCount(): Int = synchronized(lock) { state.outstandingCount() }
 
-    private fun timeoutActiveWrite(activeEntry: Entry): Outcome {
+    private suspend fun timeoutActiveWrite(requestId: Long, activeEntry: Entry): Outcome {
+        var didTimeout = false
         val failures = synchronized(lock) {
-            if (activeEntry.result.isCompleted) return activeEntry.result.getCompleted()
-            closed = true
-            state.onTimeout(stateGeneration())
+            if (activeEntry.result.isCompleted) {
+                emptyList()
+            } else {
+                closed = true
+                didTimeout = true
+                state.onTimeout(generation)
+            }
         }
+        if (!didTimeout) return activeEntry.result.await()
+
         completeAll(failures)
+        // Defensive fallback: resolve the active caller even if state and entry
+        // bookkeeping ever become inconsistent.
+        if (!activeEntry.result.isCompleted) {
+            completeEntry(
+                requestId,
+                Outcome.Failed(GattClientWriteQueueState.FailureReason.TIMEOUT)
+            )
+        }
         wakeups.close()
         runCatching(onLaneInvalidated)
-        return activeEntry.result.getCompleted()
+        return activeEntry.result.await()
     }
 
     private fun completeFromState(completion: GattClientWriteQueueState.Completion<K>) {
@@ -188,5 +224,4 @@ internal class GattClientWriteDispatcher<K : Any>(
 
     // The dispatcher owns one immutable generation; this accessor keeps every
     // state transition explicitly tied to that generation.
-    private fun stateGeneration(): Long = generation
 }
